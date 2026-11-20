@@ -108,7 +108,7 @@ export const ActiveTermCard = ({
 			</div>
 			<div className="grid grid-cols-2 gap-2">
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					Related Terms: {node.relationshipCount}
+					<T value={'Related Terms:'} /> {node.relationshipCount}
 					<DetailLinkButton
 						count={node.relationshipCount}
 						onClick={onShowRelationships}
@@ -116,7 +116,7 @@ export const ActiveTermCard = ({
 					/>
 				</span>
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					Attribute Columns: {node.columnAttributesCount}
+					<T value={'Attribute Columns:'} /> {node.columnAttributesCount}
 					<DetailLinkButton
 						count={node.columnAttributesCount}
 						onClick={onShowColumnAttributes}
@@ -124,7 +124,7 @@ export const ActiveTermCard = ({
 					/>
 				</span>
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					SQL Attributes: {node.sqlAttributesCount}
+					<T value={'SQL Attributes:'} /> {node.sqlAttributesCount}
 					<DetailLinkButton
 						count={node.sqlAttributesCount}
 						onClick={onShowSqlAttributes}

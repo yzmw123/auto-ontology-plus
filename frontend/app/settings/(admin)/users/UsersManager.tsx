@@ -255,7 +255,9 @@ export const UsersManager = () => {
 									type="button"
 									disabled={busy}
 									onClick={toggle}
-									aria-label={`Actions for ${user.name || user.email}`}
+									aria-label={__uiT('Actions for {name}', {
+										name: user.name || user.email,
+									})}
 								>
 									<Icon name={IconName.DotsVertical} className="h-4 w-4" />
 								</Button>
@@ -400,7 +402,7 @@ export const UsersManager = () => {
 							}}
 						>
 							<Icon name={IconName.Plus} className="mr-1.5 h-4 w-4" />
-							Invite
+							<T value={'Invite'} />
 						</Button>
 					</div>
 					{loading ? (

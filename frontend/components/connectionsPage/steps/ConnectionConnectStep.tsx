@@ -61,7 +61,7 @@ export const ConnectionConnectStep = ({
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-2">
 			<p className="text-sm text-body dark:text-zinc-400">
-				Connect to {connectionDisplayName[connectionType]}
+				{__uiT('Connect to {name}', { name: connectionDisplayName[connectionType] })}
 			</p>
 			<div className="flex w-full flex-col gap-3">
 				{fields.map((field) => {
@@ -133,7 +133,9 @@ export const ConnectionConnectStep = ({
 								/>
 								{encoded !== '' && (
 									<span className="text-xs text-secondary dark:text-zinc-400">
-										{`Loaded ${Math.round((encoded.length * 3) / 4 / 1024)} KB`}
+										{__uiT('Loaded {size} KB', {
+											size: Math.round((encoded.length * 3) / 4 / 1024),
+										})}
 									</span>
 								)}
 								{field.hint != null && (

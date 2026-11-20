@@ -189,7 +189,7 @@ export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
 					</div>
 					{emptyMessage !== null ? (
 						<p className="px-2 py-3 text-center text-xs text-secondary dark:text-zinc-400">
-							{emptyMessage}
+							<T value={emptyMessage} />
 						</p>
 					) : (
 						<DataTreeSelect

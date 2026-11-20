@@ -12,7 +12,7 @@ import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
 import { ConnectionType } from '@/enums/connection';
 import type { Connection } from '@/types/connection';
-import { T } from '@/i18n/LanguageProvider';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type ConnectionInfoCardProps = {
 	connection: Connection;
@@ -32,6 +32,7 @@ export const ConnectionInfoCard = ({
 	ssoFederationPending = false,
 	disabled = false,
 }: ConnectionInfoCardProps) => {
+	const { t } = useLanguage();
 	const menuItems = [
 		...(onEdit == null
 			? []
@@ -91,7 +92,9 @@ export const ConnectionInfoCard = ({
 									iconOnly
 									type="button"
 									onClick={toggle}
-									aria-label={`Actions for ${connection.database_name}`}
+									aria-label={t('Actions for {name}', {
+										name: connection.database_name,
+									})}
 								>
 									<Icon name={IconName.DotsVertical} className="h-4 w-4" />
 								</Button>

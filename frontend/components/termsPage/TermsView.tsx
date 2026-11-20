@@ -1410,7 +1410,9 @@ export const TermsView = () => {
 												setSqlAttrEditError(null);
 												setSqlAttrEditing(true);
 											}}
-											aria-label={`Edit ${sqlAttrTitle}`}
+											aria-label={__uiT('Edit {name}', {
+												name: sqlAttrTitle,
+											})}
 											title={__uiT('Edit')}
 											iconPosition="left"
 										>
@@ -1428,7 +1430,9 @@ export const TermsView = () => {
 												});
 												setDeleteSqlAttrError(null);
 											}}
-											aria-label={`Delete ${sqlAttrTitle}`}
+											aria-label={__uiT('Delete {name}', {
+												name: sqlAttrTitle,
+											})}
 											title={__uiT('Delete')}
 											iconPosition="left"
 										>
@@ -1478,11 +1482,10 @@ export const TermsView = () => {
 					onCancel={handleDeleteSqlAttrClose}
 					onConfirm={handleDeleteSqlAttrConfirm}
 					title={__uiT('Delete SQL Attribute')}
-					message={[
-						'Are you sure you want to delete ',
-						<strong key="name">{deletingSqlAttr?.name}</strong>,
-						'? This action cannot be undone.',
-					]}
+					message={__uiT(
+						'Are you sure you want to delete {name}? This action cannot be undone.',
+						{ name: deletingSqlAttr?.name ?? '' },
+					)}
 					confirming={deletingSqlAttrBusy}
 					error={deleteSqlAttrError}
 				/>
@@ -1511,7 +1514,7 @@ export const TermsView = () => {
 
 					{sqlEditValidationMessage != null && (
 						<p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-body dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
-							{sqlEditValidationMessage}
+							<T value={sqlEditValidationMessage} />
 						</p>
 					)}
 
@@ -1546,7 +1549,7 @@ export const TermsView = () => {
 											setColumnAttrEditError(null);
 											setColumnAttrEditing(true);
 										}}
-										aria-label={`Edit ${colAttrTitle}`}
+										aria-label={__uiT('Edit {name}', { name: colAttrTitle })}
 										title={__uiT('Edit')}
 										iconPosition="left"
 									>
@@ -1687,7 +1690,7 @@ export const TermsView = () => {
 
 					{sqlAttrValidationMessage != null && (
 						<p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-body dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
-							{sqlAttrValidationMessage}
+							<T value={sqlAttrValidationMessage} />
 						</p>
 					)}
 

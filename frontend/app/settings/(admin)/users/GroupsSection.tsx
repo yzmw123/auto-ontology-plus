@@ -284,7 +284,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 								iconOnly
 								type="button"
 								onClick={toggle}
-								aria-label={`Actions for ${group.name}`}
+								aria-label={__uiT('Actions for {name}', { name: group.name })}
 							>
 								<Icon name={IconName.DotsVertical} className="h-4 w-4" />
 							</Button>
@@ -357,7 +357,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 							<label htmlFor="group-name" className={labelClassName}>
 								<T value={'Name'} />
 								<span className="ml-2 font-normal text-secondary dark:text-zinc-500">
-									(Max. {MAX_GROUP_NAME_LENGTH})
+									{__uiT('(Max. {count})', { count: MAX_GROUP_NAME_LENGTH })}
 								</span>
 							</label>
 							<input
@@ -410,8 +410,12 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 										setDraft({ ...draft, role: asRole(event.target.value) })
 									}
 								>
-									<option value={Role.Viewer}>Viewer</option>
-									<option value={Role.Admin}>Admin</option>
+									<option value={Role.Viewer}>
+										<T value={'Viewer'} />
+									</option>
+									<option value={Role.Admin}>
+										<T value={'Admin'} />
+									</option>
 								</select>
 							</div>
 						</div>

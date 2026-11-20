@@ -14,22 +14,25 @@ import { authApi, type SsoProvider } from '@/api/auth';
 import { useSession } from '@/auth/auth-client';
 import { resumeAuthorizeFromApp } from '@/auth/oauth-loopback';
 import { SkeletonVariant } from '@/enums/skeleton';
-import { T } from '@/i18n/LanguageProvider';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const inputClass =
 	'w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300';
 
-const LoginLoading = () => (
-	<div
-		className="w-full max-w-sm space-y-4 py-6"
-		role="status"
-		aria-label="Loading sign-in options"
-	>
-		<SkeletonBlock variant={SkeletonVariant.RECTANGLE} className="h-10 w-full" />
-		<SkeletonBlock variant={SkeletonVariant.RECTANGLE} className="h-10 w-full" />
-		<SkeletonBlock className="mx-auto h-3 w-1/3" />
-	</div>
-);
+const LoginLoading = () => {
+	const { t } = useLanguage();
+	return (
+		<div
+			className="w-full max-w-sm space-y-4 py-6"
+			role="status"
+			aria-label={t('Loading sign-in options')}
+		>
+			<SkeletonBlock variant={SkeletonVariant.RECTANGLE} className="h-10 w-full" />
+			<SkeletonBlock variant={SkeletonVariant.RECTANGLE} className="h-10 w-full" />
+			<SkeletonBlock className="mx-auto h-3 w-1/3" />
+		</div>
+	);
+};
 
 // An MCP client sends a user here to sign in, by way of an authorize request
 // that arrived without a session (see the `mcp` plugin's `loginPage` in
@@ -99,7 +102,10 @@ const LoginForm = () => {
 		event.preventDefault();
 		setSubmitting(true);
 		setError(null);
-		const result = await authApi.signInWithPassword(email, password);
+		const previewAdminEmail = process.env.NEXT_PUBLIC_PREVIEW_ADMIN_EMAIL;
+		const loginEmail =
+			previewAdminEmail && email.trim().toLowerCase() === 'admin' ? previewAdminEmail : email;
+		const result = await authApi.signInWithPassword(loginEmail, password);
 		if (result.error) {
 			setError(result.error.message ?? 'Invalid email or password.');
 			setSubmitting(false);
@@ -160,12 +166,14 @@ const LoginForm = () => {
 		<form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
 			<div className="flex flex-col gap-1.5">
 				<label htmlFor="email" className="text-xs font-medium text-body dark:text-zinc-400">
-					<T value={'Email'} />
+					<T value={process.env.NEXT_PUBLIC_PREVIEW_ADMIN_EMAIL ? 'Account' : 'Email'} />
 				</label>
 				<input
 					id="email"
-					type="email"
-					autoComplete="email"
+					type={process.env.NEXT_PUBLIC_PREVIEW_ADMIN_EMAIL ? 'text' : 'email'}
+					autoComplete={
+						process.env.NEXT_PUBLIC_PREVIEW_ADMIN_EMAIL ? 'username' : 'email'
+					}
 					required
 					value={email}
 					onChange={(event) => setEmail(event.target.value)}

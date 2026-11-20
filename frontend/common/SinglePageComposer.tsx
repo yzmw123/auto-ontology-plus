@@ -245,7 +245,7 @@ const DescriptionSuggestion = ({
 							aria-label={__uiT('Generating suggestion')}
 							className="h-3.5 w-3.5"
 						/>
-						Generating suggestion…
+						<T value={'Generating suggestion…'} />
 					</span>
 				) : suggestion != null ? (
 					suggestion
@@ -611,6 +611,7 @@ const ZonesSection = ({ section }: { section: ComposerZonesSection }) => {
 
 function renderComposerSection(
 	section: ComposerSection,
+	t: (message: string, values?: Record<string, string | number>) => string,
 	onTermClick?: (termId: string) => void,
 	onDataTableRowClick?: (sectionId: string, rowId: string) => void,
 	isEditingActive = false,
@@ -891,7 +892,7 @@ function renderComposerSection(
 										}
 										console.log('edit sql section', section.id);
 									}}
-									aria-label={`Edit ${section.title}`}
+									aria-label={t('Edit {name}', { name: t(section.title) })}
 									title="Edit"
 								>
 									<Icon name={IconName.Pencil} className="h-4 w-4" />
@@ -922,6 +923,7 @@ function breadcrumbsFromPdf(headerProps: Record<string, unknown> | undefined): B
 
 export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerProps>(
 	function SinglePageComposer(props, ref) {
+		const { t } = useLanguage();
 		const {
 			sections,
 			header,
@@ -1093,7 +1095,7 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 				>
 					<div className="border-b border-zinc-200 pb-4 dark:border-zinc-700">
 						<p className="text-xs font-medium uppercase tracking-wide text-secondary">
-							PDF preview
+							<T value={'PDF preview'} />
 							{pdfPageName ? (
 								<span className="ml-2 font-normal normal-case text-body dark:text-zinc-400">
 									{pdfPageName}
@@ -1404,6 +1406,7 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 											) : (
 												renderComposerSection(
 													section,
+													t,
 													handleTermClick,
 													onDataTableRowClick,
 													isEditingActive,

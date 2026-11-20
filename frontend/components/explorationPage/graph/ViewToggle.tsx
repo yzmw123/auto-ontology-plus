@@ -8,7 +8,7 @@ import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
 import { Icon, IconName } from '@/common/icons';
 import { ExplorationLayer } from '@/enums/exploration';
-import { T } from '@/i18n/LanguageProvider';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 type ViewToggleProps = {
 	layer: ExplorationLayer;
@@ -16,6 +16,7 @@ type ViewToggleProps = {
 };
 
 export const ViewToggle = ({ layer, onToggle }: ViewToggleProps) => {
+	const { t } = useLanguage();
 	const isSemantic = layer === ExplorationLayer.Semantic;
 
 	return (
@@ -28,7 +29,7 @@ export const ViewToggle = ({ layer, onToggle }: ViewToggleProps) => {
 			shadow
 		>
 			<Icon name={isSemantic ? IconName.Database : IconName.Terms} className="h-4 w-4" />
-			Switch to {isSemantic ? <T value={'Data Objects'} /> : <T value={'Semantic Objects'} />}
+			{isSemantic ? t('Switch to Data Objects') : t('Switch to Semantic Objects')}
 		</Button>
 	);
 };

@@ -277,8 +277,10 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 							    failed to load has no count rather than a count of
 							    none. */}
 							<span className="ml-auto shrink-0 text-xs text-secondary dark:text-zinc-400">
-								{itemsLoading || itemsError != null ? null : `${total} tagged · `}
-								Created {formatDate(tag.created)}
+								{itemsLoading || itemsError != null
+									? null
+									: `${__uiT('{count} tagged', { count: total })} · `}
+								{__uiT('Created {date}', { date: formatDate(tag.created) })}
 							</span>
 						</>
 					)}

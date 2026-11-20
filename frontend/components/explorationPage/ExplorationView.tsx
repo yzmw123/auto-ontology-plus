@@ -2149,8 +2149,8 @@ export const ExplorationView = () => {
 							}
 							aria-label={
 								layer === ExplorationLayer.Semantic
-									? 'Search terms in exploration'
-									: 'Search data objects in exploration'
+									? __uiT('Search terms in exploration')
+									: __uiT('Search data objects in exploration')
 							}
 							className="h-10 bg-white shadow-md dark:bg-zinc-900"
 						/>
@@ -2200,7 +2200,7 @@ export const ExplorationView = () => {
 			{!loading && error != null && (
 				<div className="flex h-full items-center justify-center px-6 text-center">
 					<div className="rounded-xl border border-red-200 bg-white px-8 py-6 text-sm text-red-700 shadow-lg dark:border-red-900/50 dark:bg-zinc-900 dark:text-red-300">
-						Couldn&apos;t load exploration: <T value={error} />
+						<T value={'Couldn&apos;t load exploration:'} /> <T value={error} />
 					</div>
 				</div>
 			)}
@@ -2305,7 +2305,7 @@ export const ExplorationView = () => {
 
 			<div className="absolute bottom-4 right-4 z-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
 				<p className="text-xs text-secondary dark:text-zinc-400">
-					Viewing:{' '}
+					<T value={'Viewing:'} />{' '}
 					{layer === ExplorationLayer.Semantic ? (
 						<T value={'Semantic Objects'} />
 					) : (

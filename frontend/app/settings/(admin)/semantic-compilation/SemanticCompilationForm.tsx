@@ -219,8 +219,12 @@ export const SemanticCompilationForm = ({
 								</span>
 								<span className="text-xs text-secondary">
 									{probingEnabled
-										? 'Scans low-cardinality text columns for their full value set, so rare categories are captured too.'
-										: 'Off — columns keep only the values seen in each table’s row sample.'}
+										? __uiT(
+												'Scans low-cardinality text columns for their full value set, so rare categories are captured too.',
+											)
+										: __uiT(
+												'Off — columns keep only the values seen in each table’s row sample.',
+											)}
 								</span>
 							</div>
 							<Toggle

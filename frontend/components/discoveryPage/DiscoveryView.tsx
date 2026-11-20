@@ -496,8 +496,10 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 							)}
 						{showLimitBanner && (
 							<p className="shrink-0 px-6 py-2 text-sm text-secondary dark:text-zinc-400">
-								Viewing the top {GLOBAL_SEARCH_LIST_LIMIT} results. Try filtering
-								for more accurate results.
+								{__uiT(
+									'Viewing the top {count} results. Try filtering for more accurate results.',
+									{ count: GLOBAL_SEARCH_LIST_LIMIT },
+								)}
 							</p>
 						)}
 						<div className="min-h-0 flex-1 overflow-y-auto px-3" aria-busy={loading}>

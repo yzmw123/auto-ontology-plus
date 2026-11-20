@@ -189,7 +189,11 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 								type="submit"
 								disabled={submitting}
 							>
-								{submitting ? <T value={'Saving…'} /> : 'Save provider'}
+								{submitting ? (
+									<T value={'Saving…'} />
+								) : (
+									<T value={'Save provider'} />
+								)}
 							</Button>
 						</div>
 					)}

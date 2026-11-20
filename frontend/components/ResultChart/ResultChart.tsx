@@ -22,6 +22,7 @@ import { ChartDataTable } from './ChartDataTable';
 import { KpiTiles } from './ChartKpi';
 import type { Truncation } from './normalize';
 import type { ChartSpec } from './types';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 interface Tooltip {
 	text: string;
@@ -33,6 +34,7 @@ export const ResultChart: FC<{ spec: ChartSpec; truncation?: Truncation | null }
 	spec,
 	truncation = null,
 }) => {
+	const { t } = useLanguage();
 	const layout = useMemo(() => {
 		const fmt = spec.y?.format ?? 'number';
 		const colors = spec.series.map((s, i) => seriesColor(s.color, i));
@@ -127,7 +129,10 @@ export const ResultChart: FC<{ spec: ChartSpec; truncation?: Truncation | null }
 			</svg>
 			{truncation && (
 				<p className="result-chart-note">
-					Showing top {truncation.shown} of {truncation.total}
+					{t('Showing top {shown} of {total}', {
+						shown: truncation.shown,
+						total: truncation.total,
+					})}
 				</p>
 			)}
 			{dataOpen && <ChartDataTable spec={spec} id={dataId} />}

@@ -77,8 +77,12 @@ export const EditUserModal = ({
 							setRole(event.target.value === Role.Admin ? Role.Admin : Role.Viewer)
 						}
 					>
-						<option value={Role.Viewer}>Viewer</option>
-						<option value={Role.Admin}>Admin</option>
+						<option value={Role.Viewer}>
+							<T value={'Viewer'} />
+						</option>
+						<option value={Role.Admin}>
+							<T value={'Admin'} />
+						</option>
 					</select>
 				</label>
 

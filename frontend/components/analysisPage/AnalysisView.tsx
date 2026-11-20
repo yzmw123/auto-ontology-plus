@@ -394,8 +394,8 @@ export const AnalysisView = () => {
 					<SearchInput
 						value={searchQuery}
 						onChange={setSearchQuery}
-						placeholder={`Search ${MODE_LABEL[mode]} Analyses…`}
-						aria-label={`Search ${MODE_LABEL[mode]} analyses`}
+						placeholder={__uiT('Search {mode} analyses…', { mode: MODE_LABEL[mode] })}
+						aria-label={__uiT('Search {mode} analyses', { mode: MODE_LABEL[mode] })}
 						className="mb-6 w-full"
 					/>
 				)}
@@ -404,7 +404,7 @@ export const AnalysisView = () => {
 					<div
 						className="flex min-h-[calc(100dvh-7rem)] flex-col gap-4"
 						role="status"
-						aria-label={`Loading ${MODE_LABEL[mode]} analyses`}
+						aria-label={__uiT('Loading {mode} analyses', { mode: MODE_LABEL[mode] })}
 					>
 						{Array.from({ length: loadingSkeletonCount }).map((_, index) => (
 							<SkeletonCard key={index} rows={4} />
@@ -415,7 +415,9 @@ export const AnalysisView = () => {
 				{!loading && error != null && items.length === 0 && (
 					<div className="mx-auto max-w-lg rounded-2xl border border-red-200/80 bg-white/90 px-8 py-10 text-center shadow-xl shadow-red-100/50 dark:border-red-900/50 dark:bg-zinc-950/80 dark:shadow-none">
 						<h2 className="text-lg font-semibold tracking-tight text-red-800 dark:text-red-300">
-							Couldn&apos;t load {MODE_LABEL[mode]} analyses
+							{__uiT('Could not load {mode} analyses', {
+								mode: __uiT(MODE_LABEL[mode]),
+							})}
 						</h2>
 						<pre className="mt-4 max-w-full overflow-x-auto rounded-lg border border-red-100 bg-red-50/80 p-3 text-left text-xs text-red-900/80 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
 							<T value={error} />
@@ -441,8 +443,12 @@ export const AnalysisView = () => {
 						variant={EmptyStateVariant.Borderless}
 						title={
 							debouncedSearchQuery
-								? `No ${MODE_LABEL[mode]} Analyses Match Your Search`
-								: `No ${MODE_LABEL[mode]} Analyses Created Yet`
+								? __uiT('No {mode} analyses match your search', {
+										mode: MODE_LABEL[mode],
+									})
+								: __uiT('No {mode} analyses created yet', {
+										mode: MODE_LABEL[mode],
+									})
 						}
 					/>
 				)}
@@ -504,7 +510,9 @@ export const AnalysisView = () => {
 												iconOnly
 												type="button"
 												onClick={toggle}
-												aria-label={`Actions for ${a.name}`}
+												aria-label={__uiT('Actions for {name}', {
+													name: a.name,
+												})}
 											>
 												<Icon
 													name={IconName.DotsVertical}
@@ -542,8 +550,8 @@ export const AnalysisView = () => {
 				onClose={handleClose}
 				title={
 					isEditing
-						? `Edit ${MODE_LABEL[mode]} Analysis`
-						: `Create New ${MODE_LABEL[mode]} Analysis`
+						? __uiT('Edit {mode} Analysis', { mode: MODE_LABEL[mode] })
+						: __uiT('Create New {mode} Analysis', { mode: MODE_LABEL[mode] })
 				}
 				submitLabel={submitting ? __uiT('Saving…') : __uiT('Save')}
 				onSubmit={handleSubmit}
@@ -566,7 +574,7 @@ export const AnalysisView = () => {
 						type="text"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
-						placeholder={`${MODE_LABEL[mode]} Analysis Name`}
+						placeholder={__uiT('{mode} Analysis Name', { mode: MODE_LABEL[mode] })}
 						className={FIELD_INPUT_CLASSNAME}
 					/>
 				</div>
@@ -595,7 +603,7 @@ export const AnalysisView = () => {
 
 				{validationMessage != null && (
 					<p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-body dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
-						{validationMessage}
+						<T value={validationMessage} />
 					</p>
 				)}
 
@@ -610,7 +618,7 @@ export const AnalysisView = () => {
 				open={deletingItem !== null}
 				onCancel={handleDeleteClose}
 				onConfirm={handleDeleteConfirm}
-				title={`Delete ${MODE_LABEL[mode]} Analysis`}
+				title={__uiT('Delete {mode} Analysis', { mode: MODE_LABEL[mode] })}
 				message={__uiT(
 					'Are you sure you want to delete {name}? This action cannot be undone.',
 					{ name: deletingItem?.name ?? '' },

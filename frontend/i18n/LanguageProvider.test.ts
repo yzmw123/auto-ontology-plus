@@ -40,4 +40,34 @@ describe('interface translations', () => {
 	] as const)('translates password length errors in %s', (language, expected) => {
 		expect(translateText('Password must be at least 8 characters.', language)).toBe(expected);
 	});
+
+	it.each([
+		['zh', '用户组名称最多允许 32 个字符'],
+		['ko', '그룹 이름은 32자 이하여야 합니다'],
+		['ja', 'グループ名は 32 文字以内にしてください'],
+		['es', 'El nombre del grupo debe tener como máximo 32 caracteres'],
+	] as const)('translates parameterized server validation in %s', (language, expected) => {
+		expect(translateText('Group name must be at most 32 characters', language)).toBe(expected);
+	});
+
+	it('preserves backend error details and unknown error text', () => {
+		expect(translateText('Failed to create connection: ORA-1234', 'zh')).toBe(
+			'创建连接失败：ORA-1234',
+		);
+		expect(translateText('Driver-specific failure ORA-9999', 'zh')).toBe(
+			'Driver-specific failure ORA-9999',
+		);
+	});
+
+	it.each([
+		['zh', '创建连接失败：ORA-12514', '未找到术语'],
+		['ko', '연결 생성 실패: ORA-12514', '용어를 찾을 수 없습니다'],
+		['ja', '接続の作成に失敗しました：ORA-12514', '用語が見つかりません'],
+		['es', 'No se pudo crear la conexión: ORA-12514', 'No se encontró el término'],
+	] as const)('translates server errors in %s', (language, connectionError, missingTerm) => {
+		expect(translateText('Failed to create connection: ORA-12514', language)).toBe(
+			connectionError,
+		);
+		expect(translateText('Term not found', language)).toBe(missingTerm);
+	});
 });

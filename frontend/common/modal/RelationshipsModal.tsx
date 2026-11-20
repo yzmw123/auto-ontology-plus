@@ -150,8 +150,8 @@ export const RelationshipsModal = ({
 					<NextLink
 						href={href}
 						className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-zinc-100 hover:text-[#76b900] dark:hover:bg-zinc-700"
-						aria-label={`Open ${row.name}`}
-						title={`Open ${row.name}`}
+						aria-label={__uiT('Open {name}', { name: row.name })}
+						title={__uiT('Open {name}', { name: row.name })}
 					>
 						<Icon name={IconName.ExternalLink} className="h-3.5 w-3.5" />
 					</NextLink>
@@ -196,7 +196,10 @@ export const RelationshipsModal = ({
 						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
 					/>
 					<Text as="h2" variant={TextVariant.Heading}>
-						{node?.name} — Related Entities ({total})
+						{__uiT('{name} — Related Entities ({count})', {
+							name: node?.name ?? '',
+							count: total,
+						})}
 					</Text>
 				</div>
 				<Button

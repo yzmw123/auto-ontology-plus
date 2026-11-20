@@ -14,6 +14,7 @@ import zh from './zh.json';
 import ko from './ko.json';
 import ja from './ja.json';
 import es from './es.json';
+import { translateServerError } from './serverErrors';
 
 export type Language = 'en' | 'zh' | 'ko' | 'ja' | 'es';
 const dictionaries: Record<Exclude<Language, 'en'>, Record<string, string>> = { zh, ko, ja, es };
@@ -72,6 +73,8 @@ export const translateText = (text: string, language: Language): string => {
 	if (content.startsWith(prefix)) {
 		return leading + dictionary[prefix] + content.slice(prefix.length) + trailing;
 	}
+	const serverError = translateServerError(content, language);
+	if (serverError) return leading + serverError + trailing;
 	return Object.hasOwn(zh, content) ? leading + decodeEntities(content) + trailing : text;
 };
 

@@ -140,7 +140,7 @@ export const FileUpload = ({
 						<span className="font-medium text-[#5e9400] dark:text-[#a3d63a]">
 							{label}
 						</span>{' '}
-						or drag and drop
+						{__uiT('or drag and drop')}
 					</p>
 					{description ? <p className="text-xs text-secondary">{description}</p> : null}
 				</>

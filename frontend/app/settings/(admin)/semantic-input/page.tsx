@@ -262,7 +262,7 @@ const AcronymsSection = () => {
 						iconPosition="left"
 					>
 						<Icon name={IconName.ChatBubble} className="h-3.5 w-3.5" />
-						Add
+						<T value={'Add'} />
 					</Button>
 				)}
 			</div>

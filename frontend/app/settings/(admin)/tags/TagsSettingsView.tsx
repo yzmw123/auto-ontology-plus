@@ -331,7 +331,7 @@ const TagsList = () => {
 									iconOnly
 									type="button"
 									onClick={toggle}
-									aria-label={`Actions for ${tag.name}`}
+									aria-label={__uiT('Actions for {name}', { name: tag.name })}
 								>
 									<Icon name={IconName.DotsVertical} className="h-4 w-4" />
 								</Button>
@@ -467,7 +467,7 @@ const TagsList = () => {
 						/>
 						<T value={'Tag Name'} />
 						<span className="font-normal text-secondary dark:text-zinc-500">
-							(Max. {MAX_TAG_NAME_LENGTH})
+							{__uiT('(Max. {count})', { count: MAX_TAG_NAME_LENGTH })}
 						</span>
 					</label>
 					<input
@@ -504,7 +504,10 @@ const TagsList = () => {
 				message={
 					confirmDeleteTag == null
 						? ''
-						: `Are you sure you want to delete "${confirmDeleteTag.name}"? This action cannot be undone.`
+						: __uiT(
+								'Are you sure you want to delete "{name}"? This action cannot be undone.',
+								{ name: confirmDeleteTag.name },
+							)
 				}
 				onConfirm={handleConfirmDelete}
 				onCancel={handleCancelDelete}

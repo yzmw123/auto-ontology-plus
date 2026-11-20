@@ -15,6 +15,7 @@ import {
 	type KeyboardEvent,
 } from 'react';
 import { Text } from '@/common/Text';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type TagInputHandle = {
 	/** Forces any pending text in the input to be committed as a tag. */
@@ -76,6 +77,7 @@ export const TagInput = forwardRef<TagInputHandle, TagInputProps>(function TagIn
 	},
 	ref,
 ) {
+	const { t } = useLanguage();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [draft, setDraft] = useState('');
 
@@ -193,7 +195,7 @@ export const TagInput = forwardRef<TagInputHandle, TagInputProps>(function TagIn
 								ev.stopPropagation();
 								removeAt(idx);
 							}}
-							aria-label={`Remove ${tag}`}
+							aria-label={t('Remove {name}', { name: tag })}
 							className="-mr-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full text-[#3f6b00] transition-colors hover:bg-[#76b900]/25 hover:text-[#2c4d00] dark:text-[#cdeb86] dark:hover:bg-[#76b900]/30"
 						>
 							<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>

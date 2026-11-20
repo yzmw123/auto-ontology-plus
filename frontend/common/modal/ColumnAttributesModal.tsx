@@ -106,7 +106,10 @@ export const ColumnAttributesModal = ({ term, onClose }: ColumnAttributesModalPr
 						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
 					/>
 					<Text as="h2" variant={TextVariant.Heading}>
-						{term?.name} — Attribute Columns ({total})
+						{__uiT('{name} — Attribute Columns ({count})', {
+							name: term?.name ?? '',
+							count: total,
+						})}
 					</Text>
 				</div>
 				<Button

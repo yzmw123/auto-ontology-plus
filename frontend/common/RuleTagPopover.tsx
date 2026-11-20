@@ -232,7 +232,7 @@ const RuleTagForm = ({
 							name={IconName.Tag}
 							className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-400"
 						/>
-						Add Tag/s…
+						<T value={'Add Tag/s…'} />
 					</p>
 
 					{selected.length > 0 ? (
@@ -304,16 +304,19 @@ const RuleTagForm = ({
 									className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-[#4d7a00] transition-colors hover:bg-[#76b900]/10 disabled:cursor-default disabled:opacity-60 dark:text-[#a3d63a] dark:hover:bg-[#76b900]/15"
 								>
 									<Icon name={IconName.Plus} className="h-4 w-4 shrink-0" />
-									{`${trimmedSearch} (Create Tag - Max. ${MAX_TAG_NAME_LENGTH})`}
+									{__uiT('{name} (Create Tag - Max. {count})', {
+										name: trimmedSearch,
+										count: MAX_TAG_NAME_LENGTH,
+									})}
 								</button>
 							) : (
 								<p className="px-2 text-xs text-secondary dark:text-zinc-400">
 									{options.length === 0 ? (
 										<T value={'No tags exist yet'} />
 									) : unselected.length === 0 ? (
-										'Every tag is already selected'
+										<T value={'Every tag is already selected'} />
 									) : (
-										'No tag matches this search'
+										<T value={'No tag matches this search'} />
 									)}
 								</p>
 							)}
@@ -335,7 +338,7 @@ const RuleTagForm = ({
 					className="inline-flex items-center gap-1.5 text-xs text-secondary no-underline transition-colors hover:text-[#4d7a00] dark:text-zinc-400 dark:hover:text-[#a3d63a]"
 				>
 					<Icon name={IconName.Tag} className="h-3.5 w-3.5 shrink-0" />
-					Manage Rule Based Tags
+					<T value={'Manage Rule Based Tags'} />
 					<Icon name={IconName.Link} className="h-3.5 w-3.5 shrink-0" />
 				</Link>
 				<Button
@@ -348,7 +351,7 @@ const RuleTagForm = ({
 						void handleApply();
 					}}
 				>
-					{saving ? 'Applying…' : <T value={'Apply'} />}
+					{saving ? <T value={'Applying…'} /> : <T value={'Apply'} />}
 				</Button>
 			</div>
 		</>
@@ -381,7 +384,7 @@ export const RuleTagPopover = ({
 				iconPosition="left"
 			>
 				<Icon name={IconName.Lightning} className="h-4 w-4" />
-				Create a Ruled Tag
+				<T value={'Create a Ruled Tag'} />
 			</Button>
 		)}
 	>

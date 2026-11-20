@@ -83,7 +83,10 @@ export const ImportExportView = () => {
 	const [includeOntology, setIncludeOntology] = useState(true);
 	const [exporting, setExporting] = useState(false);
 	const [exportError, setExportError] = useState<string | null>(null);
-	const [exportMessage, setExportMessage] = useState<string | null>(null);
+	const [exportMessage, setExportMessage] = useState<{
+		format: string;
+		withOntology: boolean;
+	} | null>(null);
 	const exportProgress = useSmoothProgress();
 
 	const [importFile, setImportFile] = useState<File | null>(null);
@@ -162,11 +165,7 @@ export const ImportExportView = () => {
 				res.blob,
 				withOntology ? OSSIE_WITH_ONTOLOGY_FILENAME : EXPORT_FILENAME[exportFormat],
 			);
-			setExportMessage(
-				withOntology
-					? `Model exported as ${FORMAT_LABEL[exportFormat]}, with its ontology and mapping.`
-					: `Model exported as ${FORMAT_LABEL[exportFormat]}.`,
-			);
+			setExportMessage({ format: FORMAT_LABEL[exportFormat], withOntology });
 		} catch {
 			exportProgress.fail();
 			setExportError('Failed to export model.');
@@ -342,7 +341,9 @@ export const ImportExportView = () => {
 						showValue
 						label={__uiT('Exporting')}
 						className="mt-4"
-						aria-label={`Exporting model, ${Math.round(exportProgress.value)} percent`}
+						aria-label={__uiT('Exporting model, {percent} percent', {
+							percent: Math.round(exportProgress.value),
+						})}
 					/>
 				) : null}
 
@@ -359,7 +360,7 @@ export const ImportExportView = () => {
 						iconPosition="left"
 					>
 						<Icon name={IconName.Download} className="h-4 w-4" />
-						{exporting ? <T value={'Exporting…'} /> : 'Export'}
+						{exporting ? <T value={'Exporting…'} /> : <T value={'Export'} />}
 					</Button>
 				</div>
 			</section>
@@ -439,17 +440,33 @@ export const ImportExportView = () => {
 							<T value={'Import Summary'} />
 						</p>
 						<ul className="mt-1.5 space-y-0.5">
-							<li>Read as {FORMAT_LABEL[importSummary.format]}</li>
+							<li>
+								{__uiT('Read as {format}', {
+									format: FORMAT_LABEL[importSummary.format],
+								})}
+							</li>
 							{createdCountEntries(importSummary.created).map(([key, value]) => (
 								<li key={key}>
-									Created {value} {key.replace(/_/g, ' ')}
+									{__uiT('Created {count} {type}', {
+										count: value,
+										type: __uiT(key.replace(/_/g, ' ')),
+									})}
 								</li>
 							))}
 							{importSummary.embeddings ? (
 								<li>
 									{importSummary.embeddings.skipped
-										? 'Embeddings skipped (embed API key not configured).'
-										: `Embedded ${importSummary.embeddings.data_rows} data row(s) and ${importSummary.embeddings.semantic_rows} semantic row(s).`}
+										? __uiT(
+												'Embeddings skipped (embed API key not configured).',
+											)
+										: __uiT(
+												'Embedded {data} data row(s) and {semantic} semantic row(s).',
+												{
+													data: importSummary.embeddings.data_rows,
+													semantic:
+														importSummary.embeddings.semantic_rows,
+												},
+											)}
 								</li>
 							) : null}
 						</ul>
@@ -466,7 +483,7 @@ export const ImportExportView = () => {
 						iconPosition="left"
 					>
 						<Icon name={IconName.Upload} className="h-4 w-4" />
-						Import
+						<T value={'Import'} />
 					</Button>
 				</div>
 			</section>
@@ -476,17 +493,15 @@ export const ImportExportView = () => {
 				title={__uiT('Import Model')}
 				message={
 					<>
-						This writes <strong>{importFile?.name}</strong> into the catalog and
-						semantic layer.
+						{__uiT('This writes {filename} into the catalog and semantic layer.', {
+							filename: importFile?.name ?? '',
+						})}
 						{replace ? (
 							<>
-								Because{' '}
-								<strong>
-									<T value={'Replace Existing Data'} />
-								</strong>{' '}
-								is on, semantic-layer data for the imported databases that
-								isn&apos;t in this file will be deleted. This action cannot be
-								undone.
+								{' '}
+								{__uiT(
+									'Because Replace Existing Data is on, semantic-layer data for the imported databases that is not in this file will be deleted. This action cannot be undone.',
+								)}
 							</>
 						) : null}
 					</>
@@ -501,7 +516,16 @@ export const ImportExportView = () => {
 
 			<Toast
 				open={exportMessage !== null}
-				message={exportMessage ?? ''}
+				message={
+					exportMessage
+						? __uiT(
+								exportMessage.withOntology
+									? 'Model exported as {format}, with its ontology and mapping.'
+									: 'Model exported as {format}.',
+								{ format: exportMessage.format },
+							)
+						: ''
+				}
 				variant={ToastVariant.Success}
 				onClose={() => setExportMessage(null)}
 			/>

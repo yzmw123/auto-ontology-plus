@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { OwnerKind } from '@/types/owners';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type OwnerOption = {
 	id: string;
@@ -30,6 +31,7 @@ export const OwnersSelect = ({
 	onChange: (ownerId: string) => void;
 	disabled?: boolean;
 }) => {
+	const { t } = useLanguage();
 	const users = owners.filter((owner) => owner.kind === 'user');
 	const groups = owners.filter((owner) => owner.kind === 'group');
 	return (
@@ -38,11 +40,13 @@ export const OwnersSelect = ({
 			value={value}
 			disabled={disabled}
 			onChange={(event) => onChange(event.target.value)}
-			aria-label="Owner"
+			aria-label={t('Owner')}
 		>
-			<option value="">Unassigned</option>
+			<option value="">
+				<T value={'Unassigned'} />
+			</option>
 			{users.length > 0 && (
-				<optgroup label="Users">
+				<optgroup label={t('Users')}>
 					{users.map((owner) => (
 						<option key={owner.id} value={owner.id}>
 							{owner.name}
@@ -51,7 +55,7 @@ export const OwnersSelect = ({
 				</optgroup>
 			)}
 			{groups.length > 0 && (
-				<optgroup label="Groups">
+				<optgroup label={t('Groups')}>
 					{groups.map((owner) => (
 						<option key={owner.id} value={owner.id}>
 							{owner.name}

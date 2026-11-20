@@ -191,7 +191,7 @@ export const ApiTokensView = () => {
 					theme={ButtonTheme.IconDanger}
 					size={Size.SMALL}
 					iconOnly
-					aria-label={`Revoke ${token.name ?? 'token'}`}
+					aria-label={__uiT('Revoke {name}', { name: token.name ?? __uiT('token') })}
 					onClick={() => {
 						setRevokeError(null);
 						setRevoking(token);
@@ -233,9 +233,11 @@ export const ApiTokensView = () => {
 									<T value={'Copy your token now'} />
 								</h2>
 								<p className="mt-1 text-xs text-body dark:text-zinc-400">
-									Auto Ontology stores only a hash of it, so this is the one and
-									only time it can be shown. Send it as the <code>x-api-key</code>{' '}
-									header.
+									<T
+										value={
+											'Auto Ontology stores only a hash of this token, so it can be shown only once. Send it in the x-api-key header.'
+										}
+									/>
 								</p>
 							</div>
 							<Button

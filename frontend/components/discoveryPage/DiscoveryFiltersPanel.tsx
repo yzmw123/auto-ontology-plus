@@ -371,7 +371,7 @@ const TagsFilter = ({
 							))}
 						{emptyMessage !== null && (
 							<p className="px-2 py-1.5 text-xs text-secondary dark:text-zinc-400">
-								{emptyMessage}
+								<T value={emptyMessage} />
 							</p>
 						)}
 					</div>
@@ -417,7 +417,7 @@ export const DiscoveryFiltersPanel = ({
 						type="button"
 						onClick={onReset}
 					>
-						Reset All ({changedCount})
+						{__uiT('Reset All ({count})', { count: changedCount })}
 					</Button>
 				)}
 			</div>

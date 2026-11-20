@@ -289,7 +289,7 @@ export const GlobalSearchResults = ({
 									className="h-3.5 w-3.5 shrink-0 text-secondary"
 								/>
 								<span className="shrink-0 text-secondary dark:text-zinc-500">
-									Term:{' '}
+									<T value={'Term:'} />{' '}
 								</span>
 								<span className="min-w-0 truncate">{termName}</span>
 							</p>

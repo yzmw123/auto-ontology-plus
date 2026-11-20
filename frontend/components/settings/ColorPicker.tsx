@@ -59,7 +59,7 @@ export const ColorPicker = ({
 								close();
 							}}
 							title={color.label}
-							aria-label={`Color ${color.label}`}
+							aria-label={__uiT('Color {name}', { name: __uiT(color.label) })}
 						/>
 					))}
 				</div>

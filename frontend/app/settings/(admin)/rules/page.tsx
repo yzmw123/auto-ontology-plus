@@ -337,7 +337,9 @@ export default function RulesSettingsPage() {
 														iconOnly
 														type="button"
 														onClick={toggle}
-														aria-label={`Actions for ${rule.name}`}
+														aria-label={__uiT('Actions for {name}', {
+															name: rule.name,
+														})}
 													>
 														<Icon
 															name={IconName.DotsVertical}
@@ -443,7 +445,12 @@ export default function RulesSettingsPage() {
 						''
 					) : (
 						<>
-							<p>{`Are you sure you want to delete "${confirmDelete.name}"? This action cannot be undone.`}</p>
+							<p>
+								{__uiT(
+									'Are you sure you want to delete "{name}"? This action cannot be undone.',
+									{ name: confirmDelete.name },
+								)}
+							</p>
 							<fieldset className="mt-4">
 								<legend className="text-xs font-medium text-heading dark:text-zinc-200">
 									<T value={'The tags this rule applied'} />

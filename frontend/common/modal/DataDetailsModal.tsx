@@ -142,8 +142,8 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 							`${target.databaseId}|${target.schemaId}|${target.id}|${row.id}`,
 						)}
 						className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-zinc-100 hover:text-[#76b900] dark:hover:bg-zinc-700"
-						aria-label={`Open ${row.column_name} in Data`}
-						title={`Open ${row.column_name} in Data`}
+						aria-label={__uiT('Open {name} in Data', { name: row.column_name })}
+						title={__uiT('Open {name} in Data', { name: row.column_name })}
 					>
 						<Icon name={IconName.ExternalLink} className="h-3.5 w-3.5" />
 					</NextLink>
@@ -168,8 +168,8 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 				<NextLink
 					href={`/terms?focus=${encodeURIComponent(row.id)}`}
 					className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-zinc-100 hover:text-[#76b900] dark:hover:bg-zinc-700"
-					aria-label={`Open ${row.name} term`}
-					title={`Open ${row.name} term`}
+					aria-label={__uiT('Open {name} term', { name: row.name })}
+					title={__uiT('Open {name} term', { name: row.name })}
 				>
 					<Icon name={IconName.ExternalLink} className="h-3.5 w-3.5" />
 				</NextLink>
@@ -204,7 +204,10 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 				<ul className="space-y-4">
 					{details.queries.map((query, index) => (
 						<li key={query.id || `${index}`}>
-							<SqlBlock sql={query.sql} label={`Query ${index + 1}`} />
+							<SqlBlock
+								sql={query.sql}
+								label={__uiT('Query {number}', { number: index + 1 })}
+							/>
 						</li>
 					))}
 				</ul>
@@ -258,14 +261,14 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 					iconOnly
 					type="button"
 					onClick={onClose}
-					aria-label={`Close ${title}`}
+					aria-label={__uiT('Close {name}', { name: __uiT(title) })}
 				>
 					<Icon name={IconName.Close} className="h-4 w-4" />
 				</Button>
 			</header>
 			<div className="max-h-[70dvh] overflow-y-auto p-5">
 				{loading ? (
-					<div role="status" aria-label={`Loading ${title}`}>
+					<div role="status" aria-label={__uiT('Loading {name}', { name: __uiT(title) })}>
 						{renderSkeleton()}
 					</div>
 				) : error != null ? (
