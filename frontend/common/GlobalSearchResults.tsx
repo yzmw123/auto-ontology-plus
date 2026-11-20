@@ -244,7 +244,7 @@ export const GlobalSearchResults = ({
 								<CertificationBadge status={status} iconOnly focusable={false} />
 							)}
 							<span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-body dark:bg-zinc-800 dark:text-zinc-300">
-								{typeLabel}
+								<T value={typeLabel} />
 							</span>
 						</div>
 						{item.synonyms && item.synonyms.length > 0 ? (

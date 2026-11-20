@@ -15,6 +15,22 @@ agent harness. Auto-Ontology **maintainers** (build, test, schema, frontend conv
 stay on [`CLAUDE.md`](./CLAUDE.md). Do not fold those conventions into these
 skills.
 
+## Plus 发布记录维护规则
+
+每次修改本仓库，都要在同一批变更中更新根目录 [CHANGELOG.md](./CHANGELOG.md) 的「待发布」部分。代码、界面、配置和文档的改动都要有记录。围绕同一个使用场景的前端、后端和测试改动可以合写一条。
+
+每期记录固定按以下顺序保留三个板块。同一项改动按主要目的归入其中一类，某类没有条目时写「本期暂无」。
+
+| 板块 | 记录什么 |
+| --- | --- |
+| 新增 | 说明谁在什么场景下可以完成一件以前做不了的事。例如，管理员现在可以从设置页接入 Oracle 并选择要扫描的模式。 |
+| 优化 | 说明已有功能的操作或结果发生了什么变化。例如，编辑连线时，两张表并排展示，参与匹配的字段在下方逐对对齐。 |
+| 解决 Bug | 写出触发条件、原来的异常表现和修复后的行为。例如，部署中已配置数据源时，管理员现在仍能看到数据库连接入口。 |
+
+推送到 GitHub 前，发布负责人须对照本次拟推送的全部提交和文件差异，核对每项变更都有对应条目，并同步 [README.md](./README.md) 的本期摘要及受影响的使用、配置或升级说明。具体条目集中维护在 CHANGELOG，README 保留主要变化及其入口。
+
+普通代码推送继续累计在「待发布」。正式发布时，将本期条目归档到实际版本号和发布日期（YYYY-MM-DD）下，保留历次记录，顶部新开「待发布」。如创建 GitHub Release，发布说明沿用该版本的三个板块。计划中的能力写入 [ROADMAP.md](./ROADMAP.md)，完成后再进入发布记录。
+
 ## Which skill to read
 
 - [`skills/nvidia-ontology-setup/`](./skills/nvidia-ontology-setup/) — Helm (the official

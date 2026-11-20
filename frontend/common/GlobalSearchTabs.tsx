@@ -20,6 +20,7 @@ type GlobalSearchTabsProps = {
 	counts: Record<string, number>;
 	selected: string;
 	onSelect: (tabId: string) => void;
+	showEmpty?: boolean;
 };
 
 const tabClass = (selected: boolean) =>
@@ -44,11 +45,16 @@ export const GlobalSearchTabsSkeleton = () => (
 	</div>
 );
 
-export const GlobalSearchTabs = ({ counts, selected, onSelect }: GlobalSearchTabsProps) => {
+export const GlobalSearchTabs = ({
+	counts,
+	selected,
+	onSelect,
+	showEmpty = false,
+}: GlobalSearchTabsProps) => {
 	const { t: __uiT } = useLanguage();
 
 	const allCount = totalGlobalSearchCount(counts);
-	const typeTabs = SEARCH_TYPE_TAB_ORDER.filter((type) => (counts[type] ?? 0) > 0);
+	const typeTabs = SEARCH_TYPE_TAB_ORDER.filter((type) => showEmpty || (counts[type] ?? 0) > 0);
 
 	if (allCount === 0) return null;
 
@@ -78,12 +84,17 @@ export const GlobalSearchTabs = ({ counts, selected, onSelect }: GlobalSearchTab
 						key={type}
 						type="button"
 						role="tab"
+						disabled={!counts[type]}
 						aria-selected={isSelected}
 						onClick={() => onSelect(type)}
-						className={tabClass(isSelected)}
+						className={
+							tabClass(isSelected) + ' disabled:cursor-default disabled:opacity-50'
+						}
 					>
 						<Icon name={SEARCH_TYPE_ICON[type]} className="h-3.5 w-3.5 shrink-0" />
-						<span className="text-sm font-medium">{SEARCH_TYPE_TAB_LABEL[type]}</span>
+						<span className="text-sm font-medium">
+							{__uiT(SEARCH_TYPE_TAB_LABEL[type])}
+						</span>
 						<span className="text-sm font-normal">
 							{(counts[type] ?? 0).toLocaleString()}
 						</span>

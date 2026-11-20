@@ -499,6 +499,59 @@ table__term = Table(
     ),
 )
 
+
+# Curated semantic metadata lives outside the compiler-owned FK and attribute tables.
+field_reference = Table(
+    "field_reference",
+    METADATA,
+    _id(),
+    Column("name", Text, nullable=False),
+    Column(
+        "source_table",
+        Text,
+        ForeignKey(catalog_table.c.id, ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column(
+        "target_table",
+        Text,
+        ForeignKey(catalog_table.c.id, ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("source_term", Text, ForeignKey(term.c.id, ondelete="CASCADE")),
+    Column("target_term", Text, ForeignKey(term.c.id, ondelete="CASCADE")),
+    Column("pairs", JSONB, nullable=False),
+    Column("enabled", Boolean, nullable=False),
+    Column("origin_key", Text, unique=True),
+    Column("version", Integer, nullable=False, server_default=text("1")),
+    UniqueConstraint(
+        "source_table", "target_table", "name", name="uq_field_reference_role"
+    ),
+)
+term_classification = Table(
+    "term_classification",
+    METADATA,
+    Column(
+        "term_id", Text, ForeignKey(term.c.id, ondelete="CASCADE"), primary_key=True
+    ),
+    Column("parent_id", Text, ForeignKey(term.c.id, ondelete="RESTRICT")),
+    Column(
+        "table_id",
+        Text,
+        ForeignKey(catalog_table.c.id, ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("conditions", JSONB, nullable=False),
+    Column("display_columns", JSONB, nullable=False),
+)
+retired_term = Table(
+    "retired_term",
+    METADATA,
+    Column("term_id", Text, primary_key=True),
+    Column("name", Text, nullable=False),
+    Column("table_ids", ARRAY(Text), nullable=False),
+)
+
 # A TermFamily is one version of a schema that a database keeps several copies
 # of, told apart by a table-name prefix: `OLD_ROOMS` and `NEW_ROOMS` are twins,
 # `OLD` and `NEW` are two families (`auto_ontology.semantic.term_families`).

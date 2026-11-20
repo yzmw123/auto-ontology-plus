@@ -552,6 +552,12 @@ def _join_lines(
             if not anchor or not dest:
                 continue
             hops = find_join_path(anchor, dest)
+            if hops and ctx.field_models:
+                from auto_ontology.dal.field_model import superseded_hop
+
+                model = ctx.field_models.get(table.get("database_name"))
+                if model and any(superseded_hop(model, hop) for hop in hops):
+                    continue
             if hops:
                 ctx.join_paths.append({"path": hops})
                 line = f"JOIN {_qualified(table)} ↔ {_qualified(other)}: " + " → ".join(
@@ -657,10 +663,43 @@ def retrieve(ctx: ToolContext, query: str, kinds: list[str] | None = None) -> st
     )
 
     table_ids, matched = _resolve_tables(ctx, hits)
+    field_notes = []
+    if ctx.model_loader:
+        from auto_ontology.dal.field_model import retrieval_evidence
+
+        allowed = {
+            c.database_name for c in ctx.connectors if getattr(c, "database_name", None)
+        }
+        for database in sorted(allowed):
+            if ctx.database_name and ctx.database_name != database:
+                continue
+            if database not in ctx.field_models:
+                ctx.field_models[database] = ctx.model_loader(database)
+            model = ctx.field_models[database]
+            extra, notes = retrieval_evidence(
+                model,
+                table_ids,
+                {h.get("id") for h in hits},
+                ctx.question + " " + query,
+            )
+            table_ids.extend(t for t in extra if t not in table_ids)
+            field_notes.extend(notes)
     new_ids = [tid for tid in table_ids if tid not in ctx.seen_tables]
     # Filtered before the limit, so a table from another database never takes
     # the place of one from this database.
     fetched = {str(t["id"]): t for t in fetch_tables_by_ids(new_ids)}
+    # Legacy per-column hints cannot describe disabled overrides or composite keys.
+    if ctx.field_models:
+        from auto_ontology.dal.field_model import query_references
+
+        for _, references, _ in ctx.field_models.values():
+            for ref in query_references(references):
+                table = fetched.get(ref["source_table"])
+                if table and (ref["origin"] == "manual" or not ref["enabled"]):
+                    fields = {left for left, _ in ref["fields"]}
+                    for col in table.get("columns") or []:
+                        if col.get("name") in fields:
+                            col.pop("semantic_fk", None)
     found = [
         fetched[tid]
         for tid in new_ids
@@ -694,6 +733,28 @@ def retrieve(ctx: ToolContext, query: str, kinds: list[str] | None = None) -> st
     named: list[tuple[str, set[tuple[str | None, str | None]]]] = [
         (new_blocks[str(t["id"])], own(t)) for t in new_tables
     ]
+    if field_notes:
+        guidance = "Use the named field reference that matches the requested role. If multiple roles fit (e.g. entry vs exit), ask which role the user means. Apply the CLASS predicates to the matching entity alias."
+        known_tables = [
+            (t["schema"], t["name"])
+            for model in ctx.field_models.values()
+            for t in model[0].values()
+        ]
+        named = (
+            [(guidance, set())]
+            + [
+                (
+                    line,
+                    {
+                        (schema, name)
+                        for schema, name in known_tables
+                        if f"{schema}.{name} " in line or f"{schema}.{name}:" in line
+                    },
+                )
+                for line in field_notes
+            ]
+            + named
+        )
     named += _join_lines(ctx, new_tables)
     if config.siblings_enabled():
         named += [

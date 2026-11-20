@@ -10,7 +10,10 @@ import { useLanguage } from '@/i18n/LanguageProvider';
 
 type NavItem = { label: string; href: string };
 
-const CONNECTIONS_NAV_ITEM: NavItem = { label: 'Connections', href: '/settings/connections' };
+const CONNECTIONS_NAV_ITEM: NavItem = {
+	label: 'Database connections',
+	href: '/settings/connections',
+};
 const ZONES_NAV_ITEM: NavItem = { label: 'Zones', href: '/settings/zones' };
 const TAGS_NAV_ITEM: NavItem = { label: 'Tags', href: '/settings/tags' };
 const RULES_NAV_ITEM: NavItem = { label: 'Rules', href: '/settings/rules' };
@@ -46,24 +49,17 @@ function rowClassName(selected: boolean) {
 }
 
 export type SettingsNavProps = {
-	/**
-	 * Connections come from the CONNECTION_STRINGS env var, so they are fixed by
-	 * config and the section is dropped. Resolved by the server layout rather
-	 * than fetched here: a client-side lookup rendered the link for as long as
-	 * the request took, then took it away again.
-	 */
-	connectionsEnvManaged: boolean;
 	isAdmin: boolean;
 };
 
-export const SettingsNav = ({ connectionsEnvManaged, isAdmin }: SettingsNavProps) => {
+export const SettingsNav = ({ isAdmin }: SettingsNavProps) => {
 	const { t: __uiT } = useLanguage();
 
 	const pathname = usePathname();
 	const { t } = useLanguage();
 
 	const items: NavItem[] = [{ label: 'Language', href: '/settings/language' }];
-	if (isAdmin && !connectionsEnvManaged) items.push(CONNECTIONS_NAV_ITEM);
+	if (isAdmin) items.push(CONNECTIONS_NAV_ITEM);
 	if (isAdmin)
 		items.push(
 			ZONES_NAV_ITEM,

@@ -6,20 +6,24 @@ SPDX-License-Identifier: Apache-2.0
 
 # Connections and credential storage
 
-Auto-Ontology reads source databases from two places: connections added in the
-UI, and the `CONNECTION_STRINGS` environment variable. Use one per deployment,
-because the two code paths order them differently:
-
-- **Answering questions** uses UI-managed connections when any exist, and falls
-  back to `CONNECTION_STRINGS`.
-- **Ingestion** uses `CONNECTION_STRINGS` whenever it's set, and reads
-  UI-managed connections only when it's empty.
+Auto-Ontology uses both connections added in the UI and the
+`CONNECTION_STRINGS` environment variable for ingestion, semantic compilation,
+and SQL queries. Give each source a unique catalog database name. If two
+sources share a name, the deployment configuration takes precedence.
 
 ## Connections added in the UI
 
 Add connections under **Settings → Connections**, or through the API
 (`POST /api/connections/test`, then `POST /api/connections`; permission
 `connection:manage`).
+
+**Save and scan** starts a background catalog scan. The connections page shows its status
+and offers an explicit action to scan again and build the ontology.
+
+Oracle accepts a host, optional port (1521 by default), service name and unique
+catalog name. Test the connection and select the owners of the tables to include.
+Only readable business tables in those schemas participate in extraction and queries.
+Existing Oracle URLs without a selection continue to expose the login owner's tables.
 
 Each connection can be scoped with a schema allowlist plus
 `table_allow_regex` / `table_deny_regex`, applied at catalog extraction. Deny
@@ -45,6 +49,7 @@ The URL scheme selects the connector:
 | ------------- | --------------------------- | :-----------: |
 | PostgreSQL    | `postgresql://`, `postgres://` | yes        |
 | MySQL         | `mysql://`                  | yes           |
+| Oracle        | `oracle://`                 | yes           |
 | Databricks    | `databricks://`             | yes           |
 | Snowflake     | `snowflake://`              | yes           |
 | ClickHouse    | `clickhouse://`             | yes           |

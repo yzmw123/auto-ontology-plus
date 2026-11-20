@@ -208,6 +208,19 @@ component's original license in addition to the terms of `LICENSE`.
 
 ---
 
+## Database connector artwork
+
+The connection picker includes the Apache Kyuubi, ClickHouse, Databricks, MySQL,
+Oracle, PostgreSQL, Snowflake and Trino driver icons from DBeaver Community
+26.0.3. The assets come from the corresponding driver plugins under
+`icons/*_icon_big@2x.png` (Apache Kyuubi and Trino use the generic plugin).
+The Databricks PNG is a rasterization of `icons/databricks_icon_big.svg`.
+[DBeaver source and license](https://github.com/dbeaver/dbeaver/tree/26.0.3/plugins)
+
+The HeavyDB card uses the project organization’s
+[HEAVY.AI icon](https://github.com/heavyai.png?size=128).
+Product names and logos are trademarks of their respective owners.
+
 ## Updating this file
 
 The tables above list the **direct** dependencies declared in

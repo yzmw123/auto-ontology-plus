@@ -17,6 +17,19 @@ PEM = (
 )
 
 
+def test_oracle_service_name_and_credentials_are_encoded() -> None:
+    result = build_connection_string(
+        {
+            "type": "oracle",
+            "host": "2001:db8::1",
+            "user": "app",
+            "password": "p@ss/word",
+            "database": "ORCLPDB1",
+        }
+    )
+    assert result == "oracle://app:p%40ss%2Fword@[2001:db8::1]:1521/ORCLPDB1"
+
+
 def _snowflake(**overrides: object) -> dict[str, object]:
     connection = {
         "type": "snowflake",

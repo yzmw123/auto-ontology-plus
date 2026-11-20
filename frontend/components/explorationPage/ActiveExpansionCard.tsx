@@ -131,7 +131,7 @@ const PathChain = ({ hops }: { hops: ExplorationLinkPathHopDto[] }) => {
 						<div className="ml-2 flex items-center gap-1.5 py-1 pl-[7px]">
 							<div className="h-4 w-px bg-zinc-300 dark:bg-zinc-600" />
 							<span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-secondary dark:bg-zinc-800 dark:text-zinc-400">
-								{hops[index].relationship}
+								<T value={hops[index].relationship} />
 							</span>
 						</div>
 					)}
@@ -203,11 +203,13 @@ type ActiveExpansionCardProps = {
  */
 export const ActiveExpansionCard = ({ node, onClose, onView }: ActiveExpansionCardProps) => {
 	const { t: __uiT } = useLanguage();
+	const typeLabel = __uiT(TYPE_LABEL[node.kind]);
+	const name = node.kind === 'sql' ? typeLabel : node.name;
 	return (
 		<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
 			<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 				<p className="text-xs font-semibold text-body dark:text-zinc-300">
-					{__uiT('Showing info on this {type}', { type: __uiT(TYPE_LABEL[node.kind]) })}
+					{__uiT('Showing info on this {type}', { type: typeLabel })}
 				</p>
 				<Button
 					theme={ButtonTheme.IconNeutral}
@@ -216,7 +218,7 @@ export const ActiveExpansionCard = ({ node, onClose, onView }: ActiveExpansionCa
 					type="button"
 					onClick={onClose}
 					aria-label={__uiT('Close {type} details', {
-						type: __uiT(TYPE_LABEL[node.kind]),
+						type: typeLabel,
 					})}
 				>
 					<Icon name={IconName.Close} className="h-4 w-4" />
@@ -229,9 +231,9 @@ export const ActiveExpansionCard = ({ node, onClose, onView }: ActiveExpansionCa
 						className={`mt-0.5 h-5 w-5 shrink-0 ${TYPE_ICON_COLOR[node.kind]}`}
 					/>
 					<div className="min-w-0 flex-1 space-y-1">
-						<Text as="h2" text={node.name} variant={TextVariant.Heading} />
+						<Text as="h2" text={name} variant={TextVariant.Heading} />
 						<Text as="p" variant={TextVariant.Caption}>
-							{TYPE_LABEL[node.kind]}
+							{typeLabel}
 						</Text>
 					</div>
 				</div>
@@ -243,17 +245,20 @@ export const ActiveExpansionCard = ({ node, onClose, onView }: ActiveExpansionCa
 							type="button"
 							onClick={onView}
 						>
-							{TYPE_VIEW_LABEL[node.kind]}
+							{__uiT(TYPE_VIEW_LABEL[node.kind])}
 						</Button>
 					</div>
 				)}
 				<div className="flex flex-col gap-2">
-					<PropertyRow label="Name" value={node.name} />
+					<PropertyRow label={__uiT('Name')} value={name} />
 					{node.kind === 'column' && node.dataType != null && (
-						<PropertyRow label="Data Type" value={node.dataType} monospace />
+						<PropertyRow label={__uiT('Data Type')} value={node.dataType} monospace />
 					)}
 					{node.kind === 'columnAttribute' && node.relationshipType != null && (
-						<PropertyRow label="Relationship" value={node.relationshipType} monospace />
+						<PropertyRow
+							label={__uiT('Relationship')}
+							value={__uiT(node.relationshipType)}
+						/>
 					)}
 					{node.kind === 'sql' ? (
 						<SqlBlock sql={node.sqlText ?? ''} />
@@ -261,11 +266,11 @@ export const ActiveExpansionCard = ({ node, onClose, onView }: ActiveExpansionCa
 						<ConnectionDetails hops={node.connectionHops} />
 					) : (
 						<PropertyRow
-							label="Description"
+							label={__uiT('Description')}
 							value={
 								node.description ??
 								(node.kind === 'column'
-									? 'No description on record for this column.'
+									? __uiT('No description on record for this column.')
 									: '')
 							}
 						/>
@@ -273,18 +278,18 @@ export const ActiveExpansionCard = ({ node, onClose, onView }: ActiveExpansionCa
 					{node.kind === 'connection' ? (
 						<>
 							<PropertyRow
-								label={node.connectionSource?.name ?? 'Term 1'}
+								label={node.connectionSource?.name ?? __uiT('Term 1')}
 								value={node.connectionSource?.id ?? node.id}
 								monospace
 							/>
 							<PropertyRow
-								label={node.connectionTarget?.name ?? 'Term 2'}
+								label={node.connectionTarget?.name ?? __uiT('Term 2')}
 								value={node.connectionTarget?.id ?? node.id}
 								monospace
 							/>
 						</>
 					) : (
-						<PropertyRow label="ID" value={displayId(node)} monospace />
+						<PropertyRow label={__uiT('ID')} value={displayId(node)} monospace />
 					)}
 				</div>
 			</div>

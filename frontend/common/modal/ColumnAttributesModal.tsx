@@ -76,7 +76,7 @@ export const ColumnAttributesModal = ({ term, onClose }: ColumnAttributesModalPr
 	const columns: TableColumn<ColumnAttribute>[] = [
 		{
 			key: 'name',
-			header: 'Attribute Name',
+			header: __uiT('Attribute Name'),
 			cell: (row) => row.name,
 			title: (row) => row.name,
 			truncate: true,
@@ -84,14 +84,14 @@ export const ColumnAttributesModal = ({ term, onClose }: ColumnAttributesModalPr
 		},
 		{
 			key: 'description',
-			header: 'Description',
+			header: __uiT('Description'),
 			cell: (row) => row.description || '—',
 			title: (row) => row.description ?? '',
 			truncate: true,
 		},
 		{
 			key: 'sample_values',
-			header: 'Sample Values',
+			header: __uiT('Sample Values'),
 			width: 'w-56',
 			cell: (row) => <LabelList values={row.sample_values ?? []} />,
 		},

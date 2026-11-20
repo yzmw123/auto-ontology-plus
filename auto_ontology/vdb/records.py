@@ -28,6 +28,19 @@ if TYPE_CHECKING:
 __all__ = ["to_vdb_records", "write_embedded_rows"]
 
 
+def _without_nul(value: Any) -> Any:
+    """Postgres text/JSON cannot store U+0000, sometimes present in Oracle CHAR data."""
+    if isinstance(value, str):
+        return value.replace("\x00", "")
+    if isinstance(value, list):
+        return [_without_nul(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_without_nul(item) for item in value)
+    if isinstance(value, dict):
+        return {_without_nul(key): _without_nul(item) for key, item in value.items()}
+    return value
+
+
 def _text(row: dict[str, Any], metadata: dict[str, Any]) -> str:
     """The first non-blank text field, unmodified."""
     for value in (row.get("text"), row.get("content"), metadata.get("content")):
@@ -47,12 +60,12 @@ def _page_number(row: dict[str, Any], content_metadata: dict[str, Any]) -> int |
 
 
 def _record(row: dict[str, Any]) -> dict[str, Any] | None:
-    metadata = dict(row.get("metadata") or {})
+    metadata = _without_nul(dict(row.get("metadata") or {}))
     # An empty list is what a failed request leaves behind, so it is as absent
     # as a missing key: writing it would store a row no search can reach.
     if not metadata.get("embedding"):
         return None
-    text = _text(row, metadata)
+    text = _without_nul(_text(row, metadata))
     if not text:
         return None
 

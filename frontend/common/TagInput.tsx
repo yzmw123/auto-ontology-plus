@@ -65,7 +65,7 @@ export const TagInput = forwardRef<TagInputHandle, TagInputProps>(function TagIn
 	{
 		value,
 		onChange,
-		placeholder = 'Type and press Enter',
+		placeholder,
 		commitKeys = DEFAULT_COMMIT_KEYS,
 		splitPattern = DEFAULT_SPLIT,
 		id,
@@ -221,8 +221,8 @@ export const TagInput = forwardRef<TagInputHandle, TagInputProps>(function TagIn
 				onKeyDown={handleKeyDown}
 				onPaste={handlePaste}
 				onBlur={handleBlur}
-				placeholder={value.length === 0 ? placeholder : ''}
-				aria-label={ariaLabel ?? 'Add tag'}
+				placeholder={value.length === 0 ? (placeholder ?? t('Type and press Enter')) : ''}
+				aria-label={ariaLabel ?? t('Add tag')}
 				className="min-w-[6rem] flex-1 border-0 bg-transparent px-1 py-0.5 text-sm text-heading outline-none placeholder:text-secondary disabled:cursor-not-allowed dark:text-zinc-100"
 			/>
 		</div>

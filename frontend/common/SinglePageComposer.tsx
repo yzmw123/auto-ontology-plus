@@ -8,6 +8,7 @@ import { forwardRef, useEffect, useRef, useState, useCallback, type ReactNode } 
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@nvidia/foundations-react-core';
+import { HelpTooltip } from '@/common/HelpTooltip';
 import type { Breadcrumb } from '@/types/breadcrumbs';
 import { ComposerColumnType, ComposerSectionKind } from '@/enums/datasources';
 import {
@@ -21,6 +22,7 @@ import {
 	type ComposerCertification,
 } from '@/types/composer-section';
 import { CertificationStatus } from '@/enums/certification';
+import { sampleValuesReadOnlyHint } from '@/lib/column-types';
 import { fieldStatus } from '@/lib/certification';
 import { CertificationBadge } from '@/common/CertificationBadge';
 import { CertificationSelect } from '@/common/CertificationSelect';
@@ -83,6 +85,7 @@ export const ZonesRow = ({ zones }: { zones: TermZone[] }) => (
 export type ComposerPageHeader = {
 	/** Rendered as the page title. Every composed page names the entity it shows. */
 	title: string;
+	translateTitle?: boolean;
 	icon?: IconName;
 	/** Catalog node the default save path patches. Without it the Edit button stays hidden. */
 	entityId?: string;
@@ -157,20 +160,22 @@ export type SinglePageComposerProps = {
 	headerActions?: ReactNode;
 };
 
-function composerSectionHeading(section: ComposerSection): string {
+function composerSectionHeading(section: ComposerSection, t: (message: string) => string): string {
+	if (section.type === ComposerSectionKind.LOADING_PANEL) return t(section.message);
+	const title = t(section.title);
 	switch (section.type) {
-		case ComposerSectionKind.LOADING_PANEL:
-			return section.message;
 		case ComposerSectionKind.ZONES_CHIPS:
-			return `${section.title} (${section.zones.length})`;
+			return `${title} (${section.zones.length})`;
 		case ComposerSectionKind.RELATED_TERMS_CHIPS:
-			return `${section.title} (${section.terms.length})`;
+			return `${title} (${section.terms.length})`;
+		case ComposerSectionKind.ENTITY_CHIPS:
+			return `${title} (${section.entities.length})`;
 		case ComposerSectionKind.ENTITY_TAGS:
-			return `${section.title} (${section.tags.length})`;
-		case ComposerSectionKind.OWNER:
-			return section.title;
+			return `${title} (${section.tags.length})`;
+		case ComposerSectionKind.DATA_TABLE:
+			return section.showRowCount ? `${title} (${section.rows.length})` : title;
 		default:
-			return section.title;
+			return title;
 	}
 }
 
@@ -299,7 +304,7 @@ const EditableTextCard = ({
 		<div className="rounded-lg border border-[#76b900]/60 bg-white/90 p-5 ring-1 ring-[#76b900]/10 dark:bg-zinc-950/50">
 			<div className="flex items-start justify-between gap-3">
 				<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-					{section.title}
+					<T value={section.title} />
 				</h2>
 				{certificationSlot}
 			</div>
@@ -329,7 +334,7 @@ const EditableTextCard = ({
 								<T value={'Saving…'} />
 							</>
 						) : (
-							'Save'
+							<T value={'Save'} />
 						)}
 					</Button>
 				</div>
@@ -359,7 +364,7 @@ const EditableTagListCard = ({
 	return (
 		<div className="rounded-lg border border-[#76b900]/60 bg-white/90 p-5 ring-1 ring-[#76b900]/10 dark:bg-zinc-950/50">
 			<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-				{section.title}
+				<T value={section.title} />
 			</h2>
 			<div className="mt-3">
 				<TagInput
@@ -367,12 +372,14 @@ const EditableTagListCard = ({
 					onChange={handleChange}
 					autoFocus={autoFocus}
 					placeholder={__uiT('Type a Value And Press Enter')}
-					ariaLabel={section.title}
+					ariaLabel={__uiT(section.title)}
 				/>
 			</div>
 			<p className="mt-2 text-[11px] text-secondary dark:text-zinc-400">
-				{section.hint ??
-					'Press Enter or comma to add. Backspace to remove the last tag. Paste comma-separated values to add many at once.'}
+				{__uiT(
+					section.hint ??
+						'Press Enter or comma to add. Backspace to remove the last tag. Paste comma-separated values to add many at once.',
+				)}
 			</p>
 		</div>
 	);
@@ -454,7 +461,7 @@ const EditableEntityTagsCard = ({
 		<div className="rounded-lg border border-[#76b900]/60 bg-white/90 p-5 ring-1 ring-[#76b900]/10 dark:bg-zinc-950/50">
 			<div className="flex items-center justify-between gap-3">
 				<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-					{section.title} ({tags.length})
+					<T value={section.title} /> ({tags.length})
 				</h2>
 				<PopoverMenu
 					items={unassigned.map((tag) => ({
@@ -530,7 +537,7 @@ const OwnerSection = ({ section }: { section: ComposerOwnerSection }) => {
 	return (
 		<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
 			<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-				{section.title}
+				<T value={section.title} />
 			</h2>
 			<div className="mt-3">
 				<OwnerLabel owner={owner} />
@@ -551,7 +558,7 @@ const EditableOwnerCard = ({
 	return (
 		<div className="rounded-lg border border-[#76b900]/60 bg-white/90 p-5 ring-1 ring-[#76b900]/10 dark:bg-zinc-950/50">
 			<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-				{section.title}
+				<T value={section.title} />
 			</h2>
 			<div className="mt-3">
 				<OwnersSelect
@@ -570,7 +577,7 @@ const EditableOwnerCard = ({
 const EntityTagsSection = ({ section }: { section: ComposerEntityTagsSection }) => (
 	<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
 		<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-			{section.title} ({section.tags.length})
+			<T value={section.title} /> ({section.tags.length})
 		</h2>
 		{section.tags.length === 0 ? (
 			<p className="mt-3 text-sm italic text-secondary dark:text-zinc-400">—</p>
@@ -586,14 +593,51 @@ const EntityTagsSection = ({ section }: { section: ComposerEntityTagsSection }) 
 	</div>
 );
 
+const ChipSectionHeading = ({
+	title,
+	count,
+	helpText,
+}: {
+	title: string;
+	count: number;
+	helpText?: string;
+}) => {
+	const { t } = useLanguage();
+	return (
+		<div className="flex items-center gap-1">
+			<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
+				{t(title)} ({count})
+			</h2>
+			{helpText && (
+				<HelpTooltip text={t(helpText)}>
+					<button
+						type="button"
+						aria-label={t('About {section}', { section: t(title) })}
+						className="inline-flex size-6 shrink-0 cursor-help items-center justify-center rounded text-secondary hover:text-heading focus-visible:outline-2 focus-visible:outline-offset-1 dark:text-zinc-400 dark:hover:text-zinc-100"
+					>
+						<span
+							aria-hidden="true"
+							className="inline-flex size-4 items-center justify-center rounded-full border border-current text-[11px] font-semibold leading-none"
+						>
+							?
+						</span>
+					</button>
+				</HelpTooltip>
+			)}
+		</div>
+	);
+};
+
 const ZonesSection = ({ section }: { section: ComposerZonesSection }) => {
 	const displayedZones = section.zones;
 
 	return (
 		<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
-			<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-				{section.title} ({displayedZones.length})
-			</h2>
+			<ChipSectionHeading
+				title={section.title}
+				count={displayedZones.length}
+				helpText={section.helpText}
+			/>
 			{displayedZones.length === 0 ? (
 				<p className="mt-3 text-sm italic text-secondary dark:text-zinc-400">—</p>
 			) : (
@@ -633,7 +677,7 @@ function renderComposerSection(
 				>
 					<div className="flex items-start justify-between gap-3">
 						<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-							{section.title}
+							<T value={section.title} />
 						</h2>
 						{section.certification ? (
 							<CertificationBadge
@@ -642,25 +686,36 @@ function renderComposerSection(
 							/>
 						) : null}
 					</div>
-					<Text as="p" text={section.body} lines={3} variant={TextVariant.Body} />
+					<Text
+						as="p"
+						text={section.translateBody ? t(section.body) : section.body}
+						lines={3}
+						variant={TextVariant.Body}
+					/>
 				</div>
 			);
 		case ComposerSectionKind.TAG_LIST:
 			return (
 				<ReadOnlyTagList
-					title={section.title}
+					title={t(section.title)}
 					values={section.values}
 					sectionId={section.id}
 					// A section that stays read-only through an edit owes the user a
 					// reason; an editable one shows its hint on the input instead.
-					hint={isEditingActive && section.editable !== true ? section.hint : undefined}
+					hint={
+						isEditingActive && section.editable !== true
+							? section.readOnlySampleType !== undefined
+								? sampleValuesReadOnlyHint(section.readOnlySampleType, t)
+								: section.hint && t(section.hint)
+							: undefined
+					}
 				/>
 			);
 		case ComposerSectionKind.INFO_GRID:
 			return (
 				<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
 					<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-						{section.title}
+						<T value={section.title} />
 					</h2>
 					<dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
 						{section.items.map((item) => (
@@ -669,10 +724,10 @@ function renderComposerSection(
 								className="rounded-lg border border-zinc-100/90 bg-zinc-50/80 p-3.5 dark:border-zinc-800 dark:bg-zinc-900/60"
 							>
 								<dt className="text-[11px] font-semibold uppercase tracking-wide text-secondary">
-									{item.label}
+									{t(item.label)}
 								</dt>
 								<dd className="mt-1.5 text-sm text-heading dark:text-zinc-100">
-									{item.value}
+									{item.translateValue ? t(item.value) : item.value}
 								</dd>
 							</div>
 						))}
@@ -685,7 +740,7 @@ function renderComposerSection(
 			return (
 				<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
 					<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-						{section.title}
+						{composerSectionHeading(section, t)}
 					</h2>
 					<Table
 						className="mt-4"
@@ -708,7 +763,7 @@ function renderComposerSection(
 									: undefined;
 							return {
 								key: col.key,
-								header: col.label,
+								header: t(col.label),
 								width: col.width,
 								headerClassName: alignClass,
 								className: alignClass,
@@ -812,9 +867,9 @@ function renderComposerSection(
 					className="flex min-h-[min(50dvh,420px)] flex-col items-center justify-center gap-4 rounded-lg border border-zinc-200/80 bg-white/70 px-8 py-12 dark:border-zinc-700/80 dark:bg-zinc-950/40"
 					role="status"
 				>
-					<Spinner aria-label="Loading" />
+					<Spinner aria-label={t('Loading')} />
 					<p className="text-sm font-medium text-secondary dark:text-zinc-400">
-						{section.message}
+						{t(section.message)}
 					</p>
 				</div>
 			);
@@ -827,9 +882,11 @@ function renderComposerSection(
 		case ComposerSectionKind.RELATED_TERMS_CHIPS:
 			return (
 				<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
-					<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-						{section.title} ({section.terms.length})
-					</h2>
+					<ChipSectionHeading
+						title={section.title}
+						count={section.terms.length}
+						helpText={section.helpText}
+					/>
 					{section.terms.length === 0 ? (
 						<p className="mt-3 text-sm italic text-secondary dark:text-zinc-400">—</p>
 					) : (
@@ -851,9 +908,11 @@ function renderComposerSection(
 		case ComposerSectionKind.ENTITY_CHIPS:
 			return (
 				<div className="rounded-lg border border-zinc-200/90 bg-white/90 p-5 dark:border-zinc-700/90 dark:bg-zinc-950/50">
-					<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-						{section.title} ({section.entities.length})
-					</h2>
+					<ChipSectionHeading
+						title={section.title}
+						count={section.entities.length}
+						helpText={section.helpText}
+					/>
 					{section.entities.length === 0 ? (
 						<p className="mt-3 text-sm italic text-secondary dark:text-zinc-400">—</p>
 					) : (
@@ -893,7 +952,7 @@ function renderComposerSection(
 										console.log('edit sql section', section.id);
 									}}
 									aria-label={t('Edit {name}', { name: t(section.title) })}
-									title="Edit"
+									title={t('Edit')}
 								>
 									<Icon name={IconName.Pencil} className="h-4 w-4" />
 								</Button>
@@ -962,12 +1021,13 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 		);
 
 		const {
-			title,
+			title: rawTitle,
 			icon: headerIcon,
 			entityId = '',
 			certification: headerCertification,
 			status: headerStatus,
 		} = header.header;
+		const title = header.header.translateTitle ? t(rawTitle) : rawTitle;
 		const titleEditable = header.header.titleEditable === true;
 		const shouldAutofocusTitle = titleEditable;
 		const pdfPageName = header.header.pdfProps?.pageName;
@@ -1117,7 +1177,7 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 							<li key={i} className="text-body dark:text-zinc-300">
 								<span className="font-medium">
 									{isComposerSection(s) ? (
-										composerSectionHeading(s)
+										composerSectionHeading(s, t)
 									) : (
 										<T value={'Section'} />
 									)}
@@ -1190,11 +1250,14 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 								>
 									{saving ? (
 										<>
-											<Spinner aria-label="Saving" className="h-3.5 w-3.5" />
+											<Spinner
+												aria-label={t('Saving')}
+												className="h-3.5 w-3.5"
+											/>
 											<T value={'Saving…'} />
 										</>
 									) : (
-										'Save'
+										<T value={'Save'} />
 									)}
 								</Button>
 							)}
@@ -1231,7 +1294,7 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 							pendingEditsRef.current.name = e.target.value;
 						}}
 						className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-2xl font-semibold tracking-tight text-heading outline-none transition-colors focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
-						aria-label="Name"
+						aria-label={t('Name')}
 					/>
 				) : (
 					<div className="min-w-0">

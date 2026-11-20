@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from auto_ontology.server.models import GlobalSearchItem
 from auto_ontology.server.responses import (
     GlobalSearchCountResponse,
     GlobalSearchListResponse,
@@ -111,3 +112,31 @@ def post_global_search(payload: GlobalSearchRequest) -> dict:
 def post_global_search_count(payload: GlobalSearchRequest) -> dict:
     """Hit counts by type for the same query as ``/search/global-search``."""
     return _run(payload, count=True)
+
+
+class CatalogBrowseRequest(BaseModel):
+    filters: GlobalSearchFilters = Field(default_factory=GlobalSearchFilters)
+    selected_type: str | None = None
+    page: int = Field(default=1, ge=1)
+
+
+class CatalogBrowseResponse(BaseModel):
+    data: list[GlobalSearchItem]
+    counts: dict[str, int]
+    page: int
+    page_size: int
+
+
+@router.post("/search/browse", response_model=CatalogBrowseResponse)
+def browse_catalog(payload: CatalogBrowseRequest) -> dict:
+    """Browse visible catalog objects by type, tag and data source, 50 per page."""
+    try:
+        return search_service.browse_catalog(
+            objects=payload.filters.objects,
+            tags=payload.filters.tags,
+            data=payload.filters.data,
+            selected_type=payload.selected_type,
+            page=payload.page,
+        )
+    except search_service.SearchValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

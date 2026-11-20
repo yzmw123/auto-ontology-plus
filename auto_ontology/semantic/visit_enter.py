@@ -552,7 +552,14 @@ def calculate_columns_profiling(
 
     if pii_columns is None:
         pii_columns = pii_column_names(columns)
-    if pii_columns:
+    projector = getattr(type(connector), "profile_projection", None)
+    if projector is not None:
+        select_list = connector.profile_projection(
+            [c for c in columns if c.get("name") not in pii_columns]
+        )
+        if not select_list:
+            return {}
+    elif pii_columns:
         dialect = getattr(connector, "dialect", None)
         selected = [
             quoted_identifier(name, dialect)

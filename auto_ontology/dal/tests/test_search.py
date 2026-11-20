@@ -1312,3 +1312,24 @@ def test_a_query_that_matches_nothing_builds_no_statements() -> None:
     a legitimate state for a standing rule."""
     assert search.matching_id_selects([], ALL_TYPES, include_description=False) == {}
     assert search.matching_id_selects(["x"], set(), include_description=False) == {}
+
+
+def test_browse_stable_pages_and_view_counts(world: World) -> None:
+    types = {Labels.TABLE, search.SEARCH_TYPE_VIEW}
+    scope = dict(
+        tag_ids=[], include_untagged=False, data_ids=[world.schema], page_size=1
+    )
+    first, counts, page = search.browse_catalog(
+        types, selected_type=None, page=1, **scope
+    )
+    second, second_counts, last = search.browse_catalog(
+        types, selected_type=None, page=99, **scope
+    )
+    assert (page, last) == (1, 2)
+    assert counts == second_counts == {Labels.TABLE: 1, search.SEARCH_TYPE_VIEW: 1}
+    assert {first[0]["id"], second[0]["id"]} == {world.table, world.view}
+    views, view_counts, page = search.browse_catalog(
+        types, selected_type=search.SEARCH_TYPE_VIEW, page=1, **scope
+    )
+    assert views[0]["id"] == world.view
+    assert view_counts == counts

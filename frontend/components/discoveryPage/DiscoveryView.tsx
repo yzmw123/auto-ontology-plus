@@ -41,6 +41,7 @@ import type { DiscoveryFilters, DiscoverySearch } from '@/types/discovery';
 import type { RuleTagDraft } from '@/types/rules';
 import type { GlobalSearchItem, GlobalSearchRequest } from '@/types/search';
 import { DiscoveryFiltersPanel, discoveryFiltersMatchNothing } from './DiscoveryFiltersPanel';
+import { CatalogBrowse } from './CatalogBrowse';
 import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /**
@@ -78,7 +79,7 @@ const discoveryRequest = (search: DiscoverySearch, tabId: string): GlobalSearchR
 
 type DiscoveryResultsProps = {
 	loading: boolean;
-	searched: boolean;
+	onReset: () => void;
 	items: GlobalSearchItem[];
 	query: string;
 	descriptionSearched: boolean;
@@ -88,7 +89,7 @@ type DiscoveryResultsProps = {
 
 const DiscoveryResults = ({
 	loading,
-	searched,
+	onReset,
 	items,
 	query,
 	descriptionSearched,
@@ -105,7 +106,7 @@ const DiscoveryResults = ({
 				variant={EmptyStateVariant.Borderless}
 				title={__uiT('Search Is Unavailable')}
 				description={error}
-				action={{ label: 'Try Again', onClick: onRetry }}
+				action={{ label: __uiT('Try Again'), onClick: onRetry }}
 			/>
 		);
 	}
@@ -127,12 +128,8 @@ const DiscoveryResults = ({
 		<EmptyState
 			variant={EmptyStateVariant.Borderless}
 			illustration={<Placeholders.NoResults />}
-			title={searched ? __uiT('No Results Match Your Search') : __uiT('Search Auto Ontology')}
-			description={
-				searched
-					? "Don't give up, search harder!"
-					: 'Find terms, attributes, analyses and catalog objects by name, description or synonym.'
-			}
+			title={__uiT('No Results Match Your Search')}
+			action={{ label: __uiT('Clear filters'), onClick: onReset }}
 		/>
 	);
 };
@@ -229,7 +226,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 	const countsLoading = applied !== null && !appliedMatchesNothing && countedKey !== countsKey;
 
 	useEffect(() => {
-		if (applied === null || appliedMatchesNothing) return;
+		if (!applied?.term || appliedMatchesNothing) return;
 
 		const abort = new AbortController();
 		void searchApi
@@ -247,7 +244,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 	// Taken over every kind the filter left rather than over the selected tab,
 	// which is what keeps the other tabs on screen once one of them is chosen.
 	useEffect(() => {
-		if (applied === null || appliedMatchesNothing) return;
+		if (!applied?.term || appliedMatchesNothing) return;
 
 		const abort = new AbortController();
 		void searchApi
@@ -266,7 +263,9 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 	// The term is the only thing Apply waits on. A filter that excludes
 	// everything is a search like any other and runs like one — it just has a
 	// knowable answer, which `appliedMatchesNothing` gives without asking.
-	const canSearch = trimmedQuery.length >= GLOBAL_SEARCH_MIN_QUERY_LENGTH;
+	const browsing = !applied?.term;
+	const canSearch =
+		trimmedQuery.length === 0 || trimmedQuery.length >= GLOBAL_SEARCH_MIN_QUERY_LENGTH;
 
 	const clearResults = () => {
 		setItems([]);
@@ -289,6 +288,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 		setQuery('');
 		setFilters(DEFAULT_DISCOVERY_FILTERS);
 		clearResults();
+		setEpoch((value) => value + 1);
 		setApplied(null);
 	};
 
@@ -437,7 +437,8 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 							    once the list in hand is the answer to the tab selected: during
 							    a tab change `items` is still the previous tab's, so the counts
 							    shown would belong to one list and the rule to another. */}
-							{!loading &&
+							{!browsing &&
+								!loading &&
 								items.length > 0 &&
 								(untaggedSearch ? (
 									<p className="shrink-0 text-xs text-secondary dark:text-zinc-400">
@@ -463,37 +464,36 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 									/>
 								))}
 						</form>
-						{applied !== null &&
-							(hasCounts || loading || countsLoading || countsFailed) && (
-								<div className="shrink-0 border-b border-zinc-100 px-4 pt-2 dark:border-zinc-800">
-									{hasCounts ? (
-										<GlobalSearchTabs
-											counts={counts}
-											selected={selectedTab}
-											onSelect={setSelectedTab}
-										/>
-									) : countsFailed && !countsLoading ? (
-										<div className="flex items-center gap-2 px-2 pb-2 text-sm text-secondary dark:text-zinc-400">
-											<span>
-												<T value={'Result counts are unavailable.'} />
-											</span>
-											<Button
-												theme={ButtonTheme.Minimal}
-												size={Size.SMALL}
-												type="button"
-												onClick={() => {
-													setCountsFailed(false);
-													setCountsAttempt((value) => value + 1);
-												}}
-											>
-												<T value={'Try Again'} />
-											</Button>
-										</div>
-									) : (
-										<GlobalSearchTabsSkeleton />
-									)}
-								</div>
-							)}
+						{!browsing && (hasCounts || loading || countsLoading || countsFailed) && (
+							<div className="shrink-0 border-b border-zinc-100 px-4 pt-2 dark:border-zinc-800">
+								{hasCounts ? (
+									<GlobalSearchTabs
+										counts={counts}
+										selected={selectedTab}
+										onSelect={setSelectedTab}
+									/>
+								) : countsFailed && !countsLoading ? (
+									<div className="flex items-center gap-2 px-2 pb-2 text-sm text-secondary dark:text-zinc-400">
+										<span>
+											<T value={'Result counts are unavailable.'} />
+										</span>
+										<Button
+											theme={ButtonTheme.Minimal}
+											size={Size.SMALL}
+											type="button"
+											onClick={() => {
+												setCountsFailed(false);
+												setCountsAttempt((value) => value + 1);
+											}}
+										>
+											<T value={'Try Again'} />
+										</Button>
+									</div>
+								) : (
+									<GlobalSearchTabsSkeleton />
+								)}
+							</div>
+						)}
 						{showLimitBanner && (
 							<p className="shrink-0 px-6 py-2 text-sm text-secondary dark:text-zinc-400">
 								{__uiT(
@@ -502,25 +502,36 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 								)}
 							</p>
 						)}
-						<div className="min-h-0 flex-1 overflow-y-auto px-3" aria-busy={loading}>
-							<DiscoveryResults
-								loading={loading}
-								searched={applied !== null}
-								items={items}
-								query={applied?.term ?? ''}
-								// Read from the applied search rather than
-								// from the panel, like the query beside it:
-								// changing the toggle without applying it
-								// must not restyle the results already on
-								// screen, which came from the old one.
-								descriptionSearched={applied?.filters.description ?? false}
-								error={listError}
-								onRetry={() => {
-									clearResults();
-									setEpoch((value) => value + 1);
-								}}
+						{browsing ? (
+							<CatalogBrowse
+								key={epoch}
+								filters={applied?.filters ?? DEFAULT_DISCOVERY_FILTERS}
+								onReset={resetAll}
 							/>
-						</div>
+						) : (
+							<div
+								className="min-h-0 flex-1 overflow-y-auto px-3"
+								aria-busy={loading}
+							>
+								<DiscoveryResults
+									loading={loading}
+									onReset={resetAll}
+									items={items}
+									query={applied?.term ?? ''}
+									// Read from the applied search rather than
+									// from the panel, like the query beside it:
+									// changing the toggle without applying it
+									// must not restyle the results already on
+									// screen, which came from the old one.
+									descriptionSearched={applied?.filters.description ?? false}
+									error={listError}
+									onRetry={() => {
+										clearResults();
+										setEpoch((value) => value + 1);
+									}}
+								/>
+							</div>
+						)}
 					</main>
 				</BackPanelLayout>
 			</div>

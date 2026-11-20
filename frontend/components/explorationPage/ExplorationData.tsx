@@ -21,7 +21,7 @@ import type {
 	ExplorationLink,
 } from '@/types/exploration';
 import { ZonesRow } from '@/common/SinglePageComposer';
-import { T } from '@/i18n/LanguageProvider';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /** Build the data-layer graph (Tables/Views + their relationships) from the server DTO. */
 export const buildDataGraph = (graph: DataExplorationGraph): ExplorationGraph => {
@@ -61,6 +61,7 @@ export const buildDataGraph = (graph: DataExplorationGraph): ExplorationGraph =>
 				sourceSampleValues: fk.source_sample_values,
 				targetSampleValues: fk.target_sample_values,
 			})),
+			fieldReferenceIds: link.field_references,
 			relationshipTypes: link.relationship_types ?? [],
 		}));
 
@@ -72,6 +73,7 @@ export const buildDataGraph = (graph: DataExplorationGraph): ExplorationGraph =>
 };
 
 type ActiveDataCardProps = {
+	modelActions?: import('react').ReactNode;
 	node: ExplorationDataNode;
 	onClose: () => void;
 	onView: () => void;
@@ -84,92 +86,97 @@ type ActiveDataCardProps = {
 /** Detail card shown when a Table/View node is selected on the data graph. */
 export const ActiveDataCard = ({
 	node,
+	modelActions,
 	onClose,
 	onView,
 	onShowRelationships,
 	onShowColumns,
 	onShowQueries,
 	onShowTerms,
-}: ActiveDataCardProps) => (
-	<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
-		<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
-			<p className="text-xs font-semibold text-body dark:text-zinc-300">
-				<T value={'Showing info on this Data Object'} />
-			</p>
-			<Button
-				theme={ButtonTheme.IconNeutral}
-				size={Size.SMALL}
-				iconOnly
-				type="button"
-				onClick={onClose}
-				aria-label="Close data object details"
-			>
-				<Icon name={IconName.Close} className="h-4 w-4" />
-			</Button>
-		</header>
-		<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
-			<div className="flex items-start gap-2">
-				<Icon
-					name={catalogNodeInfo[node.nodeType].icon}
-					className="mt-0.5 h-5 w-5 shrink-0 text-[#3b82b6]"
-				/>
-				<div className="min-w-0 flex-1 space-y-1">
-					<Text as="h2" text={node.name} variant={TextVariant.Heading} />
-					<Text as="p" variant={TextVariant.Caption}>
-						{node.databaseName} • {node.schemaName}
-					</Text>
-				</div>
-			</div>
-			<div className="self-start">
+}: ActiveDataCardProps) => {
+	const { t: __uiT } = useLanguage();
+	return (
+		<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+			<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
+				<p className="text-xs font-semibold text-body dark:text-zinc-300">
+					<T value={'Showing info on this Data Object'} />
+				</p>
 				<Button
-					theme={ButtonTheme.Primary}
+					theme={ButtonTheme.IconNeutral}
 					size={Size.SMALL}
+					iconOnly
 					type="button"
-					onClick={onView}
+					onClick={onClose}
+					aria-label={__uiT('Close data object details')}
 				>
-					<T value={'View in Data'} />
+					<Icon name={IconName.Close} className="h-4 w-4" />
 				</Button>
+			</header>
+			<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
+				<div className="flex items-start gap-2">
+					<Icon
+						name={catalogNodeInfo[node.nodeType].icon}
+						className="mt-0.5 h-5 w-5 shrink-0 text-[#3b82b6]"
+					/>
+					<div className="min-w-0 flex-1 space-y-1">
+						<Text as="h2" text={node.name} variant={TextVariant.Heading} />
+						<Text as="p" variant={TextVariant.Caption}>
+							{node.databaseName} • {node.schemaName}
+						</Text>
+					</div>
+				</div>
+				<div className="self-start">
+					<Button
+						theme={ButtonTheme.Primary}
+						size={Size.SMALL}
+						type="button"
+						onClick={onView}
+					>
+						<T value={'View in Data'} />
+					</Button>
+				</div>
+				<div className="flex flex-col gap-2">
+					<PropertyRow label={__uiT('Name')} value={node.name} />
+					<PropertyRow label={__uiT('Description')} value={node.description ?? ''} />
+					<PropertyRow label={__uiT('ID')} value={node.id} monospace />
+				</div>
+				<div className="grid grid-cols-2 gap-2">
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'Columns:'} /> {node.columnsCount}
+						<DetailLinkButton
+							count={node.columnsCount}
+							onClick={onShowColumns}
+							label={__uiT('View Columns')}
+						/>
+					</span>
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'SQL Queries:'} /> {node.sqlCount}
+						<DetailLinkButton
+							count={node.sqlCount}
+							onClick={onShowQueries}
+							label={__uiT('View SQL queries')}
+						/>
+					</span>
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'Terms:'} /> {node.termsCount}
+						<DetailLinkButton
+							count={node.termsCount}
+							onClick={onShowTerms}
+							label={__uiT('View Terms')}
+						/>
+					</span>
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'Related Tables:'} /> {node.relationshipCount}
+						<DetailLinkButton
+							count={node.relationshipCount}
+							onClick={onShowRelationships}
+							label={__uiT('View Related Tables')}
+						/>
+					</span>
+				</div>
+				{modelActions}
+				<ZonesRow zones={node.zones} />
 			</div>
-			<div className="flex flex-col gap-2">
-				<PropertyRow label="Name" value={node.name} />
-				<PropertyRow label="Description" value={node.description ?? ''} />
-				<PropertyRow label="ID" value={node.id} monospace />
-			</div>
-			<div className="grid grid-cols-2 gap-2">
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'Columns:'} /> {node.columnsCount}
-					<DetailLinkButton
-						count={node.columnsCount}
-						onClick={onShowColumns}
-						label="View Columns"
-					/>
-				</span>
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'SQL Queries:'} /> {node.sqlCount}
-					<DetailLinkButton
-						count={node.sqlCount}
-						onClick={onShowQueries}
-						label="View SQL queries"
-					/>
-				</span>
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'Terms:'} /> {node.termsCount}
-					<DetailLinkButton
-						count={node.termsCount}
-						onClick={onShowTerms}
-						label="View Terms"
-					/>
-				</span>
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'Related Tables:'} /> {node.relationshipCount}
-					<DetailLinkButton
-						count={node.relationshipCount}
-						onClick={onShowRelationships}
-						label="View Related Tables"
-					/>
-				</span>
-			</div>
-			<ZonesRow zones={node.zones} />
-		</div>
-	</section>
-);
+		</section>
+	);
+};

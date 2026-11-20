@@ -424,6 +424,8 @@ type GraphEdgeAttributes = {
 	 * click-inert.
 	 */
 	kind: 'relationship' | 'structural';
+	fieldReference?: boolean;
+	label?: string;
 };
 
 /** A d3-force particle mirroring one graphology node, kept in sync by ID. */
@@ -548,11 +550,17 @@ const buildGraphologyGraph = (
 		// so hover keeps the canvas `grab` cursor rather than `pointer` (see
 		// `syncCanvasCursor`). A Semantic-layer (Term↔Term) edge still
 		// opens its own `connection` card, so it keeps the `relationship` kind.
-		const isDataLayerEdge = graphology.getNodeAttribute(link.source, 'kind') === 'table';
+		const isDataLayerEdge = graph.nodes[0]?.layer === ExplorationLayer.Data;
+		const fieldReference = Boolean(link.fieldReferenceIds?.length);
 		graphology.addEdgeWithKey(`${link.source}:${link.target}`, link.source, link.target, {
-			color: edgeColor,
-			size: 1.5,
-			kind: isDataLayerEdge ? 'structural' : 'relationship',
+			color: fieldReference ? '#2563eb' : edgeColor,
+			fieldReference,
+			label:
+				(link.fieldReferenceIds?.length ?? 0) > 1
+					? String(link.fieldReferenceIds?.length)
+					: '',
+			size: fieldReference ? 2 : 1.5,
+			kind: isDataLayerEdge && !fieldReference ? 'structural' : 'relationship',
 		});
 	});
 
@@ -644,6 +652,13 @@ export const GraphCanvas = ({
 	// active/highlighted *before* stuck looking selected until some
 	// unrelated repaint happens to come along.
 	const rendererRef = useRef<Sigma<GraphNodeAttributes, GraphEdgeAttributes> | null>(null);
+	// A generated SQL node has an interface label. Catalog node names stay verbatim.
+	const sqlLabel = __uiT('SQL Query');
+	const sqlLabelRef = useRef(sqlLabel);
+	useEffect(() => {
+		sqlLabelRef.current = sqlLabel;
+		rendererRef.current?.refresh();
+	}, [sqlLabel]);
 
 	useEffect(() => {
 		activeNodeIdRef.current = activeNodeId;
@@ -716,12 +731,38 @@ export const GraphCanvas = ({
 		// the right of it. A stroked halo behind the
 		// fill keeps the caption legible over the node's own color and icon
 		// artwork underneath, the same trick used for text labels on maps.
+		const selfReferences = new Map(
+			graph.links
+				.filter((link) => link.source === link.target && link.fieldReferenceIds?.length)
+				.map((link) => [link.source, link.fieldReferenceIds!.length]),
+		);
+		const loopPosition = (x: number, y: number, size: number) => ({
+			x: x + size * 0.82,
+			y: y - size * 0.82,
+			r: Math.max(7, size * 0.53),
+		});
 		const drawNodeLabel: NodeLabelDrawingFunction<GraphNodeAttributes, GraphEdgeAttributes> = (
 			context,
 			data,
 			settings,
 		) => {
 			if (!data.label) return;
+			const loops = selfReferences.get(data.key);
+			if (loops) {
+				const loop = loopPosition(data.x, data.y, data.size);
+				context.save();
+				context.strokeStyle = '#2563eb';
+				context.lineWidth = 2;
+				context.beginPath();
+				context.arc(loop.x, loop.y, loop.r, 0, 2 * Math.PI);
+				context.stroke();
+				if (loops > 1) {
+					context.fillStyle = '#2563eb';
+					context.textAlign = 'center';
+					context.fillText(String(loops), loop.x, loop.y);
+				}
+				context.restore();
+			}
 
 			const { labelFont: font, labelWeight: weight } = settings;
 			// Scaled to the node's own on-screen radius so captions on the
@@ -735,7 +776,10 @@ export const GraphCanvas = ({
 			// Truncated with an ellipsis instead of letting long names spill
 			// past the node's own circle.
 			const maxWidth = data.size * 1.6;
-			let { label } = data;
+			let label =
+				graphology.getNodeAttribute(data.key, 'kind') === 'sql'
+					? sqlLabelRef.current
+					: data.label;
 			if (context.measureText(label).width > maxWidth) {
 				while (label.length > 1 && context.measureText(`${label}…`).width > maxWidth) {
 					label = label.slice(0, -1);
@@ -831,7 +875,13 @@ export const GraphCanvas = ({
 			if (isHovered) size = isStructural ? 2.5 : 3.5;
 			else if (isConnected) size = isStructural ? 1.5 : 2.5;
 
-			const color = isDimmed ? edgeColors.dimmed : edgeColors.base;
+			const color = data.fieldReference
+				? isDimmed
+					? '#a5c4ee'
+					: '#2563eb'
+				: isDimmed
+					? edgeColors.dimmed
+					: edgeColors.base;
 
 			return { ...data, color, size };
 		};
@@ -887,6 +937,7 @@ export const GraphCanvas = ({
 				},
 				nodeReducer,
 				edgeReducer,
+				renderEdgeLabels: true,
 			},
 		);
 		rendererRef.current = renderer;
@@ -1490,7 +1541,19 @@ export const GraphCanvas = ({
 			return removedNodeIds;
 		};
 
-		const handleClickStage = () => onSelectNode(null);
+		const handleClickStage = ({ event }: { event: MouseCoords }) => {
+			for (const id of selfReferences.keys()) {
+				const node = renderer.getNodeDisplayData(id);
+				if (!node) continue;
+				const pos = renderer.framedGraphToViewport(node);
+				const loop = loopPosition(pos.x, pos.y, renderer.scaleSize(node.size));
+				if (Math.abs(Math.hypot(event.x - loop.x, event.y - loop.y) - loop.r) <= 5) {
+					onSelectEdge(id + ':' + id);
+					return;
+				}
+			}
+			onSelectNode(null);
+		};
 		const handleClickNode = ({ node }: { node: string }) => onClickNode(node);
 		const handleDoubleClickNode = ({ node, event }: { node: string; event: MouseCoords }) => {
 			// Sigma's default double-click behavior is to zoom the camera in on

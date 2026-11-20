@@ -85,6 +85,8 @@ class ToolContext:
     prediction_refusal: str = ""
     pages: list[Any] = field(default_factory=list)
     shown_tables: set[tuple[str, str]] = field(default_factory=set)
+    model_loader: Callable | None = None
+    field_models: dict = field(default_factory=dict)
     cost_status: Callable[[], str | None] | None = None
     can_run_queries: Callable[[], bool] | None = None
 

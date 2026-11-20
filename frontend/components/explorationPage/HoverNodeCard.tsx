@@ -49,7 +49,7 @@ export const HoverNodeCard = ({ node, x, y }: HoverNodeCardProps) => {
 							{node.layer === ExplorationLayer.Semantic ? (
 								<T value={'Term'} />
 							) : (
-								catalogNodeInfo[node.nodeType].title
+								<T value={catalogNodeInfo[node.nodeType].title} />
 							)}
 						</span>
 					</div>
@@ -64,7 +64,7 @@ export const HoverNodeCard = ({ node, x, y }: HoverNodeCardProps) => {
 						</p>
 					)}
 					<p className="mt-1 line-clamp-2 text-xs leading-5 text-secondary dark:text-zinc-400">
-						{node.description || 'No Description'}
+						{node.description || <T value="No Description" />}
 					</p>
 				</div>
 			</div>
@@ -85,7 +85,9 @@ export const HoverNodeCard = ({ node, x, y }: HoverNodeCardProps) => {
 									: ''
 							} ${index < 2 ? 'border-b border-zinc-200 dark:border-zinc-700' : ''}`}
 						>
-							<dt className="text-secondary">{item.label}</dt>
+							<dt className="text-secondary">
+								<T value={item.label} />
+							</dt>
 							<dd className="mt-0.5 font-medium text-body dark:text-zinc-200">
 								{item.value}
 							</dd>
@@ -105,7 +107,9 @@ export const HoverNodeCard = ({ node, x, y }: HoverNodeCardProps) => {
 								index < 2 ? 'border-r border-zinc-200 dark:border-zinc-700' : ''
 							}`}
 						>
-							<dt className="text-secondary">{item.label}</dt>
+							<dt className="text-secondary">
+								<T value={item.label} />
+							</dt>
 							<dd className="mt-0.5 font-medium text-body dark:text-zinc-200">
 								{item.value}
 							</dd>

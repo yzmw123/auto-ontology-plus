@@ -50,7 +50,12 @@ from auto_ontology.ingestion_service.history import (
 from auto_ontology.ingestion_service.pii import run_pii_propagation_in_thread
 from auto_ontology.ingestion_service.rules import replay_rules_in_thread
 from auto_ontology.ingestion_service.scheduler import IntervalScheduler
-from auto_ontology.semantic.cancellation import clear_cancel, request_cancel
+from auto_ontology.dal.datasources import fetch_all_tables_without_term
+from auto_ontology.semantic.cancellation import (
+    clear_cancel,
+    is_cancelled,
+    request_cancel,
+)
 from auto_ontology.semantic.compile import run_semantic_compilation
 
 logger = logging.getLogger(__name__)
@@ -86,12 +91,39 @@ class SemanticScheduler(IntervalScheduler):
         interval: timedelta = SEMANTIC_INTERVAL,
         *,
         depends_on: IntervalScheduler | None = None,
+        work_lock: asyncio.Lock | None = None,
     ) -> None:
         super().__init__(interval)
         # The scheduler that writes the catalog this one compiles from — see
         # the module docstring. Optional so tests/callers that don't care about
         # the startup race can still construct one on its own.
         self._depends_on = depends_on
+        self._work_lock = work_lock if work_lock is not None else asyncio.Lock()
+        self._building_connection = False
+
+    @property
+    def running(self) -> bool:
+        return super().running or self._building_connection
+
+    async def compile_connection(self, database_name: str) -> None:
+        """Build one source while the connection job holds the shared work lock."""
+        if self.paused:
+            raise RuntimeError("Semantic compilation is paused for a reset")
+        self._building_connection = True
+        clear_cancel()
+        try:
+            await asyncio.to_thread(run_semantic_compilation, database_name)
+            if is_cancelled():
+                raise RuntimeError("Semantic compilation was stopped")
+            remaining = await asyncio.to_thread(
+                fetch_all_tables_without_term, database_name
+            )
+            if remaining:
+                raise RuntimeError(f"{len(remaining)} tables remain without a term")
+            await run_pii_propagation_in_thread(self.name)
+            await self._reapply_rules()
+        finally:
+            self._building_connection = False
 
     def abort(self) -> None:
         """Stop the in-flight pass at the next *table*, not the next database.
@@ -130,10 +162,6 @@ class SemanticScheduler(IntervalScheduler):
         await replay_rules_in_thread(self.name)
 
     async def _run_once(self) -> None:
-        # A cancellation belongs to the pass that was running when it was
-        # requested; leaving it set would abort this one before it starts.
-        clear_cancel()
-
         # Re-check the settings flag on every pass so a disable is honored live:
         # the loop keeps ticking but no-ops until re-enabled, rather than running
         # until the next service restart. Mirrors the lifespan startup gate.
@@ -151,7 +179,13 @@ class SemanticScheduler(IntervalScheduler):
             # after the very first one returns immediately here.
             await self._depends_on.wait_first_pass()
 
-        databases = resolve_database_names()
+        async with self._work_lock:
+            if not self.paused and not self.aborting:
+                await self._compile_all()
+
+    async def _compile_all(self) -> None:
+        clear_cancel()
+        databases = await asyncio.to_thread(resolve_database_names)
         if not databases:
             logger.info(
                 "semantic: no connections configured; nothing to compile. "

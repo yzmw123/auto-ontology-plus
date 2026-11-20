@@ -59,7 +59,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 	);
 
 	const selectedName = databases.find((database) => database.id === selected)?.name;
-	const summary = selected === null ? 'All' : (selectedName ?? 'Filtered');
+	const summary = selected === null ? __uiT('All') : (selectedName ?? __uiT('Filtered'));
 
 	const emptyMessage = failed
 		? 'Could not load databases'

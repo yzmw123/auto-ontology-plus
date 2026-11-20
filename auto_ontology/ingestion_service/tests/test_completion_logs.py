@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import threading
 from typing import Any
 
 import pytest
@@ -238,15 +237,10 @@ def test_pii_failure_does_not_fail_catalog_ingestion(
     assert "Data ingestion finished successfully for database pagila" in text
 
 
-def test_trigger_ingest_re_applies_the_rules(
+def test_scan_without_compilation_reapplies_rules(
     _stub_ingest: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Neither scheduler covers this path, so it has to replay them itself.
-
-    Creating a connection asks the ingestion service for an ingest and not for
-    a compilation, so without this the database that was just ingested carries
-    no rule's tags until a scheduler tick hours later.
-    """
+    import auto_ontology.ingestion_service.connection_jobs as jobs_module
     import auto_ontology.ingestion_service.ingest as mod
 
     monkeypatch.setattr(mod, "invalidate_connectors_cache", lambda: None)
@@ -256,14 +250,54 @@ def test_trigger_ingest_re_applies_the_rules(
         mod, "detect_and_tag_pii", lambda _columns: pii_runs.append(True)
     )
     ran = _stub_rules(monkeypatch)
+    monkeypatch.setattr(jobs_module, "is_semantic_compilation_enabled", lambda: False)
 
-    mod.trigger_ingest({"database": "pagila"})
-    for thread in threading.enumerate():
-        if thread.name == "ingest-pagila":
-            thread.join(timeout=10)
+    async def run() -> None:
+        lock = asyncio.Lock()
+        jobs = jobs_module.ConnectionJobs(SemanticScheduler(work_lock=lock), lock)
+        jobs.start("pagila", compile_ontology=False)
+        await jobs.wait()
+        assert jobs.status() == {"pagila": "scanned"}
+
+    asyncio.run(run())
 
     assert ran == [True]
     assert pii_runs == [True]
+
+
+@pytest.mark.parametrize("scan_fails", [False, True])
+def test_build_runs_for_the_scanned_source_only(
+    monkeypatch: pytest.MonkeyPatch, scan_fails: bool
+) -> None:
+    import auto_ontology.ingestion_service.connection_jobs as jobs_module
+
+    steps: list[tuple[str, str]] = []
+
+    def scan(database_name: str) -> None:
+        steps.append(("scan", database_name))
+        if scan_fails:
+            raise RuntimeError("source unreachable")
+
+    async def compile_source(database_name: str) -> None:
+        steps.append(("compile", database_name))
+
+    monkeypatch.setattr(jobs_module, "ingest_connection", scan)
+    monkeypatch.setattr(jobs_module, "is_semantic_compilation_enabled", lambda: False)
+
+    async def run() -> None:
+        lock = asyncio.Lock()
+        scheduler = SemanticScheduler(work_lock=lock)
+        monkeypatch.setattr(scheduler, "compile_connection", compile_source)
+        jobs = jobs_module.ConnectionJobs(scheduler, lock)
+        jobs.start("new_source", compile_ontology=True)
+        await jobs.wait()
+        assert jobs.status() == {"new_source": "scan_failed" if scan_fails else "ready"}
+
+    asyncio.run(run())
+    expected = [("scan", "new_source")]
+    if not scan_fails:
+        expected.append(("compile", "new_source"))
+    assert steps == expected
 
 
 # --------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 
 'use client';
 
+import type { ReactNode } from 'react';
 import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
 import { Icon, IconName } from '@/common/icons';
@@ -22,6 +23,7 @@ export type ConnectionInfoCardProps = {
 	/** Disables the toggle while its request is in flight. */
 	ssoFederationPending?: boolean;
 	disabled?: boolean;
+	scanControl?: ReactNode;
 };
 
 export const ConnectionInfoCard = ({
@@ -31,8 +33,10 @@ export const ConnectionInfoCard = ({
 	onSsoFederationChange,
 	ssoFederationPending = false,
 	disabled = false,
+	scanControl,
 }: ConnectionInfoCardProps) => {
-	const { t } = useLanguage();
+	const { t: __uiT } = useLanguage();
+
 	const menuItems = [
 		...(onEdit == null
 			? []
@@ -92,9 +96,7 @@ export const ConnectionInfoCard = ({
 									iconOnly
 									type="button"
 									onClick={toggle}
-									aria-label={t('Actions for {name}', {
-										name: connection.database_name,
-									})}
+									aria-label={`Actions for ${connection.database_name}`}
 								>
 									<Icon name={IconName.DotsVertical} className="h-4 w-4" />
 								</Button>
@@ -103,6 +105,7 @@ export const ConnectionInfoCard = ({
 					)}
 				</div>
 			</header>
+			{scanControl}
 			{showSsoFederation && (
 				<div className="border-t border-zinc-200/90 px-4 py-3 dark:border-zinc-700/90">
 					<label className="flex cursor-pointer items-start gap-2">
@@ -121,19 +124,13 @@ export const ConnectionInfoCard = ({
 								<T value={'Authenticate as Signed-In User'} />
 							</span>
 							<span className="block text-xs text-secondary dark:text-zinc-400">
-								{ssoFederationOn ? (
-									<T
-										value={
-											'Chat runs SQL with each user’s own Databricks privileges.'
-										}
-									/>
-								) : (
-									<T
-										value={
-											'Chat runs SQL with this connection’s stored access token.'
-										}
-									/>
-								)}
+								{ssoFederationOn
+									? __uiT(
+											'Chat runs SQL with each user’s own Databricks privileges.',
+										)
+									: __uiT(
+											'Chat runs SQL with this connection’s stored access token.',
+										)}
 							</span>
 						</span>
 					</label>

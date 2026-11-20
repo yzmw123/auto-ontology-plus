@@ -346,6 +346,8 @@ def _match_where(label: str, tokens: list[str], *, include_description: bool):
     the whole search, and the one kind that has none is not a reason to refuse
     it -- see :data:`_LABELS_WITHOUT_DESCRIPTION`.
     """
+    if not tokens:
+        return literal(True)
     described = include_description and label not in _LABELS_WITHOUT_DESCRIPTION
     return _text_match(SEARCH_TABLES[label], tokens, described)
 
@@ -981,6 +983,65 @@ def _with_breadcrumbs(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             }
         )
     return out
+
+
+def browse_catalog(
+    object_types: set[str],
+    *,
+    selected_type: str | None,
+    tag_ids: list[str],
+    include_untagged: bool,
+    data_ids: list[str],
+    page: int,
+    page_size: int,
+) -> tuple[list[dict[str, Any]], dict[str, int], int]:
+    """Browse the same visible objects as search, with stable ordering across pages."""
+    branches = _hit_selects(
+        [],
+        object_types,
+        include_description=False,
+        synonym_tokens=[],
+        tag_ids=tag_ids,
+        include_untagged=include_untagged,
+        data_ids=data_ids,
+    )
+    if not branches:
+        return [], {}, 1
+    hits = union_all(*branches).subquery()
+    kind = case(
+        (
+            and_(
+                hits.c.label == Labels.TABLE,
+                func.lower(hits.c.table_type).in_([v.lower() for v in _VIEW_TYPES]),
+            ),
+            SEARCH_TYPE_VIEW,
+        ),
+        else_=hits.c.label,
+    )
+    counts = {
+        row["kind"]: int(row["n"])
+        for row in store().query_read(
+            select(kind.label("kind"), func.count().label("n")).group_by(kind)
+        )
+    }
+    total = (
+        sum(counts.values()) if selected_type is None else counts.get(selected_type, 0)
+    )
+    page = min(page, max(1, (total + page_size - 1) // page_size))
+    stmt = select(hits)
+    if selected_type is not None:
+        stmt = stmt.where(kind == selected_type)
+    priority = case((kind == LABEL_TERM, 0), (kind == Labels.TABLE, 1), else_=2)
+    rows = (
+        store().query_read(
+            stmt.order_by(priority, kind, func.lower(hits.c.name), hits.c.id)
+            .limit(page_size)
+            .offset((page - 1) * page_size)
+        )
+        if total
+        else []
+    )
+    return _with_breadcrumbs(rows), counts, page
 
 
 def fetch_global_search(

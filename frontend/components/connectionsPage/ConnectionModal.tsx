@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { connectionsApi } from '@/api/connections';
 import { ModalWithSteps, type StepperFooterAction } from '@/common/modal';
 import { ConnectionConnectStep } from '@/components/connectionsPage/steps/ConnectionConnectStep';
@@ -30,6 +30,7 @@ const SCHEMA_STEP = 'Select Schemas';
  */
 const SCHEMA_SELECTION_TYPES: ReadonlySet<ConnectionType> = new Set([
 	ConnectionType.DATABRICKS,
+	ConnectionType.ORACLE,
 	ConnectionType.SNOWFLAKE,
 	ConnectionType.KYUUBI,
 	ConnectionType.TRINO,
@@ -75,6 +76,7 @@ export const ConnectionModal = ({
 
 	const [loading, setLoading] = useState(false);
 	const [testingConnection, setTestingConnection] = useState(false);
+	const testVersion = useRef(0);
 	const [isConnectionTested, setIsConnectionTested] = useState(false);
 	const [testSuccessMessage, setTestSuccessMessage] = useState<string | null>(null);
 	const [activeStep, setActiveStep] = useState(0);
@@ -178,7 +180,11 @@ export const ConnectionModal = ({
 	}, [connectionType, values, keepCurrentKeys]);
 
 	const onTypeStep = steps[activeStep] === TYPE_STEP;
-	const canContinue = onTypeStep ? false : fieldsComplete;
+	const oracleNeedsSchema =
+		connectionType === ConnectionType.ORACLE &&
+		steps[activeStep] === SCHEMA_STEP &&
+		selectedSchemas.length === 0;
+	const canContinue = !onTypeStep && fieldsComplete && !oracleNeedsSchema;
 
 	const handleNext = useCallback((): void => {
 		setAlert(null);
@@ -191,6 +197,8 @@ export const ConnectionModal = ({
 	}, []);
 
 	const resetSchemaState = useCallback((): void => {
+		testVersion.current++;
+		setTestingConnection(false);
 		setAvailableSchemas([]);
 		setSelectedSchemas(initialSchemas);
 	}, [initialSchemas]);
@@ -215,6 +223,7 @@ export const ConnectionModal = ({
 	};
 
 	const handleTestConnection = useCallback(async (): Promise<void> => {
+		const version = ++testVersion.current;
 		setTestingConnection(true);
 		setAlert(null);
 		setTestSuccessMessage(null);
@@ -223,6 +232,7 @@ export const ConnectionModal = ({
 			buildConnection({ forTest: true }),
 			connection?.database_name,
 		);
+		if (version !== testVersion.current) return;
 		setTestingConnection(false);
 
 		if ('error' in res && res.error) {
@@ -237,12 +247,18 @@ export const ConnectionModal = ({
 			return;
 		}
 
+		if (connectionType === ConnectionType.ORACLE && !res.schemas.length) {
+			setIsConnectionTested(false);
+			setAlert(__uiT('Connected, but this account has no readable business tables.'));
+			return;
+		}
+		setSelectedSchemas((previous) => previous.filter((name) => res.schemas.includes(name)));
 		setIsConnectionTested(true);
-		setTestSuccessMessage('Connection successful.');
+		setTestSuccessMessage(__uiT('Connection successful.'));
 		// The test response carries the connection's schemas — feed the picker.
 		setAvailableSchemas(res.schemas);
 		setAlert(null);
-	}, [buildConnection, connection]);
+	}, [buildConnection, connection, connectionType, __uiT]);
 
 	const handleSubmit = useCallback(async (): Promise<void> => {
 		if (!isConnectionTested) {
@@ -291,7 +307,13 @@ export const ConnectionModal = ({
 				return (
 					<div className="flex flex-col gap-2">
 						<p className="px-2 text-xs text-secondary dark:text-zinc-400">
-							<T value={'Leave empty to ingest all schemas.'} />
+							<T
+								value={
+									connectionType === ConnectionType.ORACLE
+										? 'Select at least one Oracle schema.'
+										: 'Leave empty to ingest all schemas.'
+								}
+							/>
 						</p>
 						<ConnectionSelectDataStep
 							availableDatabases={availableSchemas}
@@ -323,7 +345,7 @@ export const ConnectionModal = ({
 		actions.push(
 			isLastStep
 				? {
-						label: editing ? 'Save' : 'Create',
+						label: editing ? 'Save' : 'Save and scan',
 						onClick: () => {
 							void handleSubmit();
 						},
@@ -354,10 +376,13 @@ export const ConnectionModal = ({
 			open={open}
 			onClose={onCancel}
 			title={editing ? `Edit ${connection.database_name}` : __uiT('Create New Connection')}
-			steps={steps}
+			steps={steps.map((step) => __uiT(step))}
 			activeStep={activeStep}
 			onActiveStepChange={setActiveStep}
-			footerActions={footerActions}
+			footerActions={footerActions.map((action) => ({
+				...action,
+				label: __uiT(action.label),
+			}))}
 			alert={alert}
 		>
 			{renderStepContent(activeStep)}

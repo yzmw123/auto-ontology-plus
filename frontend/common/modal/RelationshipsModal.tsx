@@ -97,7 +97,7 @@ export const RelationshipsModal = ({
 	const columns: TableColumn<ExplorationNode>[] = [
 		{
 			key: 'type',
-			header: 'Type',
+			header: __uiT('Type'),
 			width: 'w-24',
 			cell: (row) => (
 				<div className="flex items-center gap-1.5 capitalize">
@@ -112,21 +112,21 @@ export const RelationshipsModal = ({
 					{row.layer === ExplorationLayer.Semantic ? (
 						<T value={'Term'} />
 					) : (
-						catalogNodeInfo[row.nodeType].title
+						__uiT(catalogNodeInfo[row.nodeType].title)
 					)}
 				</div>
 			),
 		},
 		{
 			key: 'name',
-			header: 'Name',
+			header: __uiT('Name'),
 			cell: (row) => row.name,
 			title: (row) => row.name,
 			truncate: true,
 		},
 		{
 			key: 'relationships',
-			header: 'Relationships',
+			header: __uiT('Relationships'),
 			width: 'w-32',
 			cell: (row) => row.relationshipCount,
 		},
@@ -140,7 +140,9 @@ export const RelationshipsModal = ({
 					return (
 						<span
 							className="flex h-6 w-6 items-center justify-center rounded text-disabled dark:text-zinc-600"
-							title={`${row.name} has no catalog location to open`}
+							title={__uiT('{name} has no catalog location to open', {
+								name: row.name,
+							})}
 						>
 							<Icon name={IconName.ExternalLink} className="h-3.5 w-3.5" />
 						</span>
@@ -160,7 +162,7 @@ export const RelationshipsModal = ({
 		},
 		{
 			key: 'focus',
-			header: 'Focus',
+			header: __uiT('Focus'),
 			width: 'w-20',
 			cell: (row) => {
 				// The graph is capped at a fixed number of nodes, so a related
@@ -176,8 +178,10 @@ export const RelationshipsModal = ({
 						disabled={!focusable}
 						title={
 							focusable
-								? `Focus ${row.name} on the graph`
-								: `${row.name} is not shown on the current graph`
+								? __uiT('Focus {name} on the graph', { name: row.name })
+								: __uiT('{name} is not shown on the current graph', {
+										name: row.name,
+									})
 						}
 					>
 						<T value={'Focus'} />

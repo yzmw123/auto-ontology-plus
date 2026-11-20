@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { Button, SelectButton } from '@/common/Button';
+import { HelpTooltip } from '@/common/HelpTooltip';
 import { EmptyState } from '@/common/EmptyState';
 import { Size, ButtonTheme, SelectButtonTheme } from '@/enums/button';
 import { EmptyStateVariant } from '@/enums/emptyState';
@@ -370,16 +371,29 @@ export const AnalysisView = () => {
 					</SelectButton>
 				</div>
 				<div className="ml-auto">
-					<Button
-						theme={ButtonTheme.Primary}
-						size={Size.REGULAR}
-						onClick={openCreateModal}
-						iconPosition="left"
-						shadow
+					<HelpTooltip
+						align="end"
+						text={
+							isPql
+								? __uiT(
+										'Save a PQL query to reuse a prediction, such as forecasting traffic at a toll station.',
+									)
+								: __uiT(
+										'Save a SQL query for a recurring question, such as which 10 toll stations had the most traffic last month.',
+									)
+						}
 					>
-						<Icon name={IconName.Plus} className="h-4 w-4" />
-						<T value={'Create New'} /> {MODE_LABEL[mode]} <T value={'Analysis'} />
-					</Button>
+						<Button
+							theme={ButtonTheme.Primary}
+							size={Size.REGULAR}
+							onClick={openCreateModal}
+							iconPosition="left"
+							shadow
+						>
+							<Icon name={IconName.Plus} className="h-4 w-4" />
+							<T value={'New Analysis Query'} />
+						</Button>
+					</HelpTooltip>
 				</div>
 			</header>
 
@@ -551,7 +565,7 @@ export const AnalysisView = () => {
 				title={
 					isEditing
 						? __uiT('Edit {mode} Analysis', { mode: MODE_LABEL[mode] })
-						: __uiT('Create New {mode} Analysis', { mode: MODE_LABEL[mode] })
+						: __uiT('New Analysis Query')
 				}
 				submitLabel={submitting ? __uiT('Saving…') : __uiT('Save')}
 				onSubmit={handleSubmit}

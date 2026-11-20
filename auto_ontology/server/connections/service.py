@@ -10,10 +10,11 @@ import json
 import logging
 from typing import Any
 
-from auto_ontology.connectors.connection_string_factory import build_connection_string
 from auto_ontology.catalog.table_filter import FILTER_KEYS, from_connection
+from auto_ontology.connectors.connection_string_factory import build_connection_string
 from auto_ontology.connectors.registry import (
     create_connector,
+    environment_database_names,
     invalidate_connectors_cache,
 )
 from auto_ontology.connectors.vault import (
@@ -21,13 +22,14 @@ from auto_ontology.connectors.vault import (
     is_vault_configured,
     write_secret,
 )
-from auto_ontology.server.ingestion.proxy import trigger_ingest, trigger_reset
-from auto_ontology.server.chat.worker import refresh_chat_workers
 from auto_ontology.dal.connections import (
     clear_connection,
     insert_connection,
     list_connections,
+    lock_connection_name,
 )
+from auto_ontology.server.chat.worker import refresh_chat_workers
+from auto_ontology.server.ingestion.proxy import trigger_ingest, trigger_reset
 
 logger = logging.getLogger(__name__)
 
@@ -46,11 +48,11 @@ SECRET_FIELDS = frozenset(
 
 
 def _database_already_connected(database_name: str) -> bool:
-    """True if a UI-managed connection already exists for this database."""
-    return any(
-        str(conn.get("database") or "").strip().lower() == database_name.lower()
-        for conn in list_connections()
-    )
+    """Protect catalog identities already configured in either source."""
+    names = environment_database_names() + [
+        str(conn.get("database") or "").strip() for conn in list_connections()
+    ]
+    return any(name.casefold() == database_name.casefold() for name in names)
 
 
 def _stored_connection(database_name: str) -> dict[str, Any] | None:
@@ -188,9 +190,30 @@ def test_connection(
         connector.close()
 
 
+def _validate_oracle_scope(connection: dict[str, Any]) -> None:
+    if connection.get("type") != "oracle":
+        return
+    owners = connection.get("schemas")
+    if (
+        not isinstance(owners, list)
+        or not owners
+        or not all(isinstance(name, str) and name.strip() for name in owners)
+    ):
+        raise ValueError("Select at least one Oracle schema.")
+    connector = create_connector(build_connection_string(connection))
+    try:
+        if not set(owners).issubset(connector.get_schemas()):
+            raise ValueError(
+                "A selected Oracle schema has no readable business tables."
+            )
+    finally:
+        connector.close()
+
+
 def create_connection(
     *,
     connection: dict[str, Any],
+    compile_ontology: bool = False,
 ) -> dict[str, Any]:
     """Create a UI-managed connection stored on the catalog database row."""
 
@@ -199,7 +222,7 @@ def create_connection(
     # truth for what gets ingested, so drop it.
     connection = {key: value for key, value in connection.items() if key != "schema"}
 
-    database_name = str(connection.get("database"))
+    database_name = str(connection.get("database") or "").strip()
     if not database_name:
         raise ValueError("Database name is required")
 
@@ -207,22 +230,29 @@ def create_connection(
     # a pattern that can never be honoured.
     from_connection(connection)
 
-    if _database_already_connected(database_name):
-        raise ValueError(f"A connection for database {database_name!r} already exists")
+    connection["database"] = database_name
+    build_connection_string(connection)
+    _validate_oracle_scope(connection)
 
-    # With Vault configured, store credentials in Vault and keep them off the
-    # catalog row; otherwise fall back to persisting the JSON on the row.
-    vault_configured = is_vault_configured()
-    if vault_configured:
-        write_secret(database_name, connection)
-    insert_connection(
-        connection=json.dumps(connection) if not vault_configured else "",
-        database_name=database_name,
-    )
+    with lock_connection_name(database_name):
+        if _database_already_connected(database_name):
+            raise ValueError(
+                f"A connection for database {database_name!r} already exists"
+            )
+        vault_configured = is_vault_configured()
+        insert_connection(
+            connection="" if vault_configured else json.dumps(connection),
+            database_name=database_name,
+        )
+        if vault_configured:
+            write_secret(database_name, connection)
 
     _refresh_connection_caches()
 
-    trigger_ingest(connection)
+    if compile_ontology:
+        trigger_ingest(connection, compile_ontology=True)
+    else:
+        trigger_ingest(connection)
 
     return connection
 
@@ -268,6 +298,11 @@ def update_connection(
         },
         stored,
     )
+
+    if updated.get("type") == "oracle" and (
+        "schemas" in stored or "schemas" in updated
+    ):
+        _validate_oracle_scope(updated)
 
     if is_vault_configured():
         write_secret(database_name, updated)

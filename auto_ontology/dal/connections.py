@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from sqlalchemy import select, update
@@ -21,7 +23,7 @@ from sqlalchemy.dialects.postgresql import insert
 
 from auto_ontology.connectors.vault import read_secret
 from auto_ontology.dal import schema as s
-from auto_ontology.dal.session import store
+from auto_ontology.dal.session import store, write_transaction
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +55,17 @@ def list_connections() -> list[dict[str, Any]]:
                 json.loads(stored) if isinstance(stored, str) else stored
             )
     return connections
+
+
+@contextmanager
+def lock_connection_name(database_name: str) -> Iterator[None]:
+    """Serialize creates for a catalog name, including case-insensitive aliases."""
+    with write_transaction():
+        store().query_read(
+            "SELECT pg_advisory_xact_lock(hashtextextended(:name, 0))",
+            {"name": "connection:" + database_name.casefold()},
+        )
+        yield
 
 
 def insert_connection(

@@ -12,9 +12,9 @@ import { datasources } from '@/api/datasources';
 import { explorationApi } from '@/api/exploration';
 import { termsApi } from '@/api/terms';
 import { catalogNodeInfo } from '@/components/dataPage/catalog-node-utils';
-import { SelectButton } from '@/common/Button';
+import { Button, SelectButton } from '@/common/Button';
 import { EmptyState } from '@/common/EmptyState';
-import { SelectButtonTheme } from '@/enums/button';
+import { Size, ButtonTheme, SelectButtonTheme } from '@/enums/button';
 import { EmptyStateVariant } from '@/enums/emptyState';
 import { Icon, IconName } from '@/common/icons';
 import { catalogPathFromFocusId } from '@/lib/data/data-catalog-path';
@@ -187,7 +187,12 @@ const GraphCanvas = dynamic(
 	{ ssr: false },
 );
 
-export const ExplorationView = () => {
+import { FieldModelEditor } from './FieldModelEditor';
+import type { ModelSelection } from '@/types/fieldModel';
+
+export const ExplorationView = ({ canEdit = false }: { canEdit?: boolean }) => {
+	const [editing, setEditing] = useState<ModelSelection | null>(null);
+	const [modelRevision, refreshModel] = useState(0);
 	const { t: __uiT } = useLanguage();
 
 	const router = useRouter();
@@ -206,6 +211,35 @@ export const ExplorationView = () => {
 	const [semanticError, setSemanticError] = useState<string | null>(null);
 	const [dataError, setDataError] = useState<string | null>(null);
 	const [search, setSearch] = useState('');
+	const modelActions = (id: string, kind: 'term' | 'table') => (
+		<div className="flex flex-wrap gap-2">
+			<Button
+				theme={ButtonTheme.Secondary}
+				size={Size.SMALL}
+				onClick={() => setEditing({ id, kind, action: 'links' })}
+			>
+				{canEdit ? __uiT('Edit links') : __uiT('Field references')}
+			</Button>
+			{kind === 'term' && canEdit && (
+				<>
+					<Button
+						theme={ButtonTheme.Secondary}
+						size={Size.SMALL}
+						onClick={() => setEditing({ id, kind, action: 'class' })}
+					>
+						{__uiT('Classification rules')}
+					</Button>
+					<Button
+						theme={ButtonTheme.DangerSubtle}
+						size={Size.SMALL}
+						onClick={() => setEditing({ id, kind, action: 'remove' })}
+					>
+						{__uiT('Delete term')}
+					</Button>
+				</>
+			)}
+		</div>
+	);
 	/** One database id, or null for the unfiltered (500-node) graphs. */
 	const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
 	const [activeNodeId, setActiveNodeId] = useState<string | null>(activeNodeIdFromUrl);
@@ -366,7 +400,7 @@ export const ExplorationView = () => {
 		return () => {
 			cancelled = true;
 		};
-	}, [selectedDatabaseId]);
+	}, [selectedDatabaseId, modelRevision]);
 
 	const loadedDatabaseIdRef = useRef<string | null | undefined>(undefined);
 
@@ -411,7 +445,7 @@ export const ExplorationView = () => {
 		return () => {
 			cancelled = true;
 		};
-	}, [layer, selectedDatabaseId]);
+	}, [layer, selectedDatabaseId, modelRevision]);
 
 	useEffect(() => {
 		setActiveNodeId(activeNodeIdFromUrl);
@@ -1880,6 +1914,18 @@ export const ExplorationView = () => {
 	// other expansion on this graph gives.
 	const handleSelectEdge = useCallback(
 		(edgeId: string) => {
+			const fieldEdge = (
+				layer === ExplorationLayer.Data ? dataGraph : semanticGraph
+			).links.find((link) => link.source + ':' + link.target === edgeId);
+			if (fieldEdge?.fieldReferenceIds?.length) {
+				setEditing({
+					action: 'links',
+					id: fieldEdge.source,
+					kind: layer === ExplorationLayer.Data ? 'table' : 'term',
+					referenceIds: fieldEdge.fieldReferenceIds,
+				});
+				return;
+			}
 			setActiveNodeId(null);
 			if (expandedConnectionIdsRef.current.has(edgeId)) {
 				collapseSemanticConnection(edgeId);
@@ -1905,7 +1951,7 @@ export const ExplorationView = () => {
 			setHighlightedPath({ nodeIds: [link.source, link.target], edgeKeys: [edgeId] });
 			void expandSemanticConnection(link.source, link.target, edgeId);
 		},
-		[semanticGraph.links, expandSemanticConnection, collapseSemanticConnection],
+		[semanticGraph, dataGraph, layer, expandSemanticConnection, collapseSemanticConnection],
 	);
 
 	// `GraphCanvas`'s own effect tears down and rebuilds its `graphology`/
@@ -2245,6 +2291,7 @@ export const ExplorationView = () => {
 
 			{activeNode?.layer === ExplorationLayer.Semantic && (
 				<ActiveTermCard
+					modelActions={modelActions(activeNode.id, 'term')}
 					key={activeNode.id}
 					node={activeNode}
 					onClose={() => handleSelectNode(null)}
@@ -2257,6 +2304,7 @@ export const ExplorationView = () => {
 
 			{activeNode?.layer === ExplorationLayer.Data && (
 				<ActiveDataCard
+					modelActions={modelActions(activeNode.id, 'table')}
 					key={activeNode.id}
 					node={activeNode}
 					onClose={() => handleSelectNode(null)}
@@ -2276,6 +2324,7 @@ export const ExplorationView = () => {
 
 			{activeNode == null && activeExpansionTermNode != null && (
 				<ActiveTermCard
+					modelActions={modelActions(activeExpansionTermNode.id, 'term')}
 					key={activeExpansionTermNode.id}
 					node={activeExpansionTermNode}
 					onClose={() => handleSelectNode(null)}
@@ -2305,6 +2354,10 @@ export const ExplorationView = () => {
 
 			<div className="absolute bottom-4 right-4 z-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
 				<p className="text-xs text-secondary dark:text-zinc-400">
+					<span className="mb-1 flex items-center gap-2">
+						<span className="inline-block h-0.5 w-5 bg-blue-600" />
+						{__uiT('Field reference')}
+					</span>
 					<T value={'Viewing:'} />{' '}
 					{layer === ExplorationLayer.Semantic ? (
 						<T value={'Semantic Objects'} />
@@ -2378,7 +2431,7 @@ export const ExplorationView = () => {
 									key={item.type}
 									kind="table"
 									icon={catalogNodeInfo[item.type].icon}
-									label={item.label}
+									label={__uiT(item.label)}
 									count={dataLayerTableTypeCounts?.[item.type] ?? 0}
 								/>
 							))}
@@ -2442,6 +2495,23 @@ export const ExplorationView = () => {
 						setHighlightedPath(null);
 					}}
 					onView={() => {}}
+				/>
+			)}
+			{editing && (
+				<FieldModelEditor
+					key={editing.id + editing.action}
+					selection={editing}
+					canEdit={canEdit}
+					onClose={() => setEditing(null)}
+					onSaved={() => {
+						loadedSemanticDatabaseIdRef.current = undefined;
+						loadedDatabaseIdRef.current = undefined;
+						setEditing(null);
+						setSelectedSemanticEdgeId(null);
+						setHighlightedPath(null);
+						if (editing.action === 'remove') handleSelectNode(null);
+						refreshModel((n) => n + 1);
+					}}
 				/>
 			)}
 			<RelationshipsModal

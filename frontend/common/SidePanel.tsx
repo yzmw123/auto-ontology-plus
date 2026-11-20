@@ -13,7 +13,7 @@ import { Label } from '@/common/Label';
 import { OwnerLabel } from '@/common/OwnerLabel';
 import { OwnersSelect } from '@/common/OwnersSelect';
 import { PopoverMenu } from '@/common/PopoverMenu';
-import { formatDate } from '@/common/date';
+import { formatLocalizedDate } from '@/common/date';
 import { AUTO_GENERATED_LABEL } from '@/constants/tags';
 import { Size, ButtonTheme } from '@/enums/button';
 import { ownerChoices } from '@/lib/owners';
@@ -27,7 +27,7 @@ import type {
 import type { Owner } from '@/types/owners';
 import type { TagAuthor } from '@/types/tags';
 import type { GlossaryActivity } from '@/types/terms';
-import { T } from '@/i18n/LanguageProvider';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export const SIDE_PANEL_WIDTH = '280px';
 
@@ -114,7 +114,9 @@ const PanelBlock = ({
 	children: ReactNode;
 }) => (
 	<section className="min-w-0">
-		<h2 className="mb-2 text-sm font-semibold text-heading dark:text-zinc-100">{title}</h2>
+		<h2 className="mb-2 text-sm font-semibold text-heading dark:text-zinc-100">
+			<T value={title} />
+		</h2>
 		<div
 			className={`min-w-0 rounded-lg border bg-white p-3.5 dark:bg-zinc-950 ${
 				editing
@@ -145,12 +147,13 @@ const CalendarIcon = () => (
 );
 
 const ActivityBody = ({ bulk }: { bulk: SidePanelActivity }) => {
+	const { language, t } = useLanguage();
 	const name = bulk.author?.name || bulk.author?.email || '';
 	const neverModified = bulk.title === 'Last Modified' && name === '' && bulk.date == null;
 	if (neverModified) {
 		return <p className="text-sm text-secondary dark:text-zinc-400">—</p>;
 	}
-	const label = name || AUTO_GENERATED_LABEL;
+	const label = name || t(AUTO_GENERATED_LABEL);
 	return (
 		<div className="space-y-3">
 			<span className="flex min-w-0 items-center gap-2 text-sm text-body dark:text-zinc-300">
@@ -169,7 +172,7 @@ const ActivityBody = ({ bulk }: { bulk: SidePanelActivity }) => {
 			{bulk.date != null && (
 				<span className="flex items-center gap-2 text-sm text-body dark:text-zinc-300">
 					<CalendarIcon />
-					{formatDate(bulk.date, 'MMM DD, YYYY')}
+					{formatLocalizedDate(bulk.date, language)}
 				</span>
 			)}
 		</div>

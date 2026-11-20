@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Placeholders } from '@/assets/images/placeholders';
 import type { BreadcrumbItem } from '@/common/Breadcrumbs';
 import { Button } from '@/common/Button';
+import { HelpTooltip } from '@/common/HelpTooltip';
 import { EmptyState } from '@/common/EmptyState';
 import { Size, ButtonTheme } from '@/enums/button';
 import { Icon, IconName } from '@/common/icons';
@@ -41,7 +42,7 @@ import {
 	stagedTagIds,
 	syncTags,
 } from '@/lib/tags';
-import { sampleValuesEditable, sampleValuesReadOnlyHint } from '@/lib/column-types';
+import { sampleValuesEditable } from '@/lib/column-types';
 import { canEditEntity, changedOwnerId, entityOwnerSection, findOwner } from '@/lib/owners';
 import { fetchOwnerDirectory, ownerQueries } from '@/lib/queries/owners';
 import { OwnerPermission } from '@/types/owners';
@@ -105,17 +106,20 @@ const LOADING_SKELETON_CLASSNAMES = [
 	'hidden [@media(min-height:960px)]:block',
 ] as const;
 
-export const TermsLoadingSkeleton = () => (
-	<div
-		className="flex min-h-[calc(100dvh-11rem)] flex-col gap-4"
-		role="status"
-		aria-label="Loading terms"
-	>
-		{LOADING_SKELETON_CLASSNAMES.map((className, index) => (
-			<SkeletonCard key={index} className={className} rows={4} />
-		))}
-	</div>
-);
+export const TermsLoadingSkeleton = () => {
+	const { t } = useLanguage();
+	return (
+		<div
+			className="flex min-h-[calc(100dvh-11rem)] flex-col gap-4"
+			role="status"
+			aria-label={t('Loading terms')}
+		>
+			{LOADING_SKELETON_CLASSNAMES.map((className, index) => (
+				<SkeletonCard key={index} className={className} rows={4} />
+			))}
+		</div>
+	);
+};
 
 const TermCard = ({
 	term,
@@ -212,13 +216,13 @@ const TermCard = ({
 				<div className="border-r border-zinc-200 dark:border-zinc-700">
 					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
-							<T value={'SQL Attributes'} />
+							<T value={'Calculations'} />
 						</span>
 					</div>
 					<div className="flex items-center">
 						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
 							<span>
-								<T value={'SQL Attributes'} />
+								<T value={'Calculations'} />
 							</span>
 							<span className="ml-1.5 font-medium text-heading dark:text-zinc-100">
 								{sqlAttributeCount}
@@ -1003,7 +1007,9 @@ export const TermsView = () => {
 			if (focusId == null) {
 				return {
 					sections: [],
-					header: { header: { title: 'Column Attribute Not Found' } },
+					header: {
+						header: { title: 'Column Attribute Not Found', translateTitle: true },
+					},
 				};
 			}
 			// TODO: viewer zone-scoping handled in a separate PR — for now the
@@ -1020,7 +1026,9 @@ export const TermsView = () => {
 			if (attr == null) {
 				return {
 					sections: [],
-					header: { header: { title: 'Column Attribute Not Found' } },
+					header: {
+						header: { title: 'Column Attribute Not Found', translateTitle: true },
+					},
 				};
 			}
 			setColumnAttrs(attrs);
@@ -1055,7 +1063,7 @@ export const TermsView = () => {
 						title: 'Sample Values',
 						values: Array.isArray(attr.sample_values) ? attr.sample_values : [],
 						editable: samplesEditable,
-						hint: samplesEditable ? undefined : sampleValuesReadOnlyHint(attr.datatype),
+						readOnlySampleType: samplesEditable ? undefined : (attr.datatype ?? null),
 					},
 					{
 						type: ComposerSectionKind.ZONES_CHIPS,
@@ -1125,7 +1133,7 @@ export const TermsView = () => {
 			if (res.error || !res.data) {
 				return {
 					sections: [],
-					header: { header: { title: 'SQL Attribute Not Found' } },
+					header: { header: { title: 'SQL Attribute Not Found', translateTitle: true } },
 				};
 			}
 			const attr = res.data;
@@ -1208,7 +1216,7 @@ export const TermsView = () => {
 			if (res.error || !res.data) {
 				return {
 					sections: [],
-					header: { header: { title: 'Term Not Found' } },
+					header: { header: { title: 'Term Not Found', translateTitle: true } },
 				};
 			}
 			const term = res.data;
@@ -1258,6 +1266,8 @@ export const TermsView = () => {
 						type: ComposerSectionKind.ENTITY_CHIPS,
 						id: 'entities',
 						title: 'Entities',
+						helpText:
+							'These are the tables that store records for this term. Select a table name to see its fields.',
 						entities: (term.tables ?? []).map((table) => ({
 							id: table.id,
 							name: table.name,
@@ -1268,6 +1278,8 @@ export const TermsView = () => {
 						type: ComposerSectionKind.ZONES_CHIPS,
 						id: 'zones',
 						title: 'Zones',
+						helpText:
+							'Zones group data by business area, such as toll collection. This list shows the groups used by the fields or calculations of this term.',
 						zones: term.zones.map((z) => ({
 							id: z.id,
 							name: z.name,
@@ -1279,6 +1291,8 @@ export const TermsView = () => {
 						type: ComposerSectionKind.RELATED_TERMS_CHIPS,
 						id: 'related_terms',
 						title: 'Related Terms',
+						helpText:
+							'These are other terms that use a table this term also uses. Select a term to explore it. A count of 0 means no match was found.',
 						terms: relatedTerms.map((t) => ({
 							id: t.id,
 							name: t.name,
@@ -1311,11 +1325,11 @@ export const TermsView = () => {
 					{
 						type: ComposerSectionKind.DATA_TABLE,
 						id: 'sql_attributes',
-						title: 'SQL Attributes',
+						title: 'Calculations',
 						rowIdKey: 'id',
 						layout: 'fixed',
 						columns: [
-							{ key: 'name', label: 'Attribute Name', width: 'w-1/3' },
+							{ key: 'name', label: 'Calculation Name', width: 'w-1/3' },
 							{ key: 'description', label: 'Description', truncate: true },
 							{
 								key: 'certification',
@@ -1331,7 +1345,7 @@ export const TermsView = () => {
 							description: attr.description ?? '',
 							certification: attributeStatus(attr),
 						})),
-						emptyMessage: 'SQL Attribute Does Not Exist',
+						emptyMessage: 'No calculations yet',
 					},
 				],
 				leftPanel: entitySidePanel({
@@ -1497,7 +1511,7 @@ export const TermsView = () => {
 					onSubmit={handleSaveSqlEdit}
 					canSubmit={canSaveSqlEdit}
 					secondaryAction={{
-						label: sqlEditValidating ? 'Validating…' : 'Validate SQL',
+						label: sqlEditValidating ? __uiT('Validating…') : __uiT('Validate SQL'),
 						onClick: handleValidateSqlEdit,
 						disabled:
 							trimmedSqlEditValue.length === 0 ||
@@ -1611,17 +1625,24 @@ export const TermsView = () => {
 									</Button>
 								)}
 								{canEditCatalog ? (
-									<Button
-										theme={ButtonTheme.Primary}
-										size={Size.REGULAR}
-										type="button"
-										onClick={() => setCreateSqlAttrModalOpen(true)}
-										iconPosition="left"
-										shadow
+									<HelpTooltip
+										align="end"
+										text={__uiT(
+											'Use SQL to define how a value is calculated for this term, such as daily traffic at each toll station.',
+										)}
 									>
-										<Icon name={IconName.Plus} className="h-4 w-4" />
-										<T value={'Create New SQL Attribute'} />
-									</Button>
+										<Button
+											theme={ButtonTheme.Primary}
+											size={Size.REGULAR}
+											type="button"
+											onClick={() => setCreateSqlAttrModalOpen(true)}
+											iconPosition="left"
+											shadow
+										>
+											<Icon name={IconName.Plus} className="h-4 w-4" />
+											<T value={'Add Calculation'} />
+										</Button>
+									</HelpTooltip>
 								) : null}
 							</>
 						}
@@ -1648,25 +1669,25 @@ export const TermsView = () => {
 				<ModalCreateNewItem
 					open={createSqlAttrModalOpen}
 					onClose={handleCreateSqlAttrClose}
-					title={__uiT('Create New SQL Attribute')}
-					submitLabel={sqlAttrSubmitting ? __uiT('Creating…') : 'Create'}
+					title={__uiT('Add Calculation')}
+					submitLabel={sqlAttrSubmitting ? __uiT('Creating…') : __uiT('Create')}
 					onSubmit={handleCreateSqlAttr}
 					canSubmit={canCreateSqlAttr}
 					secondaryAction={{
-						label: sqlAttrValidating ? 'Validating…' : 'Validate SQL',
+						label: sqlAttrValidating ? __uiT('Validating…') : __uiT('Validate SQL'),
 						onClick: handleValidateSqlAttrSql,
 						disabled: trimmedSqlAttrSql.length === 0 || sqlAttrValidating,
 					}}
 				>
 					<div>
 						<label className={FIELD_LABEL_CLASSNAME}>
-							<T value={'Attribute Name'} />
+							<T value={'Calculation Name'} />
 						</label>
 						<input
 							type="text"
 							value={sqlAttrName}
 							onChange={(e) => setSqlAttrName(e.target.value)}
-							placeholder={__uiT('Attribute Name')}
+							placeholder={__uiT('Calculation Name')}
 							className={FIELD_INPUT_CLASSNAME}
 						/>
 					</div>

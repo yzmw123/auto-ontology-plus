@@ -126,7 +126,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 	const tableColumns: TableColumn<Column>[] = [
 		{
 			key: 'column',
-			header: 'Name',
+			header: __uiT('Name'),
 			cell: (row) => row.column_name,
 			title: (row) => row.column_name,
 			truncate: true,
@@ -152,10 +152,10 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 	];
 
 	const termTableColumns: TableColumn<TableExplorationDetails['terms'][number]>[] = [
-		{ key: 'name', header: 'Name', width: 'w-48', cell: (row) => row.name },
+		{ key: 'name', header: __uiT('Name'), width: 'w-48', cell: (row) => row.name },
 		{
 			key: 'description',
-			header: 'Description',
+			header: __uiT('Description'),
 			cell: (row) => row.description || 'No Description',
 			title: (row) => row.description ?? '',
 			truncate: true,
@@ -252,7 +252,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
 					/>
 					<Text as="h2" variant={TextVariant.Heading}>
-						{target?.name} ({title})
+						{target?.name} ({__uiT(title)})
 					</Text>
 				</div>
 				<Button

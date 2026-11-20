@@ -7,6 +7,7 @@ export enum ConnectionType {
 	DATABRICKS = 'databricks',
 	POSTGRESQL = 'postgresql',
 	MYSQL = 'mysql',
+	ORACLE = 'oracle',
 	SNOWFLAKE = 'snowflake',
 	HEAVYDB = 'heavydb',
 	KYUUBI = 'kyuubi',
@@ -18,6 +19,7 @@ export const connectionDisplayName: Record<ConnectionType, string> = {
 	[ConnectionType.DATABRICKS]: 'Databricks',
 	[ConnectionType.POSTGRESQL]: 'PostgreSQL',
 	[ConnectionType.MYSQL]: 'MySQL',
+	[ConnectionType.ORACLE]: 'Oracle',
 	[ConnectionType.SNOWFLAKE]: 'Snowflake',
 	[ConnectionType.HEAVYDB]: 'HeavyDB',
 	[ConnectionType.KYUUBI]: 'Apache Kyuubi',
@@ -39,6 +41,7 @@ export type ConnectionFieldKey =
 	| 'private_key'
 	| 'private_key_passphrase'
 	| 'database'
+	| 'service_name'
 	| 'protocol'
 	| 'ssa_url'
 	| 'truststore'
@@ -128,6 +131,23 @@ export const CONNECTION_FIELDS: Record<ConnectionType, ConnectionField[]> = {
 		{ key: 'user', label: 'User', placeholder: 'root' },
 		{ key: 'password', label: 'Password', secret: true },
 		{ key: 'database', label: 'Database', placeholder: 'my_database' },
+	],
+	[ConnectionType.ORACLE]: [
+		{ key: 'host', label: 'Host', placeholder: 'oracle.example.com' },
+		{ key: 'port', label: 'Port', placeholder: '1521', optional: true },
+		{
+			key: 'user',
+			label: 'User',
+			hint: 'Choose the schemas to scan after testing the connection.',
+		},
+		{ key: 'password', label: 'Password', secret: true },
+		{ key: 'service_name', label: 'Service Name', placeholder: 'ORCLPDB1' },
+		{
+			key: 'database',
+			label: 'Catalog Name',
+			placeholder: 'operations',
+			hint: 'Use a unique name for this data source in Auto Ontology.',
+		},
 	],
 	[ConnectionType.SNOWFLAKE]: [
 		{ key: 'account', label: 'Account', placeholder: 'xy12345.us-east-1' },

@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { requests } from './requests';
-import type { Connection } from '@/types/connection';
-import type { ConnectionInput } from '@/types/connection';
+import type { Connection, ConnectionInput, ConnectionScanOverview } from '@/types/connection';
 import type { ApiError, ApiResponse, ResponseWithCount } from './types';
 
 type CreateResponse = ApiError | { data: Connection };
@@ -21,6 +20,9 @@ export const connectionsApi = {
 
 	create: (input: ConnectionInput): Promise<CreateResponse> =>
 		requests.post<{ data: Connection }>('connections', { connection: input }),
+
+	scanOverview: () => requests.get<ConnectionScanOverview>('connections/scan'),
+	scan: (database: string) => requests.post<{ status: string }>('connections/scan', { database }),
 
 	test: async (input: ConnectionInput, replacing?: string): Promise<TestResponse> => {
 		const res = await requests.post<{ success: boolean; schemas?: string[] }>(

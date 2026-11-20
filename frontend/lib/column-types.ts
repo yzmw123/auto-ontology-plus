@@ -66,9 +66,16 @@ export const sampleValuesEditable = (dataType: string | null | undefined): boole
  * Note shown under a read-only sample list while the page is in edit mode, so
  * a column that stays read-only reads as deliberate rather than broken.
  */
-export const sampleValuesReadOnlyHint = (dataType: string | null | undefined): string => {
-	// Phrased around the type name rather than in front of it: "A integer" is
-	// what an indefinite article yields for half the type names there are.
-	const described = dataType?.trim() ? `typed ${dataType.trim()}` : 'with no declared type';
-	return `Sample values of a column ${described} are read-only — only text-typed columns (text, varchar, json, …) can be edited.`;
+export const sampleValuesReadOnlyHint = (
+	dataType: string | null,
+	t: (text: string, values?: Record<string, string | number>) => string,
+): string => {
+	const type = dataType?.trim();
+	return type
+		? t('Sample values for {type} columns are read-only. Only text columns can be edited.', {
+				type,
+			})
+		: t(
+				'Sample values for columns without a declared type are read-only. Only text columns can be edited.',
+			);
 };

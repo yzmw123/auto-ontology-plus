@@ -411,3 +411,34 @@ def global_search_count(
         data_ids=prepared.data_ids,
     )
     return {"data": counts}
+
+
+def browse_catalog(
+    *,
+    objects: list[str] | None,
+    tags: list[str] | None,
+    data: list[str] | None,
+    selected_type: str | None,
+    page: int,
+) -> dict[str, Any]:
+    types = resolve_object_types(objects)
+    if selected_type is not None:
+        resolve_object_types([selected_type])
+    if any(value == [] for value in (objects, tags, data)):
+        return {"data": [], "counts": {}, "page": 1, "page_size": 50}
+    tag_ids, untagged = resolve_tag_filter(tags)
+    rows, counts, effective_page = search_dal.browse_catalog(
+        types,
+        selected_type=selected_type,
+        tag_ids=tag_ids,
+        include_untagged=untagged,
+        data_ids=data or [],
+        page=page,
+        page_size=50,
+    )
+    return {
+        "data": [_normalize_item(row, synonym_tokens=[]) for row in rows],
+        "counts": counts,
+        "page": effective_page,
+        "page_size": 50,
+    }

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 from datetime import timedelta
 
@@ -41,16 +42,29 @@ class DataScheduler(IntervalScheduler):
 
     name = "ingest"
 
-    def __init__(self, interval: timedelta = INGEST_INTERVAL) -> None:
+    def __init__(
+        self,
+        interval: timedelta = INGEST_INTERVAL,
+        *,
+        work_lock: asyncio.Lock | None = None,
+    ) -> None:
         super().__init__(interval)
+        self._work_lock = work_lock if work_lock is not None else asyncio.Lock()
 
     async def _run_once(self) -> None:
+        if os.environ.get("AUTO_ONTOLOGY_SKIP_SCHEDULED_INGEST", "").lower() == "true":
+            logger.info("ingest: scheduled refresh disabled for this evaluation")
+            return
+        async with self._work_lock:
+            await self._ingest_all()
+
+    async def _ingest_all(self) -> None:
         # Reload connectors each pass so newly added connections are picked up
         # without a restart. get_connectors caches, so invalidate first; the
         # returned connectors carry each connection's schema allowlist and are
         # owned by the cache (run_ingest must not close them).
-        invalidate_connectors_cache()
-        connectors = get_connectors()
+        await asyncio.to_thread(invalidate_connectors_cache)
+        connectors = await asyncio.to_thread(get_connectors)
         if not connectors:
             logger.info(
                 "ingest: no connections configured. "

@@ -25,6 +25,7 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -37,6 +38,7 @@ from auto_ontology.env import load_env
 load_env()
 
 from auto_ontology.dal.schema_version import require_current_schema  # noqa: E402
+from auto_ontology.ingestion_service.connection_jobs import ConnectionJobs  # noqa: E402
 from auto_ontology.ingestion_service.config import (  # noqa: E402
     is_semantic_compilation_enabled,
 )
@@ -60,14 +62,18 @@ async def lifespan(app: FastAPI):
     # uvicorn owns SIGINT/SIGTERM; each scheduler exposes a stop() that unwinds
     # its in-flight wait promptly on shutdown. Schedulers are stored on
     # app.state so the router can trigger them on demand.
-    data_scheduler = DataScheduler()
+    work_lock = asyncio.Lock()
+    data_scheduler = DataScheduler(work_lock=work_lock)
     # Waits for the ingest scheduler's first pass before compiling (see
     # semantic_scheduler.py) so the two starting at the same moment on boot
     # can't race — otherwise the very first compile could run against a
     # catalog that ingest hasn't written yet.
-    semantic_scheduler = SemanticScheduler(depends_on=data_scheduler)
+    semantic_scheduler = SemanticScheduler(
+        depends_on=data_scheduler, work_lock=work_lock
+    )
     app.state.data_scheduler = data_scheduler
     app.state.semantic_scheduler = semantic_scheduler
+    app.state.connection_jobs = ConnectionJobs(semantic_scheduler, work_lock)
 
     data_scheduler.start()
     # Only start semantic compilation if it's enabled in settings. When a user
@@ -84,6 +90,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        await app.state.connection_jobs.wait()
         await data_scheduler.stop()
         await semantic_scheduler.stop()
         logger.info("ingestion_service: shutting down")

@@ -87,11 +87,11 @@ export const ConnectionConnectStep = ({
 										data-testid={`connection-field-${field.key}`}
 										className="h-4 w-4 rounded border-zinc-300 accent-[#76b900] dark:border-zinc-600"
 									/>
-									{field.label}
+									{__uiT(field.label)}
 								</span>
 								{field.hint != null && (
 									<span className="text-xs text-secondary dark:text-zinc-400">
-										{field.hint}
+										{__uiT(field.hint)}
 									</span>
 								)}
 							</label>
@@ -119,7 +119,7 @@ export const ConnectionConnectStep = ({
 						return (
 							<label key={field.key} className="flex flex-col gap-1.5">
 								<span className="text-sm font-medium text-heading dark:text-zinc-200">
-									{field.label}
+									{__uiT(field.label)}
 									{field.optional ? null : (
 										<span className="ml-0.5 text-red-500">*</span>
 									)}
@@ -140,7 +140,7 @@ export const ConnectionConnectStep = ({
 								)}
 								{field.hint != null && (
 									<span className="text-xs text-secondary dark:text-zinc-400">
-										{field.hint}
+										{__uiT(field.hint)}
 									</span>
 								)}
 							</label>
@@ -156,7 +156,7 @@ export const ConnectionConnectStep = ({
 					return (
 						<label key={field.key} className="flex flex-col gap-1.5">
 							<span className="text-sm font-medium text-heading dark:text-zinc-200">
-								{field.label}
+								{__uiT(field.label)}
 								{field.optional || keepsCurrent ? null : (
 									<span className="ml-0.5 text-red-500">*</span>
 								)}
@@ -193,7 +193,7 @@ export const ConnectionConnectStep = ({
 							)}
 							{field.hint != null && (
 								<span className="text-xs text-secondary dark:text-zinc-400">
-									{field.hint}
+									{__uiT(field.hint)}
 								</span>
 							)}
 						</label>

@@ -30,13 +30,30 @@ def _base_url() -> str:
     return url.rstrip("/")
 
 
-def trigger_ingest(connection: dict[str, Any]) -> None:
+def trigger_ingest(
+    connection: dict[str, Any], *, compile_ontology: bool = False
+) -> bool:
     """Ask the ingestion service to ingest a connection (best-effort)."""
     url = f"{_base_url()}/ingest"
     try:
-        httpx.post(url, json=connection, timeout=_REQUEST_TIMEOUT).raise_for_status()
+        httpx.post(
+            url,
+            json={
+                "database": connection["database"],
+                "compile_ontology": compile_ontology,
+            },
+            timeout=_REQUEST_TIMEOUT,
+        ).raise_for_status()
+        return True
     except Exception:
         logger.exception("Failed to trigger ingest via %s", url)
+        return False
+
+
+def connection_scan_status() -> dict[str, str]:
+    response = httpx.get(f"{_base_url()}/ingest/status", timeout=_REQUEST_TIMEOUT)
+    response.raise_for_status()
+    return response.json()
 
 
 def trigger_semantic_compile() -> None:

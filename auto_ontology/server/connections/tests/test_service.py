@@ -37,6 +37,7 @@ def test_create_connection_persists_connection_without_vault() -> None:
     connection = _snowflake_connection()
 
     with (
+        patch.object(service, "lock_connection_name"),
         patch.object(service, "_database_already_connected", return_value=False),
         patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection") as insert_connection,
@@ -356,6 +357,7 @@ def test_create_connection_drops_the_schema_shorthand() -> None:
     connection = _databricks_connection(schema="sales", schemas=["sales"])
 
     with (
+        patch.object(service, "lock_connection_name"),
         patch.object(service, "_database_already_connected", return_value=False),
         patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection") as insert_connection,

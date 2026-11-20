@@ -361,7 +361,13 @@ def check_query(ctx: ToolContext, connector: SQLDatabase, sql: str) -> CheckResu
     if bound := bound_catalog(connector):
         if problems := foreign_catalogs(check.statement, bound):
             return CheckResult(problems, check.statement)
-    return CheckResult(tables_not_shown(check.statement, ctx, catalog), check.statement)
+    problems = tables_not_shown(check.statement, ctx, catalog)
+    model = ctx.field_models.get(getattr(connector, "database_name", None))
+    if model and not problems:
+        from .field_checks import check_field_rules
+
+        problems = check_field_rules(check.statement, model, ctx.question)
+    return CheckResult(problems, check.statement)
 
 
 def connector_for(ctx: ToolContext) -> SQLDatabase | None:

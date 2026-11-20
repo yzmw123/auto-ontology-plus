@@ -469,6 +469,14 @@ def upsert_table_term(
             f"{name} ({table_id})",
         )
 
+        if store().query_read(
+            select(s.retired_term.c.term_id).where(
+                s.retired_term.c.table_ids.any(table_id),
+                s.retired_term.c.name.in_(candidate_names),
+            )
+        ):
+            return None
+
         for candidate_name in candidate_names:
             existing = store().query_read(
                 select(s.term.c.id, s.table__term.c.table_id)

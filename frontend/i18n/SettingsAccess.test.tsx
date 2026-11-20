@@ -47,7 +47,7 @@ describe('settings access', () => {
 		await act(async () =>
 			root.render(
 				<LanguageProvider>
-					<SettingsNav connectionsEnvManaged={false} isAdmin={false} />
+					<SettingsNav isAdmin={false} />
 				</LanguageProvider>,
 			),
 		);
@@ -69,17 +69,18 @@ describe('settings access', () => {
 
 	it('keeps the administrative settings visible to an admin', async () => {
 		mocks.role = 'admin';
-		mocks.readConnections.mockResolvedValue(false);
+		mocks.readConnections.mockResolvedValue(true);
 		await expect(SettingsPage()).rejects.toThrow('redirect:/settings/connections');
 		const container = document.getElementById('root')!;
 		const root = createRoot(container);
 		await act(async () =>
 			root.render(
 				<LanguageProvider>
-					<SettingsNav connectionsEnvManaged={false} isAdmin />
+					<SettingsNav isAdmin />
 				</LanguageProvider>,
 			),
 		);
+		expect(container.querySelector('a[href="/settings/connections"]')).not.toBeNull();
 		expect(container.querySelector('a[href="/settings/users"]')).not.toBeNull();
 		expect(container.querySelector('a[href="/settings/language"]')).not.toBeNull();
 		await act(async () => root.unmount());

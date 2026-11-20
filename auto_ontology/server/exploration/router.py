@@ -27,7 +27,24 @@ from auto_ontology.server.responses import (
     TermExplorationDetailsResponse,
 )
 
+from auto_ontology.dal import field_model
+from auto_ontology.server.exploration.field_rules import router as field_rules_router
+
 router = APIRouter()
+router.include_router(field_rules_router)
+
+
+def _project(graph, semantic, database_id):
+    name = None
+    if database_id:
+        rows = field_model.read(
+            "SELECT name FROM catalog_database WHERE id=:id", id=database_id
+        )
+        if not rows:
+            return graph
+        name = rows[0]["name"]
+    return field_model.project_graph(graph, semantic, field_model.effective_model(name))
+
 
 _DATA_GRAPH_LIMIT_QUERY = Query(
     default=service.MAX_EXPLORATION_GRAPH_NODES,
@@ -86,8 +103,12 @@ def get_data_exploration_graph(
     is returned and *limit* is ignored.
     """
     return {
-        "data": service.fetch_data_exploration_graph(
-            zone_ids=None, limit=limit, database_id=database_id
+        "data": _project(
+            service.fetch_data_exploration_graph(
+                zone_ids=None, limit=limit, database_id=database_id
+            ),
+            False,
+            database_id,
         )
     }
 
@@ -210,13 +231,7 @@ def get_exploration_node_relationships(
 ) -> dict:
     """Return one ordered page of nodes related to ``node_id``."""
     return {
-        "data": service.fetch_exploration_related_nodes(
-            node_id,
-            layer,
-            zone_ids=None,
-            skip=skip,
-            limit=limit,
-        )
+        "data": field_model.related_nodes(node_id, layer == "semantic", skip, limit)
     }
 
 
@@ -247,9 +262,11 @@ def get_semantic_exploration_graph(
     in that database is returned and *limit* is ignored.
     """
     return {
-        "data": service.fetch_semantic_exploration_graph(
-            zone_ids=None,
-            limit=limit,
-            database_id=database_id,
+        "data": _project(
+            service.fetch_semantic_exploration_graph(
+                zone_ids=None, limit=limit, database_id=database_id
+            ),
+            True,
+            database_id,
         )
     }

@@ -36,6 +36,18 @@ const withDefaults = (payload: GlobalSearchRequest): GlobalSearchRequest => ({
 });
 
 export const searchApi = {
+	browse: (
+		filters: GlobalSearchRequest['filters'],
+		selectedType: string | null,
+		page: number,
+		controller?: AbortController,
+	) =>
+		requests.post<{
+			data: GlobalSearchItem[];
+			counts: Record<string, number>;
+			page: number;
+			page_size: number;
+		}>('search/browse', { filters, selected_type: selectedType, page }, controller),
 	globalSearch: (
 		payload: GlobalSearchRequest,
 		abortController?: AbortController,

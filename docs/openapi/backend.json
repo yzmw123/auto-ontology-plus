@@ -19,6 +19,66 @@
         "title": "Body_import_model_api_model_import_post",
         "type": "object"
       },
+      "CatalogBrowseRequest": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/GlobalSearchFilters"
+          },
+          "page": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "selected_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Type"
+          }
+        },
+        "title": "CatalogBrowseRequest",
+        "type": "object"
+      },
+      "CatalogBrowseResponse": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/GlobalSearchItem"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "counts",
+          "page",
+          "page_size"
+        ],
+        "title": "CatalogBrowseResponse",
+        "type": "object"
+      },
       "ChatCancelResponse": {
         "additionalProperties": true,
         "properties": {
@@ -94,6 +154,66 @@
           "question"
         ],
         "title": "ChatRequest",
+        "type": "object"
+      },
+      "Classification": {
+        "properties": {
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/Condition"
+            },
+            "maxItems": 24,
+            "minItems": 1,
+            "title": "Conditions",
+            "type": "array"
+          },
+          "display_columns": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 512,
+            "title": "Display Columns",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "table_id": {
+            "title": "Table Id",
+            "type": "string"
+          },
+          "term_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term Id"
+          }
+        },
+        "required": [
+          "name",
+          "table_id",
+          "conditions"
+        ],
+        "title": "Classification",
         "type": "object"
       },
       "ColumnAttribute": {
@@ -896,6 +1016,31 @@
         "title": "ColumnSummary",
         "type": "object"
       },
+      "Condition": {
+        "properties": {
+          "column": {
+            "title": "Column",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "column",
+          "values"
+        ],
+        "title": "Condition",
+        "type": "object"
+      },
       "ConnectionBody": {
         "properties": {
           "connection": {
@@ -908,6 +1053,38 @@
           "connection"
         ],
         "title": "ConnectionBody",
+        "type": "object"
+      },
+      "ConnectionCreateBody": {
+        "properties": {
+          "compile_ontology": {
+            "default": false,
+            "title": "Compile Ontology",
+            "type": "boolean"
+          },
+          "connection": {
+            "additionalProperties": true,
+            "title": "Connection",
+            "type": "object"
+          }
+        },
+        "required": [
+          "connection"
+        ],
+        "title": "ConnectionCreateBody",
+        "type": "object"
+      },
+      "ConnectionScanBody": {
+        "properties": {
+          "database": {
+            "title": "Database",
+            "type": "string"
+          }
+        },
+        "required": [
+          "database"
+        ],
+        "title": "ConnectionScanBody",
         "type": "object"
       },
       "ConnectionTestBody": {
@@ -1774,6 +1951,13 @@
         "additionalProperties": true,
         "description": "Two tables connected by a shared SQL query and/or a foreign key.\n\n``queries`` is empty for an edge that exists only because of a foreign\nkey; ``foreign_keys`` is empty for a SQL-only edge. ``relationship_types``\nnames the relationship kind(s) behind the edge (``SQL`` and/or\n``FOREIGN_KEY``), for labeling the connection in the graph.",
         "properties": {
+          "field_references": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field References",
+            "type": "array"
+          },
           "foreign_keys": {
             "items": {
               "$ref": "#/components/schemas/ForeignKeyRef"
@@ -2337,6 +2521,13 @@
         "additionalProperties": true,
         "description": "An undirected term\u2194term link (two terms sharing at least one table).\n\n``relationship_types`` names the relationship kind(s)\n(``REPRESENTS``, ``HAS_ATTRIBUTE``, ``SEMANTIC_FK``) connecting either\nterm to a table they share, for labeling the connection in the graph.",
         "properties": {
+          "field_references": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field References",
+            "type": "array"
+          },
           "relationship_types": {
             "items": {
               "type": "string"
@@ -3342,6 +3533,84 @@
         "title": "PublicConnection",
         "type": "object"
       },
+      "Reference": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "pairs": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "type": "array"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Pairs",
+            "type": "array"
+          },
+          "source_table": {
+            "title": "Source Table",
+            "type": "string"
+          },
+          "source_term": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Term"
+          },
+          "target_table": {
+            "title": "Target Table",
+            "type": "string"
+          },
+          "target_term": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Term"
+          },
+          "version": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "source_table",
+          "target_table",
+          "pairs"
+        ],
+        "title": "Reference",
+        "type": "object"
+      },
       "Rule": {
         "additionalProperties": true,
         "description": "A saved search, and the tags to apply to everything it matches.\n\n``search_term``, ``text_match_option`` and ``filters`` are the global-search\nrequest the rule replays; together they are what the rule *is*, which is why\nthey are required rather than optional like most of this module \u2014 a rule\nmissing any of the three matches nothing.\n\n``tags`` carry the name to show and the id to act by, both read from the tag\ntable on every read rather than from what the write that saved them sent \u2014\nso a renamed tag reads back renamed here, and a caller posting whole tag\nobjects is answered with the tags as they are rather than as it sent them.\nSee ``RuleTagRef`` in ``auto_ontology/server/rules/router.py``. The ids are checked\nagainst that table, so a rule cannot apply a tag that does not exist.\n\n``created_by`` is the id of the user who saved it, read from the trusted\ngateway header rather than from the request body \u2014 see\n``auto_ontology/server/chat/identity.py``. ``modified_by`` is the same for whoever\nlast renamed it, and null until somebody has \u2014 which is the same fact as\n``modified`` still equalling ``created``, and null again for a rename whose\nrequest carried no identity to record.\n\n``created`` and ``modified`` follow the convention :class:`Tag` sets: a\ntimezone-aware ``datetime`` serialised as ISO 8601, from one clock.",
@@ -3614,6 +3883,17 @@
         "additionalProperties": true,
         "description": "A term on the semantic-layer exploration graph.",
         "properties": {
+          "classification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification"
+          },
           "column_attributes_count": {
             "anyOf": [
               {
@@ -6507,7 +6787,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ConnectionBody"
+                "$ref": "#/components/schemas/ConnectionCreateBody"
               }
             }
           },
@@ -6536,6 +6816,85 @@
           }
         },
         "summary": "Create Connection",
+        "tags": [
+          "connections"
+        ]
+      }
+    },
+    "/api/connections/scan": {
+      "get": {
+        "description": "Report connection scan progress and deployment-managed database names.",
+        "operationId": "scan_status_api_connections_scan_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "title": "Response Scan Status Api Connections Scan Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Scan Status",
+        "tags": [
+          "connections"
+        ]
+      },
+      "post": {
+        "description": "Scan and build one configured source without resetting its ontology.",
+        "operationId": "scan_connection_api_connections_scan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionScanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scan Connection",
         "tags": [
           "connections"
         ]
@@ -7249,6 +7608,320 @@
           }
         },
         "summary": "Get Data Exploration Graph",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model": {
+      "get": {
+        "operationId": "workspace_api_exploration_model_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Workspace",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model/classifications": {
+      "post": {
+        "operationId": "set_classification_api_exploration_model_classifications_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Classification"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Classification",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model/references": {
+      "post": {
+        "operationId": "add_reference_api_exploration_model_references_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reference"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Reference",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model/references/{key}": {
+      "delete": {
+        "operationId": "remove_reference_api_exploration_model_references__key__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Reference",
+        "tags": [
+          "exploration"
+        ]
+      },
+      "put": {
+        "operationId": "edit_reference_api_exploration_model_references__key__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reference"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Reference",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model/tables/{table_id}/columns": {
+      "get": {
+        "operationId": "field_columns_api_exploration_model_tables__table_id__columns_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table_id",
+            "required": true,
+            "schema": {
+              "title": "Table Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Field Columns",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model/terms/{term_id}": {
+      "delete": {
+        "operationId": "delete_term_api_exploration_model_terms__term_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "term_id",
+            "required": true,
+            "schema": {
+              "title": "Term Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Term",
+        "tags": [
+          "exploration"
+        ]
+      }
+    },
+    "/api/exploration/model/terms/{term_id}/impact": {
+      "get": {
+        "operationId": "deletion_impact_api_exploration_model_terms__term_id__impact_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "term_id",
+            "required": true,
+            "schema": {
+              "title": "Term Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Deletion Impact",
         "tags": [
           "exploration"
         ]
@@ -8663,6 +9336,48 @@
         "tags": [
           "datasources",
           "connectors"
+        ]
+      }
+    },
+    "/api/search/browse": {
+      "post": {
+        "description": "Browse visible catalog objects by type, tag and data source, 50 per page.",
+        "operationId": "browse_catalog_api_search_browse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogBrowseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogBrowseResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Browse Catalog",
+        "tags": [
+          "search"
         ]
       }
     },

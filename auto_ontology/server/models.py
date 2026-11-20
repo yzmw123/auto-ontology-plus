@@ -736,6 +736,7 @@ class ExplorationEdge(ApiModel):
     source: str
     target: str
     queries: list[str] = Field(default_factory=list)
+    field_references: list[str] = Field(default_factory=list)
     via_foreign_key: bool = False
     foreign_keys: list[ForeignKeyRef] = Field(default_factory=list)
     relationship_types: list[str] = Field(default_factory=list)
@@ -780,11 +781,14 @@ class GraphLink(ApiModel):
 
     source: str
     target: str
+    field_references: list[str] = Field(default_factory=list)
     relationship_types: list[str] = Field(default_factory=list)
 
 
 class SemanticGraphNode(ApiModel):
     """A term on the semantic-layer exploration graph."""
+
+    classification: str | None = None
 
     id: str
     name: str | None = None

@@ -96,7 +96,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/acronyms/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\acronyms\\route.ts",
         "x-auto-ontology-permissions": {
           "acronym": ["read"]
         },
@@ -181,7 +181,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/acronyms/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\acronyms\\route.ts",
         "x-auto-ontology-permissions": {
           "acronym": ["create"]
         },
@@ -224,7 +224,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/acronyms/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\acronyms\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "acronym": ["delete"]
         },
@@ -319,7 +319,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/acronyms/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\acronyms\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "acronym": ["update"]
         },
@@ -333,6 +333,55 @@
         "description": "Viewing the analytics report requires the analytics:read permission (admin).",
         "operationId": "get_api_analytics",
         "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Inclusive question timestamp, with time zone.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Exclusive upper bound on the question timestamp, with time zone.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive substring of a user name or email.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "description": "Exact channel stored on the question log.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeSources",
+            "in": "query",
+            "required": false,
+            "description": "Include the distinct channel names available for filtering.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
           {
             "name": "skip",
             "in": "query",
@@ -358,7 +407,7 @@
         ],
         "responses": {
           "200": {
-            "description": "One page of the trailing 30-day question log, newest first. `total` counts the whole window, not the page.",
+            "description": "Matching question logs, newest first. With no date bounds the window defaults to the last 30 days. Total counts all matching rows before pagination.",
             "content": {
               "application/json": {
                 "schema": {
@@ -458,9 +507,32 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
                   },
                   "required": ["data", "total"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid date bounds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"],
                   "additionalProperties": false
                 }
               }
@@ -478,9 +550,81 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/analytics/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\analytics\\route.ts",
         "x-auto-ontology-permissions": {
           "analytics": ["read"]
+        },
+        "x-auto-ontology-proxied": false
+      }
+    },
+    "/api/analytics/{id}": {
+      "delete": {
+        "tags": ["analytics"],
+        "operationId": "delete_api_analytics_id_",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The analytics record is absent, including after a repeated deletion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": ["id"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid analytics record ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\analytics\\[id]\\route.ts",
+        "x-auto-ontology-permissions": {
+          "analytics": ["delete"]
         },
         "x-auto-ontology-proxied": false
       }
@@ -584,7 +728,7 @@
             "SessionCookie": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/api-tokens/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\api-tokens\\route.ts",
         "x-auto-ontology-permissions": {
           "apiToken": ["manage"]
         },
@@ -715,7 +859,7 @@
             "SessionCookie": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/api-tokens/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\api-tokens\\route.ts",
         "x-auto-ontology-permissions": {
           "apiToken": ["manage"]
         },
@@ -726,7 +870,7 @@
       "delete": {
         "tags": ["api-tokens"],
         "summary": "Revoke a token.",
-        "description": "Revoke a token. Deletion is immediate and irreversible — the next request\ncarrying that token fails to resolve a user and gets a 401. The plugin scopes\nthe delete to the session user, so `id` can only ever name the caller's own\ntoken; an id belonging to someone else reads back as \"not found\".",
+        "description": "Revoke a token. Deletion is immediate and irreversible — the next request\rcarrying that token fails to resolve a user and gets a 401. The plugin scopes\rthe delete to the session user, so `id` can only ever name the caller's own\rtoken; an id belonging to someone else reads back as \"not found\".",
         "operationId": "delete_api_api_tokens_id_",
         "parameters": [
           {
@@ -772,7 +916,7 @@
             "SessionCookie": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/api-tokens/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\api-tokens\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "apiToken": ["manage"]
         },
@@ -815,7 +959,7 @@
           }
         },
         "security": [],
-        "x-auto-ontology-source": "frontend/app/api/auth/[...all]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\auth\\[...all]\\route.ts",
         "x-auto-ontology-permissions": "public",
         "x-auto-ontology-proxied": false
       },
@@ -854,7 +998,7 @@
           }
         },
         "security": [],
-        "x-auto-ontology-source": "frontend/app/api/auth/[...all]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\auth\\[...all]\\route.ts",
         "x-auto-ontology-permissions": "public",
         "x-auto-ontology-proxied": false
       }
@@ -924,7 +1068,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/chat/cancel/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\chat\\cancel\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["write"]
         },
@@ -1048,7 +1192,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/chat/completions/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\chat\\completions\\route.ts",
         "x-auto-ontology-permissions": {
           "chat": ["use"]
         },
@@ -1131,7 +1275,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/chat/watch/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\chat\\watch\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["read"]
         },
@@ -1221,7 +1365,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/columns/[table_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\columns\\[table_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -1264,7 +1408,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/distinct-value-probing/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\distinct-value-probing\\route.ts",
         "x-auto-ontology-permissions": {
           "semanticCompilation": ["read"]
         },
@@ -1325,7 +1469,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/distinct-value-probing/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\distinct-value-probing\\route.ts",
         "x-auto-ontology-permissions": {
           "semanticCompilation": ["manage"]
         },
@@ -1368,7 +1512,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/pii-detection/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\pii-detection\\route.ts",
         "x-auto-ontology-permissions": {
           "pii": ["read"]
         },
@@ -1429,7 +1573,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/pii-detection/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\pii-detection\\route.ts",
         "x-auto-ontology-permissions": {
           "pii": ["manage"]
         },
@@ -1472,7 +1616,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/semantic-compilation/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\semantic-compilation\\route.ts",
         "x-auto-ontology-permissions": {
           "semanticCompilation": ["read"]
         },
@@ -1530,7 +1674,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/semantic-compilation/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\semantic-compilation\\route.ts",
         "x-auto-ontology-permissions": {
           "semanticCompilation": ["manage"]
         },
@@ -1576,7 +1720,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/sql-query-timeout/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\sql-query-timeout\\route.ts",
         "x-auto-ontology-permissions": {
           "visualization": ["read"]
         },
@@ -1642,7 +1786,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/sql-query-timeout/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\sql-query-timeout\\route.ts",
         "x-auto-ontology-permissions": {
           "visualization": ["manage"]
         },
@@ -1685,7 +1829,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/visualization/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\visualization\\route.ts",
         "x-auto-ontology-permissions": {
           "visualization": ["read"]
         },
@@ -1743,7 +1887,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/configurations/visualization/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\configurations\\visualization\\route.ts",
         "x-auto-ontology-permissions": {
           "visualization": ["manage"]
         },
@@ -1779,7 +1923,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["read"]
         },
@@ -1792,7 +1936,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ConnectionBody"
+                "$ref": "#/components/schemas/ConnectionCreateBody"
               }
             }
           },
@@ -1833,7 +1977,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["manage"]
         },
@@ -1892,7 +2036,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/[database_name]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\[database_name]\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["manage"]
         },
@@ -1959,7 +2103,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/[database_name]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\[database_name]\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["manage"]
         },
@@ -2028,7 +2172,114 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/[database_name]/sso-federation/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\[database_name]\\sso-federation\\route.ts",
+        "x-auto-ontology-permissions": {
+          "connection": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/connections/scan": {
+      "get": {
+        "description": "Report connection scan progress and deployment-managed database names.",
+        "operationId": "get_api_connections_scan",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "title": "Response Scan Status Api Connections Scan Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          }
+        },
+        "summary": "Scan Status",
+        "tags": ["connections"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\scan\\route.ts",
+        "x-auto-ontology-permissions": {
+          "connection": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      },
+      "post": {
+        "description": "Scan and build one configured source without resetting its ontology.",
+        "operationId": "post_api_connections_scan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionScanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scan Connection",
+        "tags": ["connections"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\scan\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["manage"]
         },
@@ -2065,7 +2316,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/source/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\source\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["read"]
         },
@@ -2121,7 +2372,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/connections/test/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\connections\\test\\route.ts",
         "x-auto-ontology-permissions": {
           "connection": ["manage"]
         },
@@ -2189,7 +2440,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/conversations/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\conversations\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["read"]
         },
@@ -2268,7 +2519,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/conversations/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\conversations\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["write"]
         },
@@ -2325,7 +2576,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/conversations/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\conversations\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["delete"]
         },
@@ -2476,7 +2727,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/conversations/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\conversations\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["read"]
         },
@@ -2583,7 +2834,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/conversations/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\conversations\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["write"]
         },
@@ -2741,7 +2992,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/conversations/[id]/messages/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\conversations\\[id]\\messages\\route.ts",
         "x-auto-ontology-permissions": {
           "conversation": ["write"]
         },
@@ -2840,7 +3091,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-analyses/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-analyses\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["read"]
         },
@@ -2894,7 +3145,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-analyses/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-analyses\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -2951,7 +3202,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-analyses/[analysis_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-analyses\\[analysis_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -3016,7 +3267,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-analyses/[analysis_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-analyses\\[analysis_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -3072,7 +3323,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-analyses/validate/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-analyses\\validate\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -3122,7 +3373,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-prompts/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-prompts\\route.ts",
         "x-auto-ontology-permissions": {
           "prompt": ["read"]
         },
@@ -3183,7 +3434,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-prompts/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-prompts\\route.ts",
         "x-auto-ontology-permissions": {
           "prompt": ["create"]
         },
@@ -3226,7 +3477,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-prompts/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-prompts\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "prompt": ["delete"]
         },
@@ -3299,7 +3550,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-prompts/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-prompts\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "prompt": ["read"]
         },
@@ -3374,7 +3625,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/custom-prompts/[id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\custom-prompts\\[id]\\route.ts",
         "x-auto-ontology-permissions": {
           "prompt": ["update"]
         },
@@ -3410,7 +3661,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/datasources/dbs/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\datasources\\dbs\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3500,7 +3751,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/column-attributes/[attr_id]/details/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\column-attributes\\[attr_id]\\details\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3557,7 +3808,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/columns/[column_id]/details/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\columns\\[column_id]\\details\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3593,7 +3844,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/edges/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\edges\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3672,9 +3923,435 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/graph/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\graph\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model": {
+      "get": {
+        "operationId": "get_api_exploration_model",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          }
+        },
+        "summary": "Workspace",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["read"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model/classifications": {
+      "post": {
+        "operationId": "post_api_exploration_model_classifications",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Classification"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Classification",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\classifications\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["edit"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model/references": {
+      "post": {
+        "operationId": "post_api_exploration_model_references",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reference"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Reference",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\references\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["edit"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model/references/{key}": {
+      "delete": {
+        "operationId": "delete_api_exploration_model_references_key_",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Reference",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\references\\[key]\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["edit"]
+        },
+        "x-auto-ontology-proxied": true
+      },
+      "put": {
+        "operationId": "put_api_exploration_model_references_key_",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reference"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit Reference",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\references\\[key]\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["edit"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model/tables/{table_id}/columns": {
+      "get": {
+        "operationId": "get_api_exploration_model_tables_table_id_columns",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table_id",
+            "required": true,
+            "schema": {
+              "title": "Table Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Field Columns",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\tables\\[table_id]\\columns\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["read"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model/terms/{term_id}": {
+      "delete": {
+        "operationId": "delete_api_exploration_model_terms_term_id_",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "term_id",
+            "required": true,
+            "schema": {
+              "title": "Term Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Term",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\terms\\[term_id]\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["edit"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/exploration/model/terms/{term_id}/impact": {
+      "get": {
+        "operationId": "get_api_exploration_model_terms_term_id_impact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "term_id",
+            "required": true,
+            "schema": {
+              "title": "Term Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Deletion Impact",
+        "tags": ["exploration"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\model\\terms\\[term_id]\\impact\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["edit"]
         },
         "x-auto-ontology-proxied": true
       }
@@ -3776,7 +4453,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/nodes/[node_id]/relationships/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\nodes\\[node_id]\\relationships\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3855,7 +4532,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/semantic-graph/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\semantic-graph\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3912,7 +4589,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/sql-attributes/[attr_id]/details/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\sql-attributes\\[attr_id]\\details\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -3969,7 +4646,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/sql/[sql_id]/details/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\sql\\[sql_id]\\details\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -4059,7 +4736,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/tables/[table_id]/details/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\tables\\[table_id]\\details\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -4095,7 +4772,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/tables/zones/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\tables\\zones\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -4185,7 +4862,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/terms/[term_id]/details/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\terms\\[term_id]\\details\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -4251,7 +4928,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/exploration/terms/[term_id]/path/[other_term_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\exploration\\terms\\[term_id]\\path\\[other_term_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -4287,7 +4964,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/groups/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\groups\\route.ts",
         "x-auto-ontology-permissions": {
           "group": ["read"]
         },
@@ -4341,7 +5018,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/groups/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\groups\\route.ts",
         "x-auto-ontology-permissions": {
           "group": ["manage"]
         },
@@ -4398,7 +5075,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/groups/[group_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\groups\\[group_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "group": ["manage"]
         },
@@ -4453,7 +5130,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/groups/[group_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\groups\\[group_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "group": ["read"]
         },
@@ -4518,7 +5195,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/groups/[group_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\groups\\[group_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "group": ["manage"]
         },
@@ -4630,7 +5307,7 @@
           }
         },
         "security": [],
-        "x-auto-ontology-source": "frontend/app/api/health/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\health\\route.ts",
         "x-auto-ontology-permissions": "public",
         "x-auto-ontology-proxied": false
       }
@@ -4725,7 +5402,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/invitations/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\invitations\\route.ts",
         "x-auto-ontology-permissions": {
           "user": ["list"]
         },
@@ -4802,7 +5479,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/invitations/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\invitations\\route.ts",
         "x-auto-ontology-permissions": {
           "user": ["create"]
         },
@@ -4859,7 +5536,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/invitations/[token]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\invitations\\[token]\\route.ts",
         "x-auto-ontology-permissions": {
           "user": ["delete"]
         },
@@ -4930,7 +5607,7 @@
           }
         },
         "security": [],
-        "x-auto-ontology-source": "frontend/app/api/invitations/[token]/accept/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\invitations\\[token]\\accept\\route.ts",
         "x-auto-ontology-permissions": "public",
         "x-auto-ontology-proxied": false
       }
@@ -5000,7 +5677,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/invitations/reset/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\invitations\\reset\\route.ts",
         "x-auto-ontology-permissions": {
           "user": ["set-password"]
         },
@@ -5062,7 +5739,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/model/export/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\model\\export\\route.ts",
         "x-auto-ontology-permissions": {
           "modelInterchange": ["export"]
         },
@@ -5139,7 +5816,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/model/import/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\model\\import\\route.ts",
         "x-auto-ontology-permissions": {
           "modelInterchange": ["import"]
         },
@@ -5216,7 +5893,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/nodes/[node_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\nodes\\[node_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -5252,7 +5929,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/owners/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\owners\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -5351,7 +6028,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/pql-analyses/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\pql-analyses\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["read"]
         },
@@ -5405,7 +6082,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/pql-analyses/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\pql-analyses\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -5462,7 +6139,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/pql-analyses/[analysis_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\pql-analyses\\[analysis_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -5527,7 +6204,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/pql-analyses/[analysis_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\pql-analyses\\[analysis_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "analysis": ["manage"]
         },
@@ -5583,7 +6260,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/question-entity-coverage/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\question-entity-coverage\\route.ts",
         "x-auto-ontology-permissions": {
           "chat": ["use"]
         },
@@ -5682,7 +6359,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/rules/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\rules\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -5736,7 +6413,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/rules/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\rules\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -5805,7 +6482,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/rules/[rule_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\rules\\[rule_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -5870,7 +6547,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/rules/[rule_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\rules\\[rule_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -5935,7 +6612,63 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/schemas/[db_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\schemas\\[db_id]\\route.ts",
+        "x-auto-ontology-permissions": {
+          "catalog": ["read"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/search/browse": {
+      "post": {
+        "description": "Browse visible catalog objects by type, tag and data source, 50 per page.",
+        "operationId": "post_api_search_browse",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogBrowseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogBrowseResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Browse Catalog",
+        "tags": ["search"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend\\app\\api\\search\\browse\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -5991,7 +6724,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/search/global-search/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\search\\global-search\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -6047,7 +6780,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/search/global-search/count/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\search\\global-search\\count\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -6083,7 +6816,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/semantic-compilation/reset/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\semantic-compilation\\reset\\route.ts",
         "x-auto-ontology-permissions": {
           "semanticCompilation": ["manage"]
         },
@@ -6119,7 +6852,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/semantic-compilation/status/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\semantic-compilation\\status\\route.ts",
         "x-auto-ontology-permissions": {
           "chat": ["use"]
         },
@@ -6175,7 +6908,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["edit"]
         },
@@ -6232,7 +6965,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/[attr_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\[attr_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["edit"]
         },
@@ -6287,7 +7020,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/[attr_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\[attr_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -6352,7 +7085,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/[attr_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\[attr_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["edit"]
         },
@@ -6417,7 +7150,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/[attr_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\[attr_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["edit"]
         },
@@ -6474,7 +7207,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/[attr_id]/description-suggestion/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\[attr_id]\\description-suggestion\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["edit"]
         },
@@ -6530,7 +7263,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sql-attributes/validate/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sql-attributes\\validate\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -6541,7 +7274,7 @@
       "get": {
         "tags": ["sso-discovery"],
         "summary": "Resolve an OIDC issuer's discovery document, admin-only.",
-        "description": "Resolve an OIDC issuer's discovery document, admin-only.\n\nThe document is fetched server-side and relayed as the endpoints the SSO\nregistration form needs.\n\nResolving the endpoints here (instead of letting Better Auth's SSO plugin\nauto-discover from the issuer) lets us register providers with\n`skipDiscovery: true`. For public IdPs that path requires no `trustedOrigins`\nentry, so admins can add any provider without per-provider config.\n\nGated on sso:manage (admin) — it's an outbound fetch proxy.",
+        "description": "Resolve an OIDC issuer's discovery document, admin-only.\r\rThe document is fetched server-side and relayed as the endpoints the SSO\rregistration form needs.\r\rResolving the endpoints here (instead of letting Better Auth's SSO plugin\rauto-discover from the issuer) lets us register providers with\r`skipDiscovery: true`. For public IdPs that path requires no `trustedOrigins`\rentry, so admins can add any provider without per-provider config.\r\rGated on sso:manage (admin) — it's an outbound fetch proxy.",
         "operationId": "get_api_sso_discovery",
         "parameters": [
           {
@@ -6672,7 +7405,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/sso-discovery/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sso-discovery\\route.ts",
         "x-auto-ontology-permissions": {
           "sso": ["manage"]
         },
@@ -6683,7 +7416,7 @@
       "get": {
         "tags": ["sso-providers"],
         "summary": "Public list of registered SSO providers, carrying no secrets.",
-        "description": "Public list of registered SSO providers, carrying no secrets.\n\nThe login page reads it to decide whether to show the \"Sign in with SSO\"\noption, so it has to answer before anyone is authenticated.",
+        "description": "Public list of registered SSO providers, carrying no secrets.\r\rThe login page reads it to decide whether to show the \"Sign in with SSO\"\roption, so it has to answer before anyone is authenticated.",
         "operationId": "get_api_sso_providers",
         "responses": {
           "200": {
@@ -6721,7 +7454,7 @@
           }
         },
         "security": [],
-        "x-auto-ontology-source": "frontend/app/api/sso-providers/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\sso-providers\\route.ts",
         "x-auto-ontology-permissions": "public",
         "x-auto-ontology-proxied": false
       }
@@ -6794,7 +7527,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tables/[schema_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tables\\[schema_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -6903,7 +7636,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["read"]
         },
@@ -6957,7 +7690,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -7014,7 +7747,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/[tag_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\[tag_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -7079,7 +7812,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/[tag_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\[tag_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -7144,7 +7877,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/[tag_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\[tag_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -7234,7 +7967,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/[tag_id]/targets/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\[tag_id]\\targets\\route.ts",
         "x-auto-ontology-permissions": {
           "tag": ["manage"]
         },
@@ -7299,7 +8032,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/[tag_id]/targets/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\[tag_id]\\targets\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7373,7 +8106,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/tags/[tag_id]/targets/[target_type]/[item_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\tags\\[tag_id]\\targets\\[target_type]\\[item_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7472,7 +8205,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/terms/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\terms\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7529,7 +8262,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/terms/[term_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\terms\\[term_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7594,7 +8327,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/terms/[term_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\terms\\[term_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7684,7 +8417,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/terms/[term_id]/column-attributes/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\terms\\[term_id]\\column-attributes\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7762,7 +8495,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/terms/[term_id]/column-attributes/[attr_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\terms\\[term_id]\\column-attributes\\[attr_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["edit"]
         },
@@ -7852,7 +8585,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/terms/[term_id]/sql-attributes/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\terms\\[term_id]\\sql-attributes\\route.ts",
         "x-auto-ontology-permissions": {
           "catalog": ["read"]
         },
@@ -7911,7 +8644,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/zones/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\zones\\route.ts",
         "x-auto-ontology-permissions": {
           "zone": ["read"]
         },
@@ -7965,7 +8698,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/zones/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\zones\\route.ts",
         "x-auto-ontology-permissions": {
           "zone": ["manage"]
         },
@@ -8022,7 +8755,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/zones/[zone_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\zones\\[zone_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "zone": ["manage"]
         },
@@ -8088,7 +8821,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/zones/[zone_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\zones\\[zone_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "zone": ["read"]
         },
@@ -8153,7 +8886,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/zones/[zone_id]/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\zones\\[zone_id]\\route.ts",
         "x-auto-ontology-permissions": {
           "zone": ["manage"]
         },
@@ -8231,7 +8964,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/zones/[zone_id]/status/route.ts",
+        "x-auto-ontology-source": "frontend\\app\\api\\zones\\[zone_id]\\status\\route.ts",
         "x-auto-ontology-permissions": {
           "zone": ["manage"]
         },
@@ -8259,6 +8992,61 @@
         "title": "Body_import_model_api_model_import_post",
         "type": "object"
       },
+      "CatalogBrowseRequest": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/GlobalSearchFilters"
+          },
+          "page": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "selected_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Type"
+          }
+        },
+        "title": "CatalogBrowseRequest",
+        "type": "object"
+      },
+      "CatalogBrowseResponse": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/GlobalSearchItem"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          }
+        },
+        "required": ["data", "counts", "page", "page_size"],
+        "title": "CatalogBrowseResponse",
+        "type": "object"
+      },
       "ChatCancelResponse": {
         "additionalProperties": true,
         "properties": {
@@ -8269,6 +9057,62 @@
         },
         "required": ["cancelled"],
         "title": "ChatCancelResponse",
+        "type": "object"
+      },
+      "Classification": {
+        "properties": {
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/Condition"
+            },
+            "maxItems": 24,
+            "minItems": 1,
+            "title": "Conditions",
+            "type": "array"
+          },
+          "display_columns": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 512,
+            "title": "Display Columns",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "table_id": {
+            "title": "Table Id",
+            "type": "string"
+          },
+          "term_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term Id"
+          }
+        },
+        "required": ["name", "table_id", "conditions"],
+        "title": "Classification",
         "type": "object"
       },
       "ColumnAttribute": {
@@ -9056,6 +9900,28 @@
         "title": "ColumnSummary",
         "type": "object"
       },
+      "Condition": {
+        "properties": {
+          "column": {
+            "title": "Column",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": ["column", "values"],
+        "title": "Condition",
+        "type": "object"
+      },
       "ConnectionBody": {
         "properties": {
           "connection": {
@@ -9066,6 +9932,34 @@
         },
         "required": ["connection"],
         "title": "ConnectionBody",
+        "type": "object"
+      },
+      "ConnectionCreateBody": {
+        "properties": {
+          "compile_ontology": {
+            "default": false,
+            "title": "Compile Ontology",
+            "type": "boolean"
+          },
+          "connection": {
+            "additionalProperties": true,
+            "title": "Connection",
+            "type": "object"
+          }
+        },
+        "required": ["connection"],
+        "title": "ConnectionCreateBody",
+        "type": "object"
+      },
+      "ConnectionScanBody": {
+        "properties": {
+          "database": {
+            "title": "Database",
+            "type": "string"
+          }
+        },
+        "required": ["database"],
+        "title": "ConnectionScanBody",
         "type": "object"
       },
       "ConnectionTestBody": {
@@ -9855,6 +10749,13 @@
         "additionalProperties": true,
         "description": "Two tables connected by a shared SQL query and/or a foreign key.\n\n``queries`` is empty for an edge that exists only because of a foreign\nkey; ``foreign_keys`` is empty for a SQL-only edge. ``relationship_types``\nnames the relationship kind(s) behind the edge (``SQL`` and/or\n``FOREIGN_KEY``), for labeling the connection in the graph.",
         "properties": {
+          "field_references": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field References",
+            "type": "array"
+          },
           "foreign_keys": {
             "items": {
               "$ref": "#/components/schemas/ForeignKeyRef"
@@ -10398,6 +11299,13 @@
         "additionalProperties": true,
         "description": "An undirected term↔term link (two terms sharing at least one table).\n\n``relationship_types`` names the relationship kind(s)\n(``REPRESENTS``, ``HAS_ATTRIBUTE``, ``SEMANTIC_FK``) connecting either\nterm to a table they share, for labeling the connection in the graph.",
         "properties": {
+          "field_references": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Field References",
+            "type": "array"
+          },
           "relationship_types": {
             "items": {
               "type": "string"
@@ -11285,6 +12193,79 @@
         "title": "PublicConnection",
         "type": "object"
       },
+      "Reference": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "pairs": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "type": "array"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Pairs",
+            "type": "array"
+          },
+          "source_table": {
+            "title": "Source Table",
+            "type": "string"
+          },
+          "source_term": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Term"
+          },
+          "target_table": {
+            "title": "Target Table",
+            "type": "string"
+          },
+          "target_term": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Term"
+          },
+          "version": {
+            "default": 0,
+            "minimum": 0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": ["name", "source_table", "target_table", "pairs"],
+        "title": "Reference",
+        "type": "object"
+      },
       "Rule": {
         "additionalProperties": true,
         "description": "A saved search, and the tags to apply to everything it matches.\n\n``search_term``, ``text_match_option`` and ``filters`` are the global-search\nrequest the rule replays; together they are what the rule *is*, which is why\nthey are required rather than optional like most of this module — a rule\nmissing any of the three matches nothing.\n\n``tags`` carry the name to show and the id to act by, both read from the tag\ntable on every read rather than from what the write that saved them sent —\nso a renamed tag reads back renamed here, and a caller posting whole tag\nobjects is answered with the tags as they are rather than as it sent them.\nSee ``RuleTagRef`` in ``auto_ontology/server/rules/router.py``. The ids are checked\nagainst that table, so a rule cannot apply a tag that does not exist.\n\n``created_by`` is the id of the user who saved it, read from the trusted\ngateway header rather than from the request body — see\n``auto_ontology/server/chat/identity.py``. ``modified_by`` is the same for whoever\nlast renamed it, and null until somebody has — which is the same fact as\n``modified`` still equalling ``created``, and null again for a rename whose\nrequest carried no identity to record.\n\n``created`` and ``modified`` follow the convention :class:`Tag` sets: a\ntimezone-aware ``datetime`` serialised as ISO 8601, from one clock.",
@@ -11544,6 +12525,17 @@
         "additionalProperties": true,
         "description": "A term on the semantic-layer exploration graph.",
         "properties": {
+          "classification": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification"
+          },
           "column_attributes_count": {
             "anyOf": [
               {

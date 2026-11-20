@@ -14,6 +14,7 @@ import {
 	type ReactNode,
 } from 'react';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/i18n/LanguageProvider';
 import type { BreadcrumbItem } from '@/common/Breadcrumbs';
 
 const SECTION_LABELS: Record<string, string> = {
@@ -28,7 +29,8 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 const SETTINGS_SECTION_LABELS: Record<string, string> = {
-	connections: 'Connections',
+	connections: 'Database connections',
+	language: 'Language',
 	zones: 'Zones',
 	tags: 'Tags',
 	rules: 'Rules',
@@ -80,6 +82,7 @@ const BreadcrumbContext = createContext<BreadcrumbContextValue>({
 
 export const BreadcrumbProvider = ({ children }: { children: ReactNode }) => {
 	const pathname = usePathname();
+	const { t } = useLanguage();
 	const [prevPath, setPrevPath] = useState<string | null>(null);
 	const [routeCrumbs, setRouteCrumbs] = useState<BreadcrumbItem[]>(EMPTY_TRAIL);
 	const [trail, setTrailRaw] = useState<BreadcrumbItem[]>(EMPTY_TRAIL);
@@ -106,8 +109,8 @@ export const BreadcrumbProvider = ({ children }: { children: ReactNode }) => {
 	}
 
 	const items = useMemo(
-		() => (trail.length === 0 ? routeCrumbs : [...routeCrumbs, ...trail]),
-		[routeCrumbs, trail],
+		() => [...routeCrumbs.map((crumb) => ({ ...crumb, label: t(crumb.label) })), ...trail],
+		[routeCrumbs, trail, t],
 	);
 
 	const value = useMemo(

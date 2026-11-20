@@ -159,7 +159,7 @@ export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
 					aria-expanded={open}
 					aria-label={__uiT('Filter by database or schema')}
 				>
-					<span className="truncate">{summary}</span>
+					<span className="truncate">{__uiT(summary)}</span>
 					<Icon
 						name={IconName.ChevronRight}
 						className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-zinc-400"
@@ -180,16 +180,12 @@ export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
 							onClick={() => onChange(selected === null ? [] : null)}
 							disabled={emptyMessage !== null}
 						>
-							{selected === null ? (
-								<T value={'Deselect All'} />
-							) : (
-								<T value={'Select All'} />
-							)}
+							{selected === null ? __uiT('Deselect All') : __uiT('Select All')}
 						</Button>
 					</div>
 					{emptyMessage !== null ? (
 						<p className="px-2 py-3 text-center text-xs text-secondary dark:text-zinc-400">
-							<T value={emptyMessage} />
+							{__uiT(emptyMessage)}
 						</p>
 					) : (
 						<DataTreeSelect

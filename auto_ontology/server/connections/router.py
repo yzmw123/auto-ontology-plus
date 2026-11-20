@@ -7,19 +7,24 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any, TypedDict
 
 from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
+from auto_ontology.connectors.registry import (
+    environment_connection_strings,
+    environment_database_names,
+)
 from auto_ontology.dal.connections import list_connections as _list_connections
 from auto_ontology.server.connections import service
+from auto_ontology.server.ingestion.proxy import connection_scan_status, trigger_ingest
 from auto_ontology.server.responses import (
     ConnectionListResponse,
     ConnectionResponse,
     ConnectionTestResponse,
     SsoFederationResponse,
+    StatusResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -33,6 +38,14 @@ class ConnectionBody(BaseModel):
 
 class ConnectionTestBody(ConnectionBody):
     replacing: str | None = None
+
+
+class ConnectionCreateBody(ConnectionBody):
+    compile_ontology: bool = False
+
+
+class ConnectionScanBody(BaseModel):
+    database: str
 
 
 class PublicConnection(TypedDict):
@@ -56,11 +69,34 @@ def _serialize_connection(connection: dict[str, Any]) -> PublicConnection:
 @router.get("/connections/source", response_model=bool)
 def is_env_source() -> bool:
     """Report whether connections are managed via the ``CONNECTION_STRINGS`` env."""
-    connection_strings = os.environ.get("CONNECTION_STRINGS", "")
-    connection_strings_exists = [
-        cs.strip() for cs in connection_strings.split(",") if cs.strip()
-    ]
-    return bool(connection_strings_exists)
+    return bool(environment_connection_strings())
+
+
+@router.get("/connections/scan")
+def scan_status() -> dict[str, list[str] | dict[str, str]]:
+    """Report connection scan progress and deployment-managed database names."""
+    try:
+        return {
+            "jobs": connection_scan_status(),
+            "environment": environment_database_names(),
+        }
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503, detail="Ingestion service unavailable"
+        ) from exc
+
+
+@router.post("/connections/scan", status_code=202, response_model=StatusResponse)
+def scan_connection(body: ConnectionScanBody) -> dict[str, str]:
+    """Scan and build one configured source without resetting its ontology."""
+    name = body.database.strip()
+    if name not in environment_database_names() and not any(
+        connection.get("database") == name for connection in _list_connections()
+    ):
+        raise HTTPException(status_code=404, detail="Connection not found")
+    if not trigger_ingest({"database": name}, compile_ontology=True):
+        raise HTTPException(status_code=503, detail="Ingestion service unavailable")
+    return {"status": "accepted"}
 
 
 @router.get("/connections", response_model=ConnectionListResponse)
@@ -100,7 +136,7 @@ def test_connection(body: ConnectionTestBody) -> dict:
 
 
 @router.post("/connections", status_code=201, response_model=ConnectionResponse)
-def create_connection(body: ConnectionBody) -> dict:
+def create_connection(body: ConnectionCreateBody) -> dict:
     """Register a database connection and return it credential-free.
 
     The connection is validated on the way in; anything the driver rejects comes
@@ -109,7 +145,9 @@ def create_connection(body: ConnectionBody) -> dict:
     available for the picker.
     """
     try:
-        row = service.create_connection(connection=body.connection)
+        row = service.create_connection(
+            connection=body.connection, compile_ontology=body.compile_ontology
+        )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:

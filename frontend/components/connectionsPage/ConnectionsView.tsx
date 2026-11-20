@@ -23,10 +23,24 @@ import {
 	invalidateConnectionList,
 	patchConnectionList,
 } from '@/lib/queries/connections';
-import type { Connection } from '@/types/connection';
+import type { Connection, ConnectionScanStatus } from '@/types/connection';
 import { T, useLanguage } from '@/i18n/LanguageProvider';
 
-export const ConnectionsView = () => {
+const SCAN_STATUS_LABELS: Record<ConnectionScanStatus, string> = {
+	queued: 'Scan queued',
+	scanning: 'Scanning catalog…',
+	compiling: 'Building ontology…',
+	scanned: 'Catalog scan completed',
+	ready: 'Ontology build completed',
+	scan_failed: 'Catalog scan failed',
+	compile_failed: 'Ontology build failed',
+};
+
+export const ConnectionsView = ({
+	hasDeploymentConnections,
+}: {
+	hasDeploymentConnections: boolean;
+}) => {
 	const { t: __uiT } = useLanguage();
 
 	const queryClient = useQueryClient();
@@ -40,6 +54,23 @@ export const ConnectionsView = () => {
 		refetch,
 	} = useQuery(connectionQueries.list());
 	const error = loadError?.message ?? null;
+	const {
+		data: scanOverview,
+		isError: scanUnavailable,
+		refetch: refreshScans,
+	} = useQuery({
+		queryKey: ['connections', 'scan-overview'],
+		queryFn: async () => {
+			const result = await connectionsApi.scanOverview();
+			if (result.error) throw new Error(result.message);
+			return result;
+		},
+		refetchInterval: 4000,
+		retry: false,
+	});
+	const deploymentNames = scanOverview?.environment ?? [];
+	const [scanPending, setScanPending] = useState<string | null>(null);
+	const [scanError, setScanError] = useState<string | null>(null);
 
 	/** Where a write puts what it just changed — the list the page reads from. */
 	const patchConnections = (update: Parameters<typeof patchConnectionList>[1]) =>
@@ -71,6 +102,39 @@ export const ConnectionsView = () => {
 	const handleConnectionModalConfirm = () => {
 		handleConnectionModalClose();
 		void invalidateConnectionList(queryClient);
+		void refreshScans();
+	};
+
+	const handleScan = async (name: string) => {
+		setScanError(null);
+		setScanPending(name);
+		const result = await connectionsApi.scan(name);
+		if (result.error) {
+			setScanError(result.message ?? __uiT('Could not start the scan.'));
+		}
+		await refreshScans();
+		setScanPending(null);
+	};
+
+	const renderScan = (name: string) => {
+		const status = scanOverview?.jobs[name];
+		const active = status === 'queued' || status === 'scanning' || status === 'compiling';
+		return (
+			<div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-200/90 px-4 py-3 dark:border-zinc-700/90">
+				<p role="status" className="text-xs text-secondary">
+					<T value={status ? SCAN_STATUS_LABELS[status] : 'No recent scan'} />
+				</p>
+				<Button
+					theme={ButtonTheme.Secondary}
+					size={Size.SMALL}
+					type="button"
+					disabled={active || scanPending !== null}
+					onClick={() => void handleScan(name)}
+				>
+					<T value={'Scan and build ontology'} />
+				</Button>
+			</div>
+		);
 	};
 
 	const handleSsoFederationChange = async (databaseName: string, enabled: boolean) => {
@@ -99,7 +163,7 @@ export const ConnectionsView = () => {
 						: c,
 				),
 			);
-			setSsoError(res.message ?? 'Failed to update connection.');
+			setSsoError(res.message ?? __uiT('Failed to update connection.'));
 		}
 	};
 
@@ -122,7 +186,7 @@ export const ConnectionsView = () => {
 		setDeleting(false);
 
 		if (res.error) {
-			setDeleteError(res.message ?? 'Failed to delete connection.');
+			setDeleteError(res.message ?? __uiT('Failed to delete connection.'));
 			return;
 		}
 
@@ -144,9 +208,7 @@ export const ConnectionsView = () => {
 	if (error) {
 		return (
 			<div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-3 px-6">
-				<p className="text-sm text-red-600 dark:text-red-400">
-					<T value={error} />
-				</p>
+				<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
 				<Button
 					theme={ButtonTheme.Secondary}
 					size={Size.REGULAR}
@@ -162,14 +224,19 @@ export const ConnectionsView = () => {
 	}
 
 	return (
-		<div className="flex h-full w-full min-w-0 flex-1 flex-col items-start">
-			{connections.length === 0 ? (
+		<div className="flex h-full w-full min-w-0 flex-1 flex-col items-start gap-5">
+			{scanUnavailable && (
+				<p role="status" className="text-sm text-secondary">
+					<T value={'Scan status is temporarily unavailable.'} />
+				</p>
+			)}
+			{connections.length === 0 && !hasDeploymentConnections ? (
 				<EmptyState
 					variant={EmptyStateVariant.Borderless}
 					illustration={<Placeholders.NoConnections />}
 					title={__uiT('No Connections Created Yet')}
 					action={{
-						label: 'Create New Connection',
+						label: __uiT('Create New Connection'),
 						icon: IconName.Database,
 						onClick: handleCreateConnection,
 					}}
@@ -189,15 +256,38 @@ export const ConnectionsView = () => {
 							<T value={'Create New Connection'} />
 						</Button>
 					</div>
-					<ConnectionsInfoCardView
-						connections={connections}
-						onEdit={handleEditConnection}
-						onDelete={handleDeleteRequest}
-						onSsoFederationChange={(databaseName, enabled) => {
-							void handleSsoFederationChange(databaseName, enabled);
-						}}
-						ssoFederationPending={ssoFederationPending}
-					/>
+					{hasDeploymentConnections && (
+						<section className="flex w-full flex-col gap-3">
+							<h2 className="text-sm font-medium text-heading">
+								<T value={'Deployment-managed connections'} />
+							</h2>
+							<div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+								{deploymentNames.map((name) => (
+									<article
+										key={name}
+										className="rounded-lg border border-zinc-200/90 bg-white shadow-sm dark:border-zinc-700/90 dark:bg-zinc-950"
+									>
+										<h3 className="px-4 py-5 text-sm font-medium text-heading">
+											{name}
+										</h3>
+										{renderScan(name)}
+									</article>
+								))}
+							</div>
+						</section>
+					)}
+					{connections.length > 0 && (
+						<ConnectionsInfoCardView
+							connections={connections}
+							onEdit={handleEditConnection}
+							onDelete={handleDeleteRequest}
+							onSsoFederationChange={(databaseName, enabled) => {
+								void handleSsoFederationChange(databaseName, enabled);
+							}}
+							ssoFederationPending={ssoFederationPending}
+							renderScan={renderScan}
+						/>
+					)}
 				</div>
 			)}
 
@@ -228,10 +318,13 @@ export const ConnectionsView = () => {
 			/>
 
 			<Toast
-				open={ssoError !== null}
-				message={ssoError ?? ''}
+				open={ssoError !== null || scanError !== null}
+				message={scanError ?? ssoError ?? ''}
 				variant={ToastVariant.Error}
-				onClose={() => setSsoError(null)}
+				onClose={() => {
+					setSsoError(null);
+					setScanError(null);
+				}}
 			/>
 		</div>
 	);

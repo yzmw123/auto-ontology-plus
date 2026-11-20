@@ -8,17 +8,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Body, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from auto_ontology.ingestion_service.connection_jobs import ScanStatus
 from auto_ontology.ingestion_service.history import (
     get_last_failure_if_most_recent,
     get_last_successful_run,
 )
-from auto_ontology.ingestion_service.ingest import (
-    trigger_delete_ingest,
-    trigger_ingest,
-    trigger_reset_semantic,
-)
+from auto_ontology.ingestion_service.ingest import trigger_reset_semantic
 from auto_ontology.server.health.checks import check_schema, check_store
 from auto_ontology.server.responses import (
     HealthResponse,
@@ -71,20 +69,37 @@ async def liveness() -> dict[str, str]:
     return {"status": "ok"}
 
 
+class IngestRequest(BaseModel):
+    database: str
+    compile_ontology: bool = False
+
+
 @router.post("/ingest", status_code=202, response_model=StatusResponse)
-async def ingest_connection(connection: dict[str, Any] = Body(...)) -> dict[str, str]:
+async def ingest_connection(request: Request, body: IngestRequest) -> dict[str, str]:
     """Trigger a non-blocking ingest for a single connection."""
-    trigger_ingest(connection)
+    database_name = body.database.strip()
+    if not database_name:
+        raise HTTPException(status_code=422, detail="Database name is required")
+    request.app.state.connection_jobs.start(
+        database_name, compile_ontology=body.compile_ontology
+    )
     return {"status": "accepted"}
 
 
+@router.get("/ingest/status")
+async def ingest_status(request: Request) -> dict[str, ScanStatus]:
+    return request.app.state.connection_jobs.status()
+
+
 @router.post("/ingest/delete", status_code=202, response_model=StatusResponse)
-async def ingest_delete(database_name: str) -> dict[str, str]:
+async def ingest_delete(
+    request: Request, background_tasks: BackgroundTasks, database_name: str
+) -> dict[str, str]:
     """Trigger a non-blocking reset of a database's ingested data.
 
     ``database_name`` is required: this endpoint always targets one database.
     """
-    trigger_delete_ingest(database_name)
+    background_tasks.add_task(request.app.state.connection_jobs.delete, database_name)
     return {"status": "accepted"}
 
 

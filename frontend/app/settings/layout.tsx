@@ -6,7 +6,6 @@ import type { Metadata } from 'next';
 import { SettingsPanelLayout } from '@/components/settings/SettingsPanelLayout';
 import { requireUser } from '@/auth/auth-guards';
 import { Role } from '@/enums/auth';
-import { readConnectionsEnvSource } from '@/lib/server/connections';
 
 export const metadata: Metadata = {
 	title: 'Settings',
@@ -14,22 +13,7 @@ export const metadata: Metadata = {
 
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
 	const session = await requireUser();
-	// Read once here so the nav renders its final shape on the first paint, and
-	// so navigating between sections does not re-ask: the layout survives those
-	// navigations, the nav's own effect did not. The page rendering inside this
-	// pass asks the same question, which `readConnectionsEnvSource` answers
-	// from this read rather than a second one.
-	//
-	// Only the flag. The connections *list* is read by the root layout, which
-	// puts it in the query cache for the Connections page to subscribe to —
-	// this one is a plain server value the nav reads while rendering, so it
-	// stays a direct await.
 	const isAdmin = session.user.role === Role.Admin;
-	const envManaged = isAdmin ? await readConnectionsEnvSource() : false;
 
-	return (
-		<SettingsPanelLayout connectionsEnvManaged={envManaged === true} isAdmin={isAdmin}>
-			{children}
-		</SettingsPanelLayout>
-	);
+	return <SettingsPanelLayout isAdmin={isAdmin}>{children}</SettingsPanelLayout>;
 }

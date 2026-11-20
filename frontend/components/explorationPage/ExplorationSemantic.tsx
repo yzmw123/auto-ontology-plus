@@ -18,7 +18,7 @@ import type {
 	ExplorationTermNode,
 	SemanticExplorationGraph,
 } from '@/types/exploration';
-import { T } from '@/i18n/LanguageProvider';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /** Build the semantic-layer graph (Terms + their relationships) from the server DTO. */
 export const buildSemanticGraph = (graph: SemanticExplorationGraph): ExplorationGraph => ({
@@ -32,17 +32,20 @@ export const buildSemanticGraph = (graph: SemanticExplorationGraph): Exploration
 		nodeType: 'term' as const,
 		relationshipCount: node.relationship_count,
 		columnAttributesCount: node.column_attributes_count,
+		classification: node.classification,
 		sqlAttributesCount: node.sql_attributes_count,
 	})),
 	links: graph.links.map((link) => ({
 		source: link.source,
 		target: link.target,
 		queries: [],
+		fieldReferenceIds: link.field_references,
 		relationshipTypes: link.relationship_types ?? [],
 	})),
 });
 
 type ActiveTermCardProps = {
+	modelActions?: import('react').ReactNode;
 	node: ExplorationTermNode;
 	onClose: () => void;
 	onView: () => void;
@@ -54,85 +57,96 @@ type ActiveTermCardProps = {
 /** Detail card shown when a Term node is selected on the semantic graph. */
 export const ActiveTermCard = ({
 	node,
+	modelActions,
 	onClose,
 	onView,
 	onShowRelationships,
 	onShowColumnAttributes,
 	onShowSqlAttributes,
-}: ActiveTermCardProps) => (
-	<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
-		<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
-			<p className="text-xs font-semibold text-body dark:text-zinc-300">
-				<T value={'Showing info on this Semantic Object'} />
-			</p>
-			<Button
-				theme={ButtonTheme.IconNeutral}
-				size={Size.SMALL}
-				iconOnly
-				type="button"
-				onClick={onClose}
-				aria-label="Close term details"
-			>
-				<Icon name={IconName.Close} className="h-4 w-4" />
-			</Button>
-		</header>
-		<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
-			<div className="flex items-start gap-2">
-				<Icon
-					name={IconName.Terms}
-					className="mt-0.5 h-5 w-5 shrink-0 text-body dark:text-zinc-300"
-				/>
-				<div className="min-w-0 flex-1 space-y-1">
-					<Text as="h2" text={node.name} variant={TextVariant.Heading} />
-					{node.synonyms.length > 0 && (
-						<Text as="p" variant={TextVariant.Caption}>
-							<T value={'Synonyms:'} /> {node.synonyms.join(', ')}
-						</Text>
-					)}
-				</div>
-			</div>
-			<div className="self-start">
+}: ActiveTermCardProps) => {
+	const { t: __uiT } = useLanguage();
+	return (
+		<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+			<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
+				<p className="text-xs font-semibold text-body dark:text-zinc-300">
+					<T value={'Showing info on this Semantic Object'} />
+				</p>
 				<Button
-					theme={ButtonTheme.Primary}
+					theme={ButtonTheme.IconNeutral}
 					size={Size.SMALL}
+					iconOnly
 					type="button"
-					onClick={onView}
+					onClick={onClose}
+					aria-label={__uiT('Close term details')}
 				>
-					<T value={'View Term'} />
+					<Icon name={IconName.Close} className="h-4 w-4" />
 				</Button>
-			</div>
-			<div className="flex flex-col gap-2">
-				<PropertyRow label="Name" value={node.name} />
-				<PropertyRow label="Description" value={node.description ?? ''} />
-				<PropertyRow label="ID" value={node.id} monospace />
-			</div>
-			<div className="grid grid-cols-2 gap-2">
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'Related Terms:'} /> {node.relationshipCount}
-					<DetailLinkButton
-						count={node.relationshipCount}
-						onClick={onShowRelationships}
-						label="View related Terms"
+			</header>
+			<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
+				<div className="flex items-start gap-2">
+					<Icon
+						name={IconName.Terms}
+						className="mt-0.5 h-5 w-5 shrink-0 text-body dark:text-zinc-300"
 					/>
-				</span>
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'Attribute Columns:'} /> {node.columnAttributesCount}
-					<DetailLinkButton
-						count={node.columnAttributesCount}
-						onClick={onShowColumnAttributes}
-						label="View Attribute Columns"
-					/>
-				</span>
-				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					<T value={'SQL Attributes:'} /> {node.sqlAttributesCount}
-					<DetailLinkButton
-						count={node.sqlAttributesCount}
-						onClick={onShowSqlAttributes}
-						label="View SQL attributes"
-					/>
-				</span>
+					<div className="min-w-0 flex-1 space-y-1">
+						<Text as="h2" text={node.name} variant={TextVariant.Heading} />
+						{node.synonyms.length > 0 && (
+							<Text as="p" variant={TextVariant.Caption}>
+								<T value={'Synonyms:'} /> {node.synonyms.join(', ')}
+							</Text>
+						)}
+					</div>
+				</div>
+				<div className="self-start">
+					<Button
+						theme={ButtonTheme.Primary}
+						size={Size.SMALL}
+						type="button"
+						onClick={onView}
+					>
+						<T value={'View Term'} />
+					</Button>
+				</div>
+				<div className="flex flex-col gap-2">
+					<PropertyRow label={__uiT('Name')} value={node.name} />
+					<PropertyRow label={__uiT('Description')} value={node.description ?? ''} />
+					{node.classification && (
+						<PropertyRow
+							label={__uiT('Classification rules')}
+							value={node.classification}
+						/>
+					)}
+					<PropertyRow label={__uiT('ID')} value={node.id} monospace />
+				</div>
+				<div className="grid grid-cols-2 gap-2">
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'Related Terms:'} /> {node.relationshipCount}
+						<DetailLinkButton
+							count={node.relationshipCount}
+							onClick={onShowRelationships}
+							label={__uiT('View related Terms')}
+						/>
+					</span>
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'Attribute Columns:'} /> {node.columnAttributesCount}
+						<DetailLinkButton
+							count={node.columnAttributesCount}
+							onClick={onShowColumnAttributes}
+							label={__uiT('View Attribute Columns')}
+						/>
+					</span>
+					<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
+						<T value={'SQL Attributes:'} /> {node.sqlAttributesCount}
+						<DetailLinkButton
+							count={node.sqlAttributesCount}
+							onClick={onShowSqlAttributes}
+							label={__uiT('View SQL attributes')}
+						/>
+					</span>
+				</div>
+				{modelActions}
+				<ZonesRow zones={node.zones} />
 			</div>
-			<ZonesRow zones={node.zones} />
-		</div>
-	</section>
-);
+		</section>
+	);
+};

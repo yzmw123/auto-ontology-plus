@@ -4,6 +4,13 @@
 
 import type { User } from '@/types/auth';
 
+export type AnalyticsFilters = {
+	from?: string;
+	before?: string;
+	username?: string;
+	source?: string;
+};
+
 export type ConversationAnalytics = {
 	id: string;
 	user: User;

@@ -43,6 +43,12 @@ export type MySqlConnectionParams = {
 	database: string;
 };
 
+export type OracleConnectionParams = Omit<MySqlConnectionParams, 'type'> & {
+	type: ConnectionType.ORACLE;
+	service_name?: string;
+	schemas?: string[];
+};
+
 export type SnowflakeConnectionParams = {
 	type: ConnectionType.SNOWFLAKE;
 	account: string;
@@ -92,6 +98,7 @@ export type ConnectionParams = (
 	| DatabricksConnectionParams
 	| PostgresConnectionParams
 	| MySqlConnectionParams
+	| OracleConnectionParams
 	| SnowflakeConnectionParams
 	| HeavyDBConnectionParams
 ) &
@@ -105,3 +112,17 @@ export type Connection = {
 
 /** User-provided fields for testing or creating a connection. */
 export type ConnectionInput = ConnectionParams;
+
+export type ConnectionScanStatus =
+	| 'queued'
+	| 'scanning'
+	| 'compiling'
+	| 'scanned'
+	| 'ready'
+	| 'scan_failed'
+	| 'compile_failed';
+
+export type ConnectionScanOverview = {
+	jobs: Partial<Record<string, ConnectionScanStatus>>;
+	environment: string[];
+};

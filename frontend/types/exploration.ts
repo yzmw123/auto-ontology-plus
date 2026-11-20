@@ -12,6 +12,7 @@ export type ExplorationTermNode = Omit<
 	Term,
 	'name_certified' | 'description_certified' | 'certification'
 > & {
+	classification?: string | null;
 	layer: ExplorationLayer.Semantic;
 	nodeType: 'term';
 	relationshipCount: number;
@@ -51,6 +52,7 @@ export type ExplorationForeignKey = {
 };
 
 export type ExplorationLink = {
+	fieldReferenceIds?: string[];
 	source: string;
 	target: string;
 	queries: string[];
@@ -72,6 +74,7 @@ export type ExplorationZonesMap = Record<string, TermZone[]>;
 
 /** Server DTO for a semantic (Term) node in the Exploration graph endpoint. */
 export type SemanticGraphNodeDto = {
+	classification?: string | null;
 	id: string;
 	name: string;
 	description: string | null;
@@ -115,7 +118,12 @@ export type ExplorationRelationshipsPageDto = {
 
 export type SemanticExplorationGraph = {
 	nodes: SemanticGraphNodeDto[];
-	links: Array<{ source: string; target: string; relationship_types: string[] }>;
+	links: Array<{
+		source: string;
+		target: string;
+		relationship_types: string[];
+		field_references?: string[];
+	}>;
 };
 
 /** One Term/Table/Column/ColumnAttribute node along an `ExplorationLinkPathHop` chain. */
@@ -172,6 +180,7 @@ export type DataGraphForeignKeyDto = {
 
 /** Server DTO for a data-layer Exploration edge (Table ↔ Table). */
 export type DataGraphEdgeDto = {
+	field_references?: string[];
 	source: string;
 	target: string;
 	queries: string[];

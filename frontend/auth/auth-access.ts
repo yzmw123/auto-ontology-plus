@@ -13,7 +13,7 @@ import access from './access.json';
  * their arrays to `string[]`.
  */
 const applicationStatements = {
-	analytics: ['read'],
+	analytics: ['read', 'delete'],
 	acronym: ['read', 'create', 'update', 'delete'],
 	prompt: ['read', 'create', 'update', 'delete'],
 	sso: ['read', 'manage'],

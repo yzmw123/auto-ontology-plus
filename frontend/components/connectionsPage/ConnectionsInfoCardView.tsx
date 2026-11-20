@@ -4,6 +4,7 @@
 
 'use client';
 
+import type { ReactNode } from 'react';
 import { ConnectionInfoCard } from '@/components/connectionsPage/ConnectionInfoCard';
 import { EmptyState } from '@/common/EmptyState';
 import { IconName } from '@/common/icons';
@@ -20,6 +21,7 @@ type ConnectionsInfoCardViewProps = {
 	onSsoFederationChange?: (databaseName: string, enabled: boolean) => void;
 	/** Database name whose SSO-federation request is currently in flight. */
 	ssoFederationPending?: string | null;
+	renderScan?: (databaseName: string) => ReactNode;
 };
 
 export const ConnectionsInfoCardView = ({
@@ -29,6 +31,7 @@ export const ConnectionsInfoCardView = ({
 	onDelete,
 	onSsoFederationChange,
 	ssoFederationPending = null,
+	renderScan,
 }: ConnectionsInfoCardViewProps) => {
 	const { t: __uiT } = useLanguage();
 
@@ -62,6 +65,7 @@ export const ConnectionsInfoCardView = ({
 					onDelete={onDelete}
 					onSsoFederationChange={onSsoFederationChange}
 					ssoFederationPending={ssoFederationPending === connection.database_name}
+					scanControl={renderScan?.(connection.database_name)}
 				/>
 			))}
 		</div>

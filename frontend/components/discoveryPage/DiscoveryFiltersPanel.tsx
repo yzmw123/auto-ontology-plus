@@ -70,10 +70,10 @@ const bulkActionLabel = (allSelected: boolean): string =>
 	allSelected ? 'Deselect All' : 'Select All';
 
 /** What the closed select field says about a selection. */
-const selectionSummary = (selected: string[] | null): string => {
-	if (selected === null) return 'All';
-	if (selected.length === 0) return 'None';
-	return `Selected (${selected.length})`;
+const selectionSummary = (selected: string[] | null, t: (text: string) => string): string => {
+	if (selected === null) return t('All');
+	if (selected.length === 0) return t('None');
+	return `${t('Selected')} (${selected.length})`;
 };
 
 /**
@@ -164,7 +164,7 @@ const ObjectsFilter = ({
 					aria-expanded={open}
 					aria-label={__uiT('Filter by object type')}
 				>
-					<span className="truncate">{selectionSummary(selected)}</span>
+					<span className="truncate">{selectionSummary(selected, __uiT)}</span>
 					<Icon
 						name={IconName.ChevronRight}
 						className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-zinc-400"
@@ -184,7 +184,7 @@ const ObjectsFilter = ({
 							type="button"
 							onClick={() => onChange(allSelected ? [] : null)}
 						>
-							{bulkActionLabel(allSelected)}
+							{__uiT(bulkActionLabel(allSelected))}
 						</Button>
 					</div>
 					{SEARCH_TYPE_TAB_ORDER.map((type) => {
@@ -204,7 +204,9 @@ const ObjectsFilter = ({
 									name={SEARCH_TYPE_ICON[type]}
 									className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-400"
 								/>
-								<span className="truncate">{SEARCH_TYPE_TAB_LABEL[type]}</span>
+								<span className="truncate">
+									{__uiT(SEARCH_TYPE_TAB_LABEL[type])}
+								</span>
 							</label>
 						);
 					})}
@@ -305,7 +307,7 @@ const TagsFilter = ({
 	// Named by count rather than by name: tag names run to 25 characters and
 	// the field is one column of a narrow panel, so a single name would be
 	// truncated to nothing recognisable and two would not fit at all.
-	const summary = selectionSummary(selected);
+	const summary = selectionSummary(selected, __uiT);
 
 	return (
 		<Popover
@@ -340,7 +342,7 @@ const TagsFilter = ({
 							onClick={() => onChange(allSelected ? [] : null)}
 							disabled={!ready}
 						>
-							{bulkActionLabel(allSelected)}
+							{__uiT(bulkActionLabel(allSelected))}
 						</Button>
 					</div>
 					<div className="px-1 pb-1">
@@ -371,7 +373,7 @@ const TagsFilter = ({
 							))}
 						{emptyMessage !== null && (
 							<p className="px-2 py-1.5 text-xs text-secondary dark:text-zinc-400">
-								<T value={emptyMessage} />
+								{__uiT(emptyMessage)}
 							</p>
 						)}
 					</div>

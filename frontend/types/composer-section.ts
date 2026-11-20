@@ -16,6 +16,7 @@ export type ComposerTextCardSection = {
 	id: string;
 	title: string;
 	body: string;
+	translateBody?: boolean;
 	editable?: boolean;
 	suggestable?: boolean;
 	/** When set, renders a certification badge (view) / dropdown (edit) on the card. */
@@ -33,13 +34,14 @@ export type ComposerTagListSection = {
 	 * is editable, under the values when it is not — where it says why.
 	 */
 	hint?: string;
+	readOnlySampleType?: string | null;
 };
 
 export type ComposerInfoGridSection = {
 	type: ComposerSectionKind.INFO_GRID;
 	id: string;
 	title: string;
-	items: { label: string; value: string }[];
+	items: { label: string; value: string; translateValue?: boolean }[];
 };
 
 type ComposerDataTableColumnBase = {
@@ -81,6 +83,7 @@ export type ComposerDataTableSection = {
 	type: ComposerSectionKind.DATA_TABLE;
 	id: string;
 	title: string;
+	showRowCount?: boolean;
 	columns: ComposerDataTableColumn[];
 	rows: Record<string, string | string[]>[];
 	/** When set with `onDataTableRowClick`, rows become clickable using this field as id. */
@@ -109,6 +112,7 @@ export type ComposerZonesSection = {
 	type: ComposerSectionKind.ZONES_CHIPS;
 	id: string;
 	title: string;
+	helpText?: string;
 	zones: ComposerZoneChip[];
 };
 
@@ -121,6 +125,7 @@ export type ComposerRelatedTermsSection = {
 	type: ComposerSectionKind.RELATED_TERMS_CHIPS;
 	id: string;
 	title: string;
+	helpText?: string;
 	terms: ComposerRelatedTermChip[];
 };
 
@@ -135,6 +140,7 @@ export type ComposerEntitiesSection = {
 	type: ComposerSectionKind.ENTITY_CHIPS;
 	id: string;
 	title: string;
+	helpText?: string;
 	entities: ComposerEntity[];
 };
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import os
 import re
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from auto_ontology.catalog.table_filter import TableFilter, from_connection
 from auto_ontology.connectors.base import SQLDatabase
@@ -21,6 +21,7 @@ from auto_ontology.connectors.duckdb import DuckDBDatabase
 from auto_ontology.connectors.heavydb import HeavyDBDatabase
 from auto_ontology.connectors.kyuubi import KyuubiDatabase
 from auto_ontology.connectors.mysql import MySQLDatabase
+from auto_ontology.connectors.oracle import OracleDatabase
 from auto_ontology.connectors.postgres import PostgresDatabase
 from auto_ontology.connectors.snowflake import SnowflakeDatabase
 from auto_ontology.connectors.sqlite import SQLiteDatabase
@@ -45,6 +46,7 @@ CONNECTOR_REGISTRY: dict[str, type[SQLDatabase]] = {
     "postgres": PostgresDatabase,
     "postgresql": PostgresDatabase,
     "mysql": MySQLDatabase,
+    "oracle": OracleDatabase,
     "databricks": DatabricksDatabase,
     "duckdb": DuckDBDatabase,
     "snowflake": SnowflakeDatabase,
@@ -65,6 +67,33 @@ def parse_connection_strings(raw: str) -> list[str]:
         for connection_string in re.split(r"[,\r\n]+", raw)
         if connection_string.strip()
     ]
+
+
+def environment_connection_strings() -> list[str]:
+    return parse_connection_strings(os.environ.get("CONNECTION_STRINGS", ""))
+
+
+def environment_database_names() -> list[str]:
+    """Read explicitly configured catalog names without opening source sessions."""
+    names: list[str] = []
+    for connection_string in environment_connection_strings():
+        try:
+            parts = urlparse(connection_string)
+        except ValueError:
+            continue
+        engine = parts.scheme.split("+", 1)[0]
+        params = parse_qs(parts.query)
+        path = unquote(parts.path.strip("/"))
+        if engine in ("duckdb", "sqlite"):
+            continue  # A file path is not necessarily its catalog name.
+        name = params.get("metadata_database", [None])[0] or (
+            params.get("database", [path])[0]
+            if engine in {"snowflake", "oracle"}
+            else path
+        )
+        if name:
+            names.append(name)
+    return list(dict.fromkeys(names))
 
 
 def _redact(connection_string: str) -> str:
@@ -163,6 +192,7 @@ def create_connector(
 
         if schemas and connector_class in (
             DatabricksDatabase,
+            OracleDatabase,
             SnowflakeDatabase,
             KyuubiDatabase,
             TrinoDatabase,
@@ -272,26 +302,28 @@ def get_connectors() -> list[SQLDatabase]:
         # (Databricks, Snowflake, Kyuubi, and Trino); it is inert for retrieval,
         # which executes SQL rather than introspecting. The table filter is
         # likewise ingestion-only, but applies to every connector.
+        specs: list[tuple[str, list[str] | None, TableFilter]] = [
+            (connection_string, None, TableFilter())
+            for connection_string in environment_connection_strings()
+        ]
         try:
-            specs: list[tuple[str, list[str] | None, TableFilter]] = [
-                (
-                    build_connection_string(conn),
-                    _schema_filter(conn),
-                    _table_filter(conn),
-                )
-                for conn in list_connections()
-            ]
+            stored = list_connections()
         except Exception:
             logger.exception("Failed to load connection strings from the catalog")
-            specs = []
-        if not specs:
-            # CONNECTION_STRINGS carries no connection dict, so an env-configured
-            # connection cannot express a table filter.
-            raw = os.environ.get("CONNECTION_STRINGS", "")
-            specs = [
-                (connection_string, None, TableFilter())
-                for connection_string in parse_connection_strings(raw)
-            ]
+            stored = []
+        for conn in stored:
+            try:
+                specs.append(
+                    (
+                        build_connection_string(conn),
+                        _schema_filter(conn),
+                        _table_filter(conn),
+                    )
+                )
+            except ValueError:
+                logger.exception(
+                    "Failed to configure database %r", conn.get("database")
+                )
         if not specs:
             logger.warning(
                 "No connections configured. Add CONNECTION_STRINGS to your .env "
@@ -302,15 +334,20 @@ def get_connectors() -> list[SQLDatabase]:
         loaded: list[SQLDatabase] = []
         seen_database_names: set[str] = set()
         for cs, schemas, table_filter in specs:
-            connector = create_connector(cs, schemas=schemas, table_filter=table_filter)
-            database_name = connector.database_name
+            try:
+                connector = create_connector(
+                    cs, schemas=schemas, table_filter=table_filter
+                )
+            except Exception:
+                continue  # create_connector reports the failure without blocking other sources.
+            database_name = connector.database_name.casefold()
             if database_name in seen_database_names:
                 logger.warning(
-                    "Duplicate connector database_name %r — NeMo routes SQL by "
-                    "database_name, so only one connector per name can be used. "
-                    "Set metadata_database on the connection string to disambiguate.",
-                    database_name,
+                    "Ignoring duplicate connector for database %r",
+                    connector.database_name,
                 )
+                connector.close()
+                continue
             seen_database_names.add(database_name)
             loaded.append(connector)
         _connectors = loaded

@@ -25,9 +25,30 @@ export const analyticsRow = z.object({
 	}),
 });
 
+export const analyticsFilters = z.object({
+	from: z.iso
+		.datetime({ offset: true })
+		.optional()
+		.describe('Inclusive question timestamp, with time zone.'),
+	before: z.iso
+		.datetime({ offset: true })
+		.optional()
+		.describe('Exclusive upper bound on the question timestamp, with time zone.'),
+	username: z
+		.string()
+		.trim()
+		.optional()
+		.describe('Case-insensitive substring of a user name or email.'),
+	source: z.string().optional().describe('Exact channel stored on the question log.'),
+});
+
 export const openapi: OpenApiRoute = {
 	get: {
-		query: z.object({
+		query: analyticsFilters.extend({
+			includeSources: z
+				.boolean()
+				.optional()
+				.describe('Include the distinct channel names available for filtering.'),
 			skip: z.int().optional().describe('Rows to skip. Unparseable values fall back to 0.'),
 			limit: z
 				.int()
@@ -37,10 +58,14 @@ export const openapi: OpenApiRoute = {
 		responses: {
 			200: {
 				description:
-					'One page of the trailing 30-day question log, newest first. `total` ' +
-					'counts the whole window, not the page.',
-				schema: z.object({ data: z.array(analyticsRow), total: z.int() }),
+					'Matching question logs, newest first. With no date bounds the window defaults to the last 30 days. Total counts all matching rows before pagination.',
+				schema: z.object({
+					data: z.array(analyticsRow),
+					total: z.int(),
+					sources: z.array(z.string()).optional(),
+				}),
 			},
+			400: { description: 'Invalid date bounds.', schema: z.object({ error: z.string() }) },
 		},
 	},
 };

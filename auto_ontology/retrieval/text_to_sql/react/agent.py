@@ -66,7 +66,10 @@ class ReactSQLAgent(BaseAgent):
 
     def execute(self, state: AgentState) -> Dict[str, Any]:
         path_state = dict(state.get("path_state") or {})
+        from auto_ontology.dal.field_model import effective_model
+
         ctx = ToolContext(
+            model_loader=effective_model,
             retriever=state.get("semantic_retriever") or state.get("data_retriever"),
             data_retriever=state.get("data_retriever"),
             connectors=list(state.get("connectors") or []),
