@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Auto Ontology Plus
 
-Auto Ontology Plus 是基于 NVIDIA Auto Ontology 独立维护的社区增强版。数据工程师可以在网页上接入 Oracle，业务负责人可以用熟悉的语言查看术语、指定两张表该用哪些字段关联，让问答使用这些连接条件。管理员可以从问答记录追溯一次提问用到了什么 SQL。[开发路线图](./ROADMAP.md) · [v0.1 里程碑](https://github.com/yzmw123/auto-ontology-plus/milestone/1) · [English upstream guide](./README.en.md)
+Auto Ontology Plus 是基于 NVIDIA Auto Ontology 独立维护的社区增强版。数据工程师可以在网页上接入 Oracle，业务负责人可以用熟悉的语言查看术语、指定两张表该用哪些字段关联，让问答使用这些连接条件。管理员可以从问答记录追溯一次提问用到了什么 SQL。[界面实拍](#界面实拍) · [开发路线图](./ROADMAP.md) · [v0.1 里程碑](https://github.com/yzmw123/auto-ontology-plus/milestone/1) · [English upstream guide](./README.en.md)
 
 ## 与 NVIDIA 上游的区别
 
@@ -22,12 +22,33 @@ Auto Ontology Plus 是基于 NVIDIA Auto Ontology 独立维护的社区增强版
 
 例如，收费记录里同时有“入口站编号”和“出口站编号”，两者都能匹配收费站表的“站编号”。在 Plus 中可分别建成“入口站”和“出口站”两条连线。用户问“各出口站收了多少钱”时，问答可以沿“出口站”匹配字段。管理员随后可以在 **数据分析** 中找到这次提问，核对实际使用的 SQL。
 
-<details>
-<summary>查看新建数据库连接界面</summary>
+## 界面实拍
+
+### 选择数据库
+
+在「创建新连接」中按名称和标识选择数据库。图中第二列最下方是 Oracle。
 
 ![新建连接向导中显示的部分数据库及其品牌标识，包括 MySQL 和 Oracle](./docs/assets/plus-connection-picker.png)
 
-</details>
+### 在探索图中查看和编辑字段引用
+
+图中的圆点是业务术语，蓝线表示字段引用。例如，「日志记录」与「日志级别」之间有一条蓝线，点击它可以查看两端通过哪些字段关联。
+
+![探索图中的业务术语，以及日志记录和日志级别之间的蓝色字段引用连线](./docs/assets/plus-exploration-field-references.png)
+
+选中节点后，点「编辑链接」可以指定两张表怎样关联。下图把两张表的 `ID_DATABASE_CONTYPE` 配成一对。勾选「用于问答」后，系统可以在回答相关问题时使用这个连接条件。
+
+![编辑连线窗口，并排展示两张表、匹配字段和用于问答的选项](./docs/assets/plus-field-reference-editor.png)
+
+### 在数据分析中从提问追溯到 SQL
+
+用日期、用户名或渠道缩小范围。列表把每次提问放在一行，方便对照网页端与 API 的记录。
+
+![数据分析页的日期、用户名、渠道筛选，以及按行展示的问答记录](./docs/assets/plus-analytics-filters.png)
+
+点击任意一行即可打开详情。下图是一条比较两个时段行程平均车速的提问，向下滚动可以读完问题、思考说明和 SQL，并核对提问和回答时间。
+
+![可滚动的分析记录详情，展示提问与回答时间、完整问题、思考说明及 SQL](./docs/assets/plus-analytics-record.png)
 
 ## 本期更新（待发布）
 
