@@ -6,6 +6,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 type NavItem = { label: string; href: string };
 
@@ -52,38 +53,41 @@ export type SettingsNavProps = {
 	 * the request took, then took it away again.
 	 */
 	connectionsEnvManaged: boolean;
+	isAdmin: boolean;
 };
 
-// The whole Settings section is admin-only (gated in app/settings/layout.tsx),
-// so no per-item role checks are needed here.
-export const SettingsNav = ({ connectionsEnvManaged }: SettingsNavProps) => {
-	const pathname = usePathname();
+export const SettingsNav = ({ connectionsEnvManaged, isAdmin }: SettingsNavProps) => {
+	const { t: __uiT } = useLanguage();
 
-	const items: NavItem[] = [];
-	if (!connectionsEnvManaged) items.push(CONNECTIONS_NAV_ITEM);
-	items.push(
-		ZONES_NAV_ITEM,
-		TAGS_NAV_ITEM,
-		RULES_NAV_ITEM,
-		PII_SETTINGS_NAV_ITEM,
-		SEMANTIC_INPUT_NAV_ITEM,
-		USERS_NAV_ITEM,
-		SSO_NAV_ITEM,
-		SEMANTIC_COMPILATION_NAV_ITEM,
-		AGENT_SETTINGS_NAV_ITEM,
-		IMPORT_EXPORT_NAV_ITEM,
-	);
+	const pathname = usePathname();
+	const { t } = useLanguage();
+
+	const items: NavItem[] = [{ label: 'Language', href: '/settings/language' }];
+	if (isAdmin && !connectionsEnvManaged) items.push(CONNECTIONS_NAV_ITEM);
+	if (isAdmin)
+		items.push(
+			ZONES_NAV_ITEM,
+			TAGS_NAV_ITEM,
+			RULES_NAV_ITEM,
+			PII_SETTINGS_NAV_ITEM,
+			SEMANTIC_INPUT_NAV_ITEM,
+			USERS_NAV_ITEM,
+			SSO_NAV_ITEM,
+			SEMANTIC_COMPILATION_NAV_ITEM,
+			AGENT_SETTINGS_NAV_ITEM,
+			IMPORT_EXPORT_NAV_ITEM,
+		);
 
 	return (
 		<nav
 			className="flex min-h-0 flex-1 flex-col gap-y-1 overflow-y-auto px-3 py-2 sm:px-4"
-			aria-label="Settings sections"
+			aria-label={__uiT('Settings sections')}
 		>
 			{items.map((item) => {
 				const selected = pathname === item.href || pathname.startsWith(`${item.href}/`);
 				return (
 					<Link key={item.href} href={item.href} className={rowClassName(selected)}>
-						{item.label}
+						{t(item.label)}
 					</Link>
 				);
 			})}

@@ -12,6 +12,7 @@ import { Button } from '@/common/Button';
 import { Icon, IconName } from '@/common/icons';
 import { Size, ButtonTheme } from '@/enums/button';
 import { InvitationKind } from '@/enums/invitation';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const inputClass =
 	'w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300';
@@ -26,6 +27,7 @@ type InviteSetPasswordProps = {
 };
 
 export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps) => {
+	const { t: __uiT } = useLanguage();
 	const router = useRouter();
 	const [password, setPassword] = useState('');
 	const [confirm, setConfirm] = useState('');
@@ -74,15 +76,17 @@ export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps
 				<div className="flex items-center gap-2">
 					<Icon name={IconName.NvidiaLogo} className="h-6 w-6" />
 					<span className="text-lg font-semibold text-heading dark:text-zinc-100">
-						Auto Ontology
+						<T value={'Auto Ontology'} />
 					</span>
 				</div>
 				{savedWithoutSession ? (
 					<div className="flex w-full flex-col gap-4">
 						<p className="text-sm text-body dark:text-zinc-300">
-							{kind === InvitationKind.Reset
-								? 'Password updated. Sign in to continue.'
-								: 'Account created. Sign in to continue.'}
+							{kind === InvitationKind.Reset ? (
+								<T value={'Password updated. Sign in to continue.'} />
+							) : (
+								<T value={'Account created. Sign in to continue.'} />
+							)}
 						</p>
 						<Button
 							theme={ButtonTheme.Primary}
@@ -90,7 +94,7 @@ export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps
 							type="button"
 							onClick={() => router.push('/login')}
 						>
-							Sign in
+							<T value={'Sign in'} />
 						</Button>
 					</div>
 				) : (
@@ -99,18 +103,19 @@ export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps
 						className="flex w-full flex-col gap-4"
 					>
 						<p className="text-xs text-secondary dark:text-zinc-400">
-							{kind === InvitationKind.Reset
-								? 'Set a new password for '
-								: 'Set a password for '}
-							<span className="font-medium text-body">{email}</span>
-							{kind === InvitationKind.Reset ? '.' : ' to finish joining.'}
+							{__uiT(
+								kind === InvitationKind.Reset
+									? 'Set a new password for {email}.'
+									: 'Set a password for {email} to finish joining.',
+								{ email },
+							)}
 						</p>
 						<div className="flex flex-col gap-1.5">
 							<label
 								htmlFor="invite-email"
 								className="text-xs font-medium text-body dark:text-zinc-400"
 							>
-								Email
+								<T value={'Email'} />
 							</label>
 							<input
 								id="invite-email"
@@ -125,7 +130,7 @@ export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps
 								htmlFor="invite-password"
 								className="text-xs font-medium text-body dark:text-zinc-400"
 							>
-								Password
+								<T value={'Password'} />
 							</label>
 							<input
 								id="invite-password"
@@ -144,7 +149,7 @@ export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps
 								htmlFor="invite-password-confirm"
 								className="text-xs font-medium text-body dark:text-zinc-400"
 							>
-								Confirm password
+								<T value={'Confirm password'} />
 							</label>
 							<input
 								id="invite-password-confirm"
@@ -158,18 +163,24 @@ export const InviteSetPassword = ({ token, email, kind }: InviteSetPasswordProps
 								className={inputClass}
 							/>
 						</div>
-						{error ? <p className="text-xs text-red-500">{error}</p> : null}
+						{error ? (
+							<p className="text-xs text-red-500">
+								<T value={error} />
+							</p>
+						) : null}
 						<Button
 							theme={ButtonTheme.Primary}
 							size={Size.REGULAR}
 							type="submit"
 							disabled={submitting}
 						>
-							{submitting
-								? 'Saving…'
-								: kind === InvitationKind.Reset
-									? 'Save password'
-									: 'Create password'}
+							{submitting ? (
+								<T value={'Saving…'} />
+							) : kind === InvitationKind.Reset ? (
+								'Save password'
+							) : (
+								'Create password'
+							)}
 						</Button>
 					</form>
 				)}

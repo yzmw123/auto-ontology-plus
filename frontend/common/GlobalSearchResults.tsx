@@ -20,10 +20,11 @@ import { SearchObjectType } from '@/enums/search';
 // The Tags screen's own URL, from the module that owns it rather than spelled
 // again here — it is a leaf of plain constants, so importing it pulls in no
 // page.
-import { tagPath } from '@/app/settings/tags/tags-path';
+import { tagPath } from '@/app/settings/(admin)/tags/tags-path';
 import { catalogPathFromFocusId } from '@/lib/data/data-catalog-path';
 import { searchTokens, synonymWordTokens } from '@/lib/searchTokens';
 import type { GlobalSearchItem } from '@/types/search';
+import { T } from '@/i18n/LanguageProvider';
 
 const parentTermName = (item: GlobalSearchItem): string | null => {
 	const termCrumb =
@@ -249,7 +250,7 @@ export const GlobalSearchResults = ({
 						{item.synonyms && item.synonyms.length > 0 ? (
 							<p className="min-w-0 truncate pl-6 text-xs text-secondary dark:text-zinc-400">
 								<span className="text-secondary dark:text-zinc-500">
-									Synonyms:{' '}
+									<T value={'Synonyms:'} />{' '}
 								</span>
 								{item.synonyms.map((synonym, index) => (
 									<span key={`${item.id}-${synonym}`}>

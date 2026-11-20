@@ -10,6 +10,7 @@ import { Button } from '@/common/Button';
 import { Spinner } from '@/common/Spinner';
 import { Size, ButtonTheme } from '@/enums/button';
 import { ToastVariant } from '@/enums/toast';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 type ToastProps = {
 	open: boolean;
@@ -96,6 +97,8 @@ export const Toast = ({
 	variant = ToastVariant.Error,
 	onClose,
 }: ToastProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const mounted = useSyncExternalStore(
 		subscribeHydration,
 		getHydratedSnapshot,
@@ -116,11 +119,11 @@ export const Toast = ({
 				<VariantIcon variant={variant} />
 				{resolvedTitle ? (
 					<span className="text-sm font-semibold text-heading dark:text-zinc-100">
-						{resolvedTitle}
+						{__uiT(resolvedTitle)}
 					</span>
 				) : null}
 				<span className="text-sm text-heading dark:text-zinc-200">
-					{capitalizeFirst(message)}
+					{capitalizeFirst(__uiT(message))}
 				</span>
 				<Button
 					theme={ButtonTheme.IconNeutral}
@@ -128,7 +131,7 @@ export const Toast = ({
 					iconOnly
 					type="button"
 					onClick={onClose}
-					aria-label="Dismiss notification"
+					aria-label={__uiT('Dismiss notification')}
 				>
 					<svg
 						viewBox="0 0 24 24"

@@ -8,6 +8,7 @@ import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { Button } from '@/common/Button';
 import { Icon, IconName } from '@/common/icons';
 import { ButtonTheme, Size } from '@/enums/button';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type FileUploadProps = {
 	/** Currently selected file, or `null` when the zone is empty. */
@@ -41,6 +42,8 @@ export const FileUpload = ({
 	'aria-label': ariaLabel = 'Upload a file',
 	className = '',
 }: FileUploadProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const [isDragOver, setIsDragOver] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,7 +129,7 @@ export const FileUpload = ({
 							event.stopPropagation();
 							handleClear();
 						}}
-						aria-label="Remove selected file"
+						aria-label={__uiT('Remove selected file')}
 					>
 						<Icon name={IconName.Close} className="h-3.5 w-3.5" />
 					</Button>

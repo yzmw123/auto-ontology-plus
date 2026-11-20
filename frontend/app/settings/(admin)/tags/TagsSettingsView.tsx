@@ -33,6 +33,7 @@ import type { Tag, TagAuthor } from '@/types/tags';
 
 import { TagDetailView } from './TagDetailView';
 import { FOCUS_PARAM, TAGS_PANEL_CLASSNAME, TAGS_PANEL_PADDING, tagPath } from './tags-path';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /** As long as the Rules list waits: long enough to type a word into the box. */
 const SEARCH_DEBOUNCE_MS = 1000;
@@ -89,6 +90,8 @@ const TagAuthorCell = ({ author }: { author: TagAuthor | null | undefined }) => 
 };
 
 const TagsList = () => {
+	const { t: __uiT } = useLanguage();
+
 	const router = useRouter();
 	// This page is the only one that writes the vocabulary, and every picker in
 	// the app reads it. Each write below tells the cache so, which is what
@@ -353,7 +356,7 @@ const TagsList = () => {
 				<div className="w-full space-y-5">
 					<div className="flex items-center gap-3">
 						<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
-							Tags
+							<T value={'Tags'} />
 						</h1>
 						{tags.length > 0 || searching ? (
 							<div className="ml-auto">
@@ -366,7 +369,7 @@ const TagsList = () => {
 									shadow
 								>
 									<Icon name={IconName.Plus} className="h-4 w-4" />
-									Create New Tag
+									<T value={'Create New Tag'} />
 								</Button>
 							</div>
 						) : null}
@@ -382,20 +385,20 @@ const TagsList = () => {
 						<SearchInput
 							value={query}
 							onChange={setQuery}
-							placeholder="Search Tags…"
-							aria-label="Search tags"
+							placeholder={__uiT('Search Tags…')}
+							aria-label={__uiT('Search tags')}
 							className="w-full"
 						/>
 					) : null}
 
 					{!loading && error != null && tags.length === 0 ? (
 						<div className="rounded-lg border border-red-200/90 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-							{error}
+							<T value={error} />
 						</div>
 					) : null}
 
 					{loading ? (
-						<div className="py-2" role="status" aria-label="Loading tags">
+						<div className="py-2" role="status" aria-label={__uiT('Loading tags')}>
 							<SkeletonRows rows={4} />
 						</div>
 					) : tags.length > 0 ? (
@@ -417,11 +420,17 @@ const TagsList = () => {
 						<EmptyState
 							variant={EmptyStateVariant.Inline}
 							icon={IconName.Tag}
-							title={searching ? 'No Tags Match Your Search' : 'No Tags Yet'}
+							title={
+								searching
+									? __uiT('No Tags Match Your Search')
+									: __uiT('No Tags Yet')
+							}
 							description={
 								searching
 									? undefined
-									: 'Tags label catalog items so they can be found and governed together.'
+									: __uiT(
+											'Tags label catalog items so they can be found and governed together.',
+										)
 							}
 							action={
 								searching
@@ -441,8 +450,8 @@ const TagsList = () => {
 			<ModalCreateNewItem
 				open={dialog !== null}
 				onClose={closeDialog}
-				title={renaming == null ? 'Create New Tag' : 'Rename Tag'}
-				submitLabel={renaming == null ? 'Create' : 'Save'}
+				title={renaming == null ? __uiT('Create New Tag') : __uiT('Rename Tag')}
+				submitLabel={renaming == null ? 'Create' : __uiT('Save')}
 				canSubmit={canSubmit}
 				onSubmit={handleSubmit}
 				className="w-[520px] max-w-full"
@@ -456,7 +465,7 @@ const TagsList = () => {
 							name={IconName.Tag}
 							className="h-4 w-4 text-secondary dark:text-zinc-400"
 						/>
-						Tag Name
+						<T value={'Tag Name'} />
 						<span className="font-normal text-secondary dark:text-zinc-500">
 							(Max. {MAX_TAG_NAME_LENGTH})
 						</span>
@@ -473,14 +482,14 @@ const TagsList = () => {
 							// makes it stale rather than helpful.
 							setSubmitError(null);
 						}}
-						placeholder="Type Tag Name"
+						placeholder={__uiT('Type Tag Name')}
 						className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500 ${submitError == null ? 'border-zinc-300 focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600' : 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 dark:border-red-500 dark:focus:border-red-400 dark:focus:ring-red-400/30'}`}
 					/>
 				</div>
 
 				{submitError ? (
 					<div className="rounded-lg border border-red-200/90 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-						{submitError}
+						<T value={submitError} />
 					</div>
 				) : null}
 
@@ -491,7 +500,7 @@ const TagsList = () => {
 
 			<ConfirmModal
 				open={confirmDeleteTag !== null}
-				title="Delete Tag"
+				title={__uiT('Delete Tag')}
 				message={
 					confirmDeleteTag == null
 						? ''
@@ -510,7 +519,9 @@ const TagsList = () => {
 export const TagsSettingsSkeleton = () => (
 	<main className={TAGS_PANEL_CLASSNAME}>
 		<div className={`w-full space-y-5 ${TAGS_PANEL_PADDING}`}>
-			<h1 className="text-base font-semibold text-heading dark:text-zinc-100">Tags</h1>
+			<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
+				<T value={'Tags'} />
+			</h1>
 			<div className="py-2" role="status" aria-label="Loading tags">
 				<SkeletonRows rows={4} />
 			</div>

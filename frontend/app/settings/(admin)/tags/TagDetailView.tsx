@@ -24,6 +24,7 @@ import type { Tag, TagItem } from '@/types/tags';
 
 import { tagItemPath } from './tag-item-path';
 import { TAGS_PANEL_PADDING, TAGS_PATH } from './tags-path';
+import { useLanguage, T } from '@/i18n/LanguageProvider';
 
 const TYPE_LABELS: Record<TagItemType, string> = {
 	[TagItemType.Term]: 'Term',
@@ -166,6 +167,8 @@ type TagDetailViewProps = {
  * this page is titled with — is one small read that does not wait for them.
  */
 export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const router = useRouter();
 	// No loading flag beside these: the two reads render independently, and a
 	// tag that has not arrived is `tag == null`, which is what the title
@@ -236,7 +239,7 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 			<div className={`w-full space-y-5 ${TAGS_PANEL_PADDING}`}>
 				<EmptyState
 					icon={IconName.Tag}
-					title="This tag could not be opened"
+					title={__uiT('This tag could not be opened')}
 					description={error}
 					action={{ label: 'Back to Tags', onClick: () => router.push(TAGS_PATH) }}
 				/>
@@ -283,12 +286,12 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 
 				{!itemsLoading && itemsError != null && items.length === 0 ? (
 					<div className="rounded-lg border border-red-200/90 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-						{itemsError}
+						<T value={itemsError} />
 					</div>
 				) : null}
 
 				{itemsLoading ? (
-					<div role="status" aria-label="Loading tagged items">
+					<div role="status" aria-label={__uiT('Loading tagged items')}>
 						<SkeletonTable columns={5} rows={4} />
 					</div>
 				) : null}
@@ -307,8 +310,10 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 					<EmptyState
 						variant={EmptyStateVariant.Inline}
 						icon={IconName.Tag}
-						title="Nothing is tagged with this tag"
-						description="Terms, tables, columns, column attributes and SQL attributes carrying this tag will be listed here."
+						title={__uiT('Nothing is tagged with this tag')}
+						description={__uiT(
+							'Terms, tables, columns, column attributes and SQL attributes carrying this tag will be listed here.',
+						)}
 						className="rounded-lg border border-dashed border-zinc-300/90 bg-white/70 dark:border-zinc-600 dark:bg-zinc-900/30"
 					/>
 				) : null}

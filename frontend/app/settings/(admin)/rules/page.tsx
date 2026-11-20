@@ -27,6 +27,7 @@ import type { Rule } from '@/types/rules';
 
 import { RuleInformationModal } from './RuleInformationModal';
 import { RuleAuthor } from './RuleAuthor';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /** Long enough to type a word into the box. Every search in the app waits it. */
 const SEARCH_DEBOUNCE_MS = 1000;
@@ -90,6 +91,8 @@ const DELETE_OPTIONS = [
  * goes to the backend and starts the paging over.
  */
 export default function RulesSettingsPage() {
+	const { t: __uiT } = useLanguage();
+
 	const router = useRouter();
 	const [information, setInformation] = useState<Rule | null>(null);
 	const [renaming, setRenaming] = useState<Rule | null>(null);
@@ -212,7 +215,7 @@ export default function RulesSettingsPage() {
 			>
 				<div className="w-full space-y-5">
 					<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
-						Rules
+						<T value={'Rules'} />
 					</h1>
 
 					{/* A box for narrowing a list, so there is none until there is a
@@ -225,20 +228,20 @@ export default function RulesSettingsPage() {
 						<SearchInput
 							value={query}
 							onChange={setQuery}
-							placeholder="Search Rules…"
-							aria-label="Search rules"
+							placeholder={__uiT('Search Rules…')}
+							aria-label={__uiT('Search rules')}
 							className="w-full"
 						/>
 					) : null}
 
 					{!loading && error != null && rules.length === 0 ? (
 						<div className="rounded-lg border border-red-200/90 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-							{error}
+							<T value={error} />
 						</div>
 					) : null}
 
 					{loading ? (
-						<div className="py-2" role="status" aria-label="Loading rules">
+						<div className="py-2" role="status" aria-label={__uiT('Loading rules')}>
 							<SkeletonRows rows={4} />
 						</div>
 					) : null}
@@ -249,13 +252,15 @@ export default function RulesSettingsPage() {
 							illustration={<Placeholders.NoRules />}
 							title={
 								debouncedQuery
-									? 'No Rules Match Your Search'
-									: 'No Rules Created Yet'
+									? __uiT('No Rules Match Your Search')
+									: __uiT('No Rules Created Yet')
 							}
 							description={
 								debouncedQuery
 									? undefined
-									: 'Rules are created on the Discovery page. Search for the items you would like to tag, then create a new rule from the results.'
+									: __uiT(
+											'Rules are created on the Discovery page. Search for the items you would like to tag, then create a new rule from the results.',
+										)
 							}
 							action={
 								debouncedQuery
@@ -348,10 +353,14 @@ export default function RulesSettingsPage() {
 											name={IconName.Users}
 											className="h-3.5 w-3.5 shrink-0"
 										/>
-										<span>Created By</span>
+										<span>
+											<T value={'Created By'} />
+										</span>
 										<RuleAuthor author={rule.created_by_user} />
 										<span className="ml-auto flex items-center gap-3">
-											<span>Last Modified</span>
+											<span>
+												<T value={'Last Modified'} />
+											</span>
 											<span className="text-body dark:text-zinc-300">
 												{formatDate(rule.modified)}
 											</span>
@@ -372,8 +381,8 @@ export default function RulesSettingsPage() {
 			<ModalCreateNewItem
 				open={renaming !== null}
 				onClose={closeRename}
-				title="Rename Rule"
-				submitLabel={renamingSaving ? 'Saving…' : 'Save'}
+				title={__uiT('Rename Rule')}
+				submitLabel={renamingSaving ? __uiT('Saving…') : __uiT('Save')}
 				canSubmit={canRename}
 				onSubmit={handleRename}
 				className="w-[520px] max-w-full"
@@ -387,27 +396,31 @@ export default function RulesSettingsPage() {
 							name={IconName.Lightning}
 							className="h-4 w-4 text-secondary dark:text-zinc-400"
 						/>
-						Rule Name
+						<T value={'Rule Name'} />
 					</label>
 					<input
 						id="rule-name"
 						type="text"
 						value={name}
 						onChange={(event) => setName(event.target.value)}
-						placeholder="Type Rule Name"
+						placeholder={__uiT('Type Rule Name')}
 						className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500"
 					/>
 					{/* The tags and the search are on the information card, and are not
 					    editable — worth saying inside the dialog that changes the one
 					    thing about a rule that is. */}
 					<p className="mt-1.5 text-xs text-secondary dark:text-zinc-400">
-						Renaming does not change what the rule matches or the tags it applies.
+						<T
+							value={
+								'Renaming does not change what the rule matches or the tags it applies.'
+							}
+						/>
 					</p>
 				</div>
 
 				{renameError ? (
 					<div className="rounded-lg border border-red-200/90 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-						{renameError}
+						<T value={renameError} />
 					</div>
 				) : null}
 
@@ -423,7 +436,7 @@ export default function RulesSettingsPage() {
 			    given the choice of whether to accept it. */}
 			<ConfirmModal
 				open={confirmDelete !== null}
-				title="Delete Rule"
+				title={__uiT('Delete Rule')}
 				className="w-[520px] max-w-full"
 				message={
 					confirmDelete == null ? (
@@ -433,7 +446,7 @@ export default function RulesSettingsPage() {
 							<p>{`Are you sure you want to delete "${confirmDelete.name}"? This action cannot be undone.`}</p>
 							<fieldset className="mt-4">
 								<legend className="text-xs font-medium text-heading dark:text-zinc-200">
-									The tags this rule applied
+									<T value={'The tags this rule applied'} />
 								</legend>
 								<div className="mt-2 space-y-2">
 									{DELETE_OPTIONS.map((option) => (
@@ -466,7 +479,7 @@ export default function RulesSettingsPage() {
 				}
 				// The button says which of the two is about to happen, so the last
 				// thing read before pressing it is the choice that was made.
-				confirmLabel={keepTags ? 'Delete Rule Only' : 'Delete All'}
+				confirmLabel={keepTags ? __uiT('Delete Rule Only') : __uiT('Delete All')}
 				onConfirm={handleConfirmDelete}
 				onCancel={() => {
 					if (deleting) return;

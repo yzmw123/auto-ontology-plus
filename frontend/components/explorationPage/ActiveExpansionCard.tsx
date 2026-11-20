@@ -18,6 +18,7 @@ import type {
 	ExpansionEntityKind,
 	ExplorationLinkPathHopDto,
 } from '@/types/exploration';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const TYPE_ICON: Record<ExpansionEntityKind, IconName> = {
 	schema: IconName.Schema,
@@ -147,10 +148,12 @@ const PathChain = ({ hops }: { hops: ExplorationLinkPathHopDto[] }) => {
  * comment) case where they genuinely share no traceable path.
  */
 const ConnectionDetails = ({ hops }: { hops: ExplorationLinkPathHopDto[] | null | undefined }) => {
+	const { t: __uiT } = useLanguage();
+
 	if (hops == null) {
 		return (
 			<Text as="p" variant={TextVariant.Caption}>
-				Loading connection…
+				<T value={'Loading connection…'} />
 			</Text>
 		);
 	}
@@ -159,15 +162,15 @@ const ConnectionDetails = ({ hops }: { hops: ExplorationLinkPathHopDto[] | null 
 			<EmptyState
 				variant={EmptyStateVariant.Inline}
 				icon={IconName.Link}
-				title="No Connection Found"
-				description="These terms no longer share a common table."
+				title={__uiT('No Connection Found')}
+				description={__uiT('These terms no longer share a common table.')}
 			/>
 		);
 	}
 	return (
 		<div className="flex flex-col gap-1.5">
 			<Text as="p" variant={TextVariant.Caption}>
-				Details
+				<T value={'Details'} />
 			</Text>
 			<PathChain hops={hops} />
 		</div>

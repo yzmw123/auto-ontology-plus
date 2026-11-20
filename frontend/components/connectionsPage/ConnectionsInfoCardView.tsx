@@ -10,6 +10,7 @@ import { IconName } from '@/common/icons';
 import { SkeletonCard } from '@/common/Skeleton';
 import { EmptyStateVariant } from '@/enums/emptyState';
 import type { Connection } from '@/types/connection';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 type ConnectionsInfoCardViewProps = {
 	connections: Connection[];
@@ -29,6 +30,8 @@ export const ConnectionsInfoCardView = ({
 	onSsoFederationChange,
 	ssoFederationPending = null,
 }: ConnectionsInfoCardViewProps) => {
+	const { t: __uiT } = useLanguage();
+
 	if (loading) {
 		return (
 			<div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -44,7 +47,7 @@ export const ConnectionsInfoCardView = ({
 			<EmptyState
 				variant={EmptyStateVariant.Borderless}
 				icon={IconName.Connection}
-				title="No Results"
+				title={__uiT('No Results')}
 			/>
 		);
 	}

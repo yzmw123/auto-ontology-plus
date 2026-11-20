@@ -16,6 +16,7 @@ import { ButtonTheme, Size } from '@/enums/button';
 import type { Rule } from '@/types/rules';
 
 import { RuleAuthor } from './RuleAuthor';
+import { T } from '@/i18n/LanguageProvider';
 
 /**
  * Which kinds of object a rule labels, as the search tab it was saved from
@@ -100,7 +101,7 @@ export const RuleInformationModal = ({
 							aria-hidden
 						/>
 						<span className="font-semibold text-heading dark:text-zinc-100">
-							Created By
+							<T value={'Created By'} />
 						</span>
 						<RuleAuthor author={rule.created_by_user} />
 					</div>
@@ -116,7 +117,7 @@ export const RuleInformationModal = ({
 								aria-hidden
 							/>
 							<span className="font-semibold text-heading dark:text-zinc-100">
-								Renamed By
+								<T value={'Renamed By'} />
 							</span>
 							<RuleAuthor author={rule.modified_by_user} />
 							<span className="ml-auto shrink-0 text-xs text-secondary dark:text-zinc-400">

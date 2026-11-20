@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 import { Icon, IconName } from '@/common/icons';
 import { Text } from '@/common/Text';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type BreadcrumbItem = {
 	label: string;
@@ -21,8 +22,10 @@ type BreadcrumbsProps = {
 const CRUMB_MAX_WIDTH = 'max-w-64';
 
 export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
+	const { t: __uiT } = useLanguage();
+
 	return (
-		<nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
+		<nav aria-label={__uiT('Breadcrumb')} className="flex min-w-0 items-center gap-1 text-sm">
 			{items.map((item, i) => {
 				const isLast = i === items.length - 1;
 

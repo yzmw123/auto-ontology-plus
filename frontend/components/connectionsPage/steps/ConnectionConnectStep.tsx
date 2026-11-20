@@ -14,6 +14,7 @@ import {
 	type ConnectionFieldKey,
 	type ConnectionType,
 } from '@/enums/connection';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const EMPTY_KEYS: ReadonlySet<ConnectionFieldKey> = new Set();
 
@@ -44,10 +45,12 @@ export const ConnectionConnectStep = ({
 	testDisabled = false,
 	testingConnection = false,
 }: ConnectionConnectStepProps) => {
+	const { t: __uiT } = useLanguage();
+
 	if (loading) {
 		return (
 			<div className="flex flex-1 items-center justify-center">
-				<Spinner aria-label="Loading connection" className="h-10 w-10" />
+				<Spinner aria-label={__uiT('Loading connection')} className="h-10 w-10" />
 			</div>
 		);
 	}
@@ -183,7 +186,7 @@ export const ConnectionConnectStep = ({
 							)}
 							{keepsCurrent && (
 								<span className="text-xs text-secondary dark:text-zinc-400">
-									Leave empty to keep the stored value.
+									<T value={'Leave empty to keep the stored value.'} />
 								</span>
 							)}
 							{field.hint != null && (
@@ -204,7 +207,11 @@ export const ConnectionConnectStep = ({
 						onClick={onTestConnection}
 						disabled={testButtonDisabled}
 					>
-						{testingConnection ? 'Test Connection…' : 'Test Connection'}
+						{testingConnection ? (
+							<T value={'Test Connection…'} />
+						) : (
+							<T value={'Test Connection'} />
+						)}
 					</Button>
 				)}
 				{testSuccessMessage != null && (

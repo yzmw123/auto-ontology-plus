@@ -12,17 +12,19 @@ type SettingsPanelLayoutProps = {
 	children: ReactNode;
 	/** Passed straight to the nav, which drops Connections when it is set. */
 	connectionsEnvManaged: boolean;
+	isAdmin: boolean;
 };
 
 export const SettingsPanelLayout = ({
 	children,
 	connectionsEnvManaged,
+	isAdmin,
 }: SettingsPanelLayoutProps) => (
 	<BackPanelLayout
 		panelAriaLabel="Settings sections"
 		expandAriaLabel="Expand settings menu"
 		collapseAriaLabel="Collapse settings menu"
-		panel={<SettingsNav connectionsEnvManaged={connectionsEnvManaged} />}
+		panel={<SettingsNav connectionsEnvManaged={connectionsEnvManaged} isAdmin={isAdmin} />}
 	>
 		{children}
 	</BackPanelLayout>

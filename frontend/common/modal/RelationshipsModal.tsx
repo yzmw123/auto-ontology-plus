@@ -22,6 +22,7 @@ import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
 import { usePagination } from '@/hooks/usePagination';
 import { Modal } from './Modal';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 type RelationshipsModalProps = {
 	node: ExplorationNode | null;
@@ -54,6 +55,8 @@ export const RelationshipsModal = ({
 	onFocus,
 	focusableNodeIds,
 }: RelationshipsModalProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const nodeId = node?.id ?? null;
 	const [rows, setRows] = useState<ExplorationNode[]>([]);
 	const [total, setTotal] = useState(0);
@@ -106,9 +109,11 @@ export const RelationshipsModal = ({
 						}
 						className="h-4 w-4 text-body dark:text-zinc-300"
 					/>
-					{row.layer === ExplorationLayer.Semantic
-						? 'Term'
-						: catalogNodeInfo[row.nodeType].title}
+					{row.layer === ExplorationLayer.Semantic ? (
+						<T value={'Term'} />
+					) : (
+						catalogNodeInfo[row.nodeType].title
+					)}
 				</div>
 			),
 		},
@@ -175,7 +180,7 @@ export const RelationshipsModal = ({
 								: `${row.name} is not shown on the current graph`
 						}
 					>
-						Focus
+						<T value={'Focus'} />
 					</Button>
 				);
 			},
@@ -200,18 +205,20 @@ export const RelationshipsModal = ({
 					iconOnly
 					type="button"
 					onClick={onClose}
-					aria-label="Close related entities"
+					aria-label={__uiT('Close related entities')}
 				>
 					<Icon name={IconName.Close} className="h-4 w-4" />
 				</Button>
 			</header>
 			<div className="max-h-[70dvh] overflow-y-auto p-5">
 				{loading ? (
-					<div role="status" aria-label="Loading related entities">
+					<div role="status" aria-label={__uiT('Loading related entities')}>
 						<SkeletonTable columns={columns.length} rows={pageRowCount} />
 					</div>
 				) : error != null ? (
-					<p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+					<p className="text-sm text-red-600 dark:text-red-300">
+						<T value={error} />
+					</p>
 				) : (
 					<Table
 						columns={columns}
@@ -219,7 +226,7 @@ export const RelationshipsModal = ({
 						rowKey={(row) => row.id}
 						pagination={pagination}
 						containerClassName="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
-						emptyMessage="No Related Entities"
+						emptyMessage={__uiT('No Related Entities')}
 					/>
 				)}
 			</div>

@@ -5,6 +5,7 @@
 import { Icon, IconName } from '@/common/icons';
 import { groupColorClass } from '@/lib/owners';
 import type { Owner } from '@/types/owners';
+import { T } from '@/i18n/LanguageProvider';
 
 type OwnerLabelOwner = Pick<Owner, 'name' | 'kind' | 'color'>;
 
@@ -22,7 +23,9 @@ export const OwnerLabel = ({ owner }: { owner?: OwnerLabelOwner | null }) => {
 				<span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-secondary dark:bg-zinc-700 dark:text-zinc-400">
 					<Icon name={IconName.User} className="h-3.5 w-3.5" />
 				</span>
-				<span className="truncate">Unassigned</span>
+				<span className="truncate">
+					<T value={'Unassigned'} />
+				</span>
 			</span>
 		);
 	}

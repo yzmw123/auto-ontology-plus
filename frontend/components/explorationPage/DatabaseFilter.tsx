@@ -14,6 +14,7 @@ import { Popover } from '@/common/Popover';
 import { ButtonTheme, SelectButtonTheme, Size } from '@/enums/button';
 import { PopoverAlign } from '@/enums/popover';
 import type { Database } from '@/types/datasources';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const DATABASE_SELECTION_NAME = 'exploration-database';
 
@@ -33,6 +34,8 @@ export type DatabaseFilterProps = {
  * that catalog in full.
  */
 export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const [databases, setDatabases] = useState<Database[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [failed, setFailed] = useState(false);
@@ -77,7 +80,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 						theme={SelectButtonTheme.SelectField}
 						onClick={togglePanel}
 						aria-expanded={open}
-						aria-label="Filter by database"
+						aria-label={__uiT('Filter by database')}
 					>
 						<span className="flex min-w-0 items-center gap-2">
 							<Icon
@@ -104,7 +107,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
 						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
-							Filter By
+							<T value={'Filter By'} />
 						</span>
 						<Button
 							theme={ButtonTheme.Minimal}
@@ -116,7 +119,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 							}}
 							disabled={emptyMessage !== null || selected === null}
 						>
-							Select All
+							<T value={'Select All'} />
 						</Button>
 					</div>
 					{emptyMessage !== null ? (
@@ -143,7 +146,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 										className="h-4 w-4 text-zinc-500 dark:text-zinc-400"
 									/>
 								</span>
-								All databases
+								<T value={'All databases'} />
 							</label>
 							<DataTreeSelect
 								databases={databases}

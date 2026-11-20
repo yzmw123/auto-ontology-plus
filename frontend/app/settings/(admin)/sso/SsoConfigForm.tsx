@@ -10,6 +10,7 @@ import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
 import { ToastVariant } from '@/enums/toast';
 import { Toast } from '@/common/Toast';
+import { T } from '@/i18n/LanguageProvider';
 
 // Only one provider is supported; its id is a fixed constant. It's the DB key
 // and the providerId segment of the native callback (/api/auth/sso/callback/sso).
@@ -98,11 +99,14 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 		<div className="h-full overflow-auto p-6">
 			<div className="mx-auto max-w-xl">
 				<h1 className="mb-1 text-lg font-semibold text-heading dark:text-zinc-100">
-					Single Sign-On (OIDC)
+					<T value={'Single Sign-On (OIDC)'} />
 				</h1>
 				<p className="mb-4 text-xs text-secondary">
-					Configure a single OpenID Connect provider. Endpoints are discovered from the
-					issuer. The client secret is stored securely and never shown again.
+					<T
+						value={
+							'Configure a single OpenID Connect provider. Endpoints are discovered from the issuer. The client secret is stored securely and never shown again.'
+						}
+					/>
 				</p>
 
 				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -111,7 +115,7 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 							htmlFor="issuer"
 							className="text-xs font-medium text-body dark:text-zinc-400"
 						>
-							Issuer URL
+							<T value={'Issuer URL'} />
 						</label>
 						<input
 							id="issuer"
@@ -129,7 +133,7 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 							htmlFor="clientId"
 							className="text-xs font-medium text-body dark:text-zinc-400"
 						>
-							Client ID
+							<T value={'Client ID'} />
 						</label>
 						<input
 							id="clientId"
@@ -146,7 +150,7 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 							htmlFor="clientSecret"
 							className="text-xs font-medium text-body dark:text-zinc-400"
 						>
-							Client Secret
+							<T value={'Client Secret'} />
 						</label>
 						<input
 							id="clientSecret"
@@ -170,9 +174,11 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 								onClick={() => handleDelete(provider.provider_id)}
 								disabled={deletingId === provider.provider_id}
 							>
-								{deletingId === provider.provider_id
-									? 'Deleting…'
-									: 'Delete provider'}
+								{deletingId === provider.provider_id ? (
+									<T value={'Deleting…'} />
+								) : (
+									'Delete provider'
+								)}
 							</Button>
 						</div>
 					) : (
@@ -183,7 +189,7 @@ export const SsoConfigForm = ({ initialProviders }: { initialProviders: SsoProvi
 								type="submit"
 								disabled={submitting}
 							>
-								{submitting ? 'Saving…' : 'Save provider'}
+								{submitting ? <T value={'Saving…'} /> : 'Save provider'}
 							</Button>
 						</div>
 					)}

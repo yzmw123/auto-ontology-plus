@@ -11,12 +11,15 @@ import { Table, TABLE_THEAD_CLASSNAME } from '@/common/Table';
 import { EmptyStateVariant } from '@/enums/emptyState';
 import { usePagination } from '@/hooks/usePagination';
 import type { TableColumn } from '@/types/table';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 type DynamicTableProps = {
 	table: ParsedTable;
 };
 
 export const DynamicTable = ({ table }: DynamicTableProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const { columns, rows } = table;
 	const { skip, pageSize, pagination } = usePagination({ totalItems: rows.length });
 	// A fresh array every render would re-render `Table` on every parent render,
@@ -38,7 +41,7 @@ export const DynamicTable = ({ table }: DynamicTableProps) => {
 	);
 
 	if (columns.length === 0 || rows.length === 0) {
-		return <EmptyState variant={EmptyStateVariant.Inline} title="No Data Available" />;
+		return <EmptyState variant={EmptyStateVariant.Inline} title={__uiT('No Data Available')} />;
 	}
 
 	return (

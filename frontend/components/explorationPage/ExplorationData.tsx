@@ -21,6 +21,7 @@ import type {
 	ExplorationLink,
 } from '@/types/exploration';
 import { ZonesRow } from '@/common/SinglePageComposer';
+import { T } from '@/i18n/LanguageProvider';
 
 /** Build the data-layer graph (Tables/Views + their relationships) from the server DTO. */
 export const buildDataGraph = (graph: DataExplorationGraph): ExplorationGraph => {
@@ -93,7 +94,7 @@ export const ActiveDataCard = ({
 	<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
 		<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 			<p className="text-xs font-semibold text-body dark:text-zinc-300">
-				Showing info on this Data Object
+				<T value={'Showing info on this Data Object'} />
 			</p>
 			<Button
 				theme={ButtonTheme.IconNeutral}
@@ -126,7 +127,7 @@ export const ActiveDataCard = ({
 					type="button"
 					onClick={onView}
 				>
-					View in Data
+					<T value={'View in Data'} />
 				</Button>
 			</div>
 			<div className="flex flex-col gap-2">
@@ -136,7 +137,7 @@ export const ActiveDataCard = ({
 			</div>
 			<div className="grid grid-cols-2 gap-2">
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					Columns: {node.columnsCount}
+					<T value={'Columns:'} /> {node.columnsCount}
 					<DetailLinkButton
 						count={node.columnsCount}
 						onClick={onShowColumns}
@@ -144,7 +145,7 @@ export const ActiveDataCard = ({
 					/>
 				</span>
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					SQL Queries: {node.sqlCount}
+					<T value={'SQL Queries:'} /> {node.sqlCount}
 					<DetailLinkButton
 						count={node.sqlCount}
 						onClick={onShowQueries}
@@ -152,7 +153,7 @@ export const ActiveDataCard = ({
 					/>
 				</span>
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					Terms: {node.termsCount}
+					<T value={'Terms:'} /> {node.termsCount}
 					<DetailLinkButton
 						count={node.termsCount}
 						onClick={onShowTerms}
@@ -160,7 +161,7 @@ export const ActiveDataCard = ({
 					/>
 				</span>
 				<span className="flex items-center justify-between gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-body dark:border-zinc-700 dark:text-zinc-300">
-					Related Tables: {node.relationshipCount}
+					<T value={'Related Tables:'} /> {node.relationshipCount}
 					<DetailLinkButton
 						count={node.relationshipCount}
 						onClick={onShowRelationships}

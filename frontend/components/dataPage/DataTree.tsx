@@ -24,6 +24,7 @@ import {
 	mergeSchemasIntoDatabase,
 	mergeTablesIntoSchema,
 } from '@/lib/data/datasource-tree-merge';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 function scheduleTreeDataNotify(
 	onTreeDataUpdated: ((dbs: Database[]) => void) | undefined,
@@ -531,6 +532,8 @@ export function DataTree({
 	className = '',
 	onTreeDataUpdated,
 }: DataTreeProps) {
+	const { t: __uiT } = useLanguage();
+
 	const [databases, setDatabases] = useState<Database[]>(initialDatabases);
 	const catalogFpRef = useRef('');
 
@@ -587,7 +590,7 @@ export function DataTree({
 	return (
 		<nav
 			className={`flex min-h-0 flex-1 flex-col gap-y-1 overflow-y-auto px-3 py-2 sm:px-4 ${className}`}
-			aria-label="Datasource tree"
+			aria-label={__uiT('Datasource tree')}
 		>
 			{databases.map((database) => (
 				<DatabaseBlock

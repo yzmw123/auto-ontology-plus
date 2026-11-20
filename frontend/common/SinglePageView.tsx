@@ -11,6 +11,7 @@ import {
 	type SinglePageComposerProps,
 } from '@/common/SinglePageComposer';
 import { SkeletonDetail } from '@/common/Skeleton';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type SinglePageFormat = SinglePageComposerProps;
 
@@ -60,6 +61,8 @@ export const SinglePageView = ({
 	hideEditToolbar,
 	headerActions,
 }: SinglePageViewProps): React.JSX.Element | null => {
+	const { t: __uiT } = useLanguage();
+
 	const [loading, setLoading] = useState(true);
 	const [props, setProps] = useState<SinglePageFormat | null>(null);
 	const prevCoreRef = useRef<{
@@ -100,7 +103,7 @@ export const SinglePageView = ({
 
 	if (loading) {
 		return (
-			<div className="flex flex-1" role="status" aria-label="Loading details">
+			<div className="flex flex-1" role="status" aria-label={__uiT('Loading details')}>
 				<SkeletonDetail />
 			</div>
 		);

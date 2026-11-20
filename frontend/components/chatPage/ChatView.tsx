@@ -20,8 +20,11 @@ import { ChatSidebar } from './ChatSidebar';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { SemanticNotReady } from './SemanticNotReady';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export const ChatView = () => {
+	const { t: __uiT } = useLanguage();
+
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -228,7 +231,10 @@ export const ChatView = () => {
 			<main className="flex min-w-0 flex-1 flex-col">
 				{semanticReady == null ? (
 					<div className="flex flex-1 items-center justify-center">
-						<Spinner aria-label="Checking semantic layer" className="h-10 w-10" />
+						<Spinner
+							aria-label={__uiT('Checking semantic layer')}
+							className="h-10 w-10"
+						/>
 					</div>
 				) : !semanticReady ? (
 					<SemanticNotReady />

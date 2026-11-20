@@ -25,6 +25,7 @@ import type { SearchObjectType } from '@/enums/search';
 import { tagQueries } from '@/lib/queries/tags';
 import type { DiscoveryFilters } from '@/types/discovery';
 import { DataFilter } from './DataFilter';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type DiscoveryFiltersPanelProps = {
 	/** The filters being edited, which are not yet the ones a search ran with. */
@@ -135,6 +136,8 @@ const ObjectsFilter = ({
 	selected: SearchObjectType[] | null;
 	onChange: (selected: SearchObjectType[] | null) => void;
 }) => {
+	const { t: __uiT } = useLanguage();
+
 	const effective = selected ?? SEARCH_TYPE_TAB_ORDER;
 	const allSelected = selected === null;
 
@@ -159,7 +162,7 @@ const ObjectsFilter = ({
 					theme={SelectButtonTheme.SelectField}
 					onClick={toggle}
 					aria-expanded={open}
-					aria-label="Filter by object type"
+					aria-label={__uiT('Filter by object type')}
 				>
 					<span className="truncate">{selectionSummary(selected)}</span>
 					<Icon
@@ -173,7 +176,7 @@ const ObjectsFilter = ({
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
 						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
-							Filter By
+							<T value={'Filter By'} />
 						</span>
 						<Button
 							theme={ButtonTheme.Minimal}
@@ -253,6 +256,8 @@ const TagsFilter = ({
 	selected: string[] | null;
 	onChange: (selected: string[] | null) => void;
 }) => {
+	const { t: __uiT } = useLanguage();
+
 	const [search, setSearch] = useState('');
 	// The vocabulary the rest of the app already holds — the layout prefetches
 	// it, so this panel usually opens on the tags rather than on "Loading".
@@ -312,7 +317,7 @@ const TagsFilter = ({
 					theme={SelectButtonTheme.SelectField}
 					onClick={togglePanel}
 					aria-expanded={open}
-					aria-label="Filter by tag"
+					aria-label={__uiT('Filter by tag')}
 				>
 					<span className="truncate">{summary}</span>
 					<Icon
@@ -326,7 +331,7 @@ const TagsFilter = ({
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
 						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
-							Filter By
+							<T value={'Filter By'} />
 						</span>
 						<Button
 							theme={ButtonTheme.Minimal}
@@ -342,15 +347,15 @@ const TagsFilter = ({
 						<SearchInput
 							value={search}
 							onChange={setSearch}
-							placeholder="Search tags…"
-							aria-label="Search tags"
+							placeholder={__uiT('Search tags…')}
+							aria-label={__uiT('Search tags')}
 							className="h-8 w-full"
 						/>
 					</div>
 					<div className="max-h-56 overflow-y-auto [scrollbar-gutter:stable]">
 						{untaggedMatches && (
 							<TagOption
-								label="(Blanks)"
+								label={__uiT('(Blanks)')}
 								checked={effective.includes(UNTAGGED_TAG_FILTER)}
 								onToggle={() => toggle(UNTAGGED_TAG_FILTER)}
 							/>
@@ -392,6 +397,8 @@ export const DiscoveryFiltersPanel = ({
 	onChange,
 	onReset,
 }: DiscoveryFiltersPanelProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const changedCount = changedDiscoveryFilterCount(filters);
 
 	return (
@@ -399,7 +406,7 @@ export const DiscoveryFiltersPanel = ({
 			<div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
 				<span className="flex items-center gap-1.5">
 					<span className="text-base font-semibold text-heading dark:text-zinc-100">
-						Filters
+						<T value={'Filters'} />
 					</span>
 					<Icon name={IconName.Filter} className="h-4 w-4 text-body dark:text-zinc-300" />
 				</span>
@@ -417,7 +424,7 @@ export const DiscoveryFiltersPanel = ({
 			<div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto py-3">
 				<FilterRow
 					icon={IconName.Exploration}
-					title="Objects"
+					title={__uiT('Objects')}
 					changed={filters.objects !== null}
 				>
 					<ObjectsFilter
@@ -425,13 +432,21 @@ export const DiscoveryFiltersPanel = ({
 						onChange={(objects) => onChange({ ...filters, objects })}
 					/>
 				</FilterRow>
-				<FilterRow icon={IconName.Tag} title="Tags" changed={filters.tags !== null}>
+				<FilterRow
+					icon={IconName.Tag}
+					title={__uiT('Tags')}
+					changed={filters.tags !== null}
+				>
 					<TagsFilter
 						selected={filters.tags}
 						onChange={(tags) => onChange({ ...filters, tags })}
 					/>
 				</FilterRow>
-				<FilterRow icon={IconName.Table} title="Data" changed={filters.data !== null}>
+				<FilterRow
+					icon={IconName.Table}
+					title={__uiT('Data')}
+					changed={filters.data !== null}
+				>
 					<DataFilter
 						selected={filters.data}
 						onChange={(data) => onChange({ ...filters, data })}
@@ -439,13 +454,13 @@ export const DiscoveryFiltersPanel = ({
 				</FilterRow>
 				<FilterRow
 					icon={IconName.Pencil}
-					title="Search In Description"
+					title={__uiT('Search In Description')}
 					changed={filters.description !== DEFAULT_DISCOVERY_FILTERS.description}
 				>
 					<Toggle
 						checked={filters.description}
 						onChange={(description) => onChange({ ...filters, description })}
-						aria-label="Search in description"
+						aria-label={__uiT('Search in description')}
 					/>
 				</FilterRow>
 			</div>

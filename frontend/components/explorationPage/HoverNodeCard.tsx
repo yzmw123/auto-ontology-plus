@@ -9,6 +9,7 @@ import { catalogNodeInfo } from '@/components/dataPage/catalog-node-utils';
 import { ExplorationLayer } from '@/enums/exploration';
 import type { ExplorationNode } from '@/types/exploration';
 import { ZonesRow } from '@/common/SinglePageComposer';
+import { T } from '@/i18n/LanguageProvider';
 
 type HoverNodeCardProps = {
 	node: ExplorationNode;
@@ -45,9 +46,11 @@ export const HoverNodeCard = ({ node, x, y }: HoverNodeCardProps) => {
 							{node.name}
 						</h2>
 						<span className="shrink-0 text-xs capitalize text-secondary">
-							{node.layer === ExplorationLayer.Semantic
-								? 'Term'
-								: catalogNodeInfo[node.nodeType].title}
+							{node.layer === ExplorationLayer.Semantic ? (
+								<T value={'Term'} />
+							) : (
+								catalogNodeInfo[node.nodeType].title
+							)}
 						</span>
 					</div>
 					{node.layer === ExplorationLayer.Data && (
@@ -57,7 +60,7 @@ export const HoverNodeCard = ({ node, x, y }: HoverNodeCardProps) => {
 					)}
 					{node.layer === ExplorationLayer.Semantic && node.synonyms.length > 0 && (
 						<p className="mt-0.5 truncate text-xs text-secondary dark:text-zinc-500">
-							Synonyms: {node.synonyms.join(', ')}
+							<T value={'Synonyms:'} /> {node.synonyms.join(', ')}
 						</p>
 					)}
 					<p className="mt-1 line-clamp-2 text-xs leading-5 text-secondary dark:text-zinc-400">

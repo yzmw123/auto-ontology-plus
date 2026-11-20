@@ -21,6 +21,7 @@ import type { User } from '@/types/auth';
 import { MAX_GROUP_NAME_LENGTH, type Group } from '@/types/groups';
 import type { TableColumn } from '@/types/table';
 import { invalidateOwners } from '@/lib/queries/owners';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const GROUP_COLORS: readonly ColorOption[] = [
 	{ value: '#0ea5e9', label: 'Sky', colorClass: 'bg-sky-500' },
@@ -81,6 +82,8 @@ type GroupsSectionProps = {
 };
 
 export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSectionProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const queryClient = useQueryClient();
 	const [groups, setGroups] = useState<Group[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -299,10 +302,14 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 			<div className="mb-4 flex items-start justify-between gap-4">
 				<div>
 					<h2 className="text-lg font-semibold text-heading dark:text-zinc-100">
-						Groups
+						<T value={'Groups'} />
 					</h2>
 					<p className="mt-1 text-xs text-secondary">
-						A group has its own role. Members keep the role on their account.
+						<T
+							value={
+								'A group has its own role. Members keep the role on their account.'
+							}
+						/>
 					</p>
 				</div>
 				<Button
@@ -311,18 +318,18 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 					type="button"
 					onClick={openCreate}
 				>
-					Create group
+					<T value={'Create group'} />
 				</Button>
 			</div>
 
 			{loadError ? (
 				<p className="mb-3 text-xs text-red-700 dark:text-red-300" role="alert">
-					{loadError}
+					<T value={loadError} />
 				</p>
 			) : null}
 
 			{loading ? (
-				<div role="status" aria-label="Loading groups">
+				<div role="status" aria-label={__uiT('Loading groups')}>
 					<SkeletonTable columns={4} rows={4} />
 				</div>
 			) : (
@@ -331,15 +338,15 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 					rows={groups}
 					rowKey={(group) => group.id}
 					layout="auto"
-					emptyMessage="No Groups Found"
+					emptyMessage={__uiT('No Groups Found')}
 				/>
 			)}
 
 			<ModalCreateNewItem
 				open={draft != null}
 				onClose={closeDraft}
-				title={draft?.id == null ? 'Create Group' : 'Edit Group'}
-				submitLabel={draft?.id == null ? 'Create' : 'Save'}
+				title={draft?.id == null ? __uiT('Create Group') : __uiT('Edit Group')}
+				submitLabel={draft?.id == null ? 'Create' : __uiT('Save')}
 				canSubmit={canSave}
 				onSubmit={save}
 				className="w-[560px] max-w-full"
@@ -348,7 +355,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 					<>
 						<div>
 							<label htmlFor="group-name" className={labelClassName}>
-								Name
+								<T value={'Name'} />
 								<span className="ml-2 font-normal text-secondary dark:text-zinc-500">
 									(Max. {MAX_GROUP_NAME_LENGTH})
 								</span>
@@ -362,13 +369,13 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 									setDraft({ ...draft, name: event.target.value });
 									setSubmitError(null);
 								}}
-								placeholder="Finance"
+								placeholder={__uiT('Finance')}
 								className={inputClassName}
 							/>
 						</div>
 						<div>
 							<label htmlFor="group-description" className={labelClassName}>
-								Description
+								<T value={'Description'} />
 							</label>
 							<textarea
 								id="group-description"
@@ -382,7 +389,9 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 						</div>
 						<div className="flex items-end gap-4">
 							<div>
-								<span className={labelClassName}>Color</span>
+								<span className={labelClassName}>
+									<T value={'Color'} />
+								</span>
 								<ColorPicker
 									colors={GROUP_COLORS}
 									value={draft.color}
@@ -391,7 +400,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 							</div>
 							<div className="min-w-0 flex-1">
 								<label htmlFor="group-role" className={labelClassName}>
-									Role
+									<T value={'Role'} />
 								</label>
 								<select
 									id="group-role"
@@ -407,11 +416,17 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 							</div>
 						</div>
 						<div>
-							<span className={labelClassName}>Members</span>
+							<span className={labelClassName}>
+								<T value={'Members'} />
+							</span>
 							{usersLoading ? (
-								<p className="text-xs text-secondary">Loading users…</p>
+								<p className="text-xs text-secondary">
+									<T value={'Loading users…'} />
+								</p>
 							) : sortedUsers.length === 0 ? (
-								<p className="text-xs text-secondary">No users to add.</p>
+								<p className="text-xs text-secondary">
+									<T value={'No users to add.'} />
+								</p>
 							) : (
 								<ul className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
 									{sortedUsers.map((user) => {
@@ -447,7 +462,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 								className="rounded-lg border border-red-200/90 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
 								role="alert"
 							>
-								{submitError}
+								<T value={submitError} />
 							</div>
 						) : null}
 						<div className="-mx-6 border-t border-zinc-200 dark:border-zinc-700" />
@@ -457,7 +472,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 
 			<ConfirmModal
 				open={pendingDelete != null}
-				title="Delete Group"
+				title={__uiT('Delete Group')}
 				message={
 					pendingDelete == null
 						? ''

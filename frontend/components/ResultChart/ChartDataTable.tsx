@@ -7,9 +7,12 @@ import { useMemo, type FC } from 'react';
 import { DynamicTable } from '@/components/chatPage/DynamicTable';
 import type { ParsedTable } from '@/lib/parseSqlResponse';
 import type { ChartSpec } from './types';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /** The chart's exact underlying rows, shown by the "Show data" toggle. */
 export const ChartDataTable: FC<{ spec: ChartSpec; id?: string }> = ({ spec, id }) => {
+	const { t: __uiT } = useLanguage();
+
 	const table = useMemo<ParsedTable>(() => {
 		const columns = [spec.x.key, ...spec.series.map((s) => s.key)];
 		const rawHeaders = [
@@ -43,9 +46,9 @@ export const ChartDataTable: FC<{ spec: ChartSpec; id?: string }> = ({ spec, id 
 	}, [spec]);
 
 	return (
-		<div className="mt-3" role="region" aria-label="Chart data" id={id}>
+		<div className="mt-3" role="region" aria-label={__uiT('Chart data')} id={id}>
 			<div className="mb-1 text-xs font-medium text-secondary dark:text-zinc-400">
-				Query results
+				<T value={'Query results'} />
 			</div>
 			<DynamicTable table={table} />
 		</div>

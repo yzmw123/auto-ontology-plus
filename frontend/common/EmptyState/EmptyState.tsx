@@ -8,6 +8,7 @@ import { Button } from '@/common/Button';
 import { Icon, IconName } from '@/common/icons';
 import { ButtonTheme, Size } from '@/enums/button';
 import { EmptyStateVariant } from '@/enums/emptyState';
+import { T } from '@/i18n/LanguageProvider';
 
 export type EmptyStateAction = {
 	label: string;
@@ -78,7 +79,7 @@ export const EmptyState = ({
 	const actionContent = action && (
 		<>
 			{action.icon && <Icon name={action.icon} className="h-4 w-4" />}
-			{action.label}
+			<T value={action.label} />
 		</>
 	);
 
@@ -99,9 +100,13 @@ export const EmptyState = ({
 						className={`${styles.icon} text-disabled dark:text-zinc-600`}
 					/>
 				))}
-			<p className={styles.title}>{title}</p>
+			<p className={styles.title}>
+				{typeof title === 'string' ? <T value={title} /> : title}
+			</p>
 			{description && (
-				<p className={`max-w-sm leading-relaxed ${styles.description}`}>{description}</p>
+				<p className={`max-w-sm leading-relaxed ${styles.description}`}>
+					{typeof description === 'string' ? <T value={description} /> : description}
+				</p>
 			)}
 			{action && (
 				<Button

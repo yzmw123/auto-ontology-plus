@@ -16,6 +16,7 @@ import { ModalCreateNewItem, ConfirmModal } from '@/common/modal';
 import { PopoverMenu } from '@/common/PopoverMenu';
 import { acronymsApi, promptsApi, type Acronym, type Prompt } from '@/api/settings';
 import { SkeletonVariant } from '@/enums/skeleton';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 type SettingsSectionProps = {
 	title: string;
@@ -36,6 +37,8 @@ const PromptEditor = ({
 	onSave: (content: string) => void;
 	onCancel: () => void;
 }) => {
+	const { t: __uiT } = useLanguage();
+
 	const [value, setValue] = useState(initialValue);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -47,7 +50,7 @@ const PromptEditor = ({
 		<div className="space-y-3 p-4">
 			<div className="rounded-lg border border-zinc-200/90 bg-white p-4 dark:border-zinc-700/90 dark:bg-zinc-900/60">
 				<span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-secondary">
-					Prompt
+					<T value={'Prompt'} />
 				</span>
 				<div className="space-y-2">
 					<textarea
@@ -55,7 +58,7 @@ const PromptEditor = ({
 						value={value}
 						onChange={(e) => setValue(e.target.value)}
 						rows={3}
-						placeholder="Enter Your Custom Prompt Prefix…"
+						placeholder={__uiT('Enter Your Custom Prompt Prefix…')}
 						className="w-full resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-relaxed text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-600"
 					/>
 					<div className="flex justify-end gap-2">
@@ -65,7 +68,7 @@ const PromptEditor = ({
 							type="button"
 							onClick={onCancel}
 						>
-							Cancel
+							<T value={'Cancel'} />
 						</Button>
 						<Button
 							theme={ButtonTheme.Primary}
@@ -73,7 +76,7 @@ const PromptEditor = ({
 							type="button"
 							onClick={() => onSave(value)}
 						>
-							Save
+							<T value={'Save'} />
 						</Button>
 					</div>
 				</div>
@@ -128,6 +131,8 @@ const AcronymRow = ({
 );
 
 const AcronymsSection = () => {
+	const { t: __uiT } = useLanguage();
+
 	const [acronyms, setAcronyms] = useState<Acronym[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [modalOpen, setModalOpen] = useState(false);
@@ -238,10 +243,14 @@ const AcronymsSection = () => {
 			<div className="flex items-center justify-between">
 				<div className="flex items-baseline gap-2">
 					<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
-						Glossary
+						<T value={'Glossary'} />
 					</h2>
 					<span className="text-sm text-secondary dark:text-zinc-400">
-						Define definitions for your account, department, or database context
+						<T
+							value={
+								'Define definitions for your account, department, or database context'
+							}
+						/>
 					</span>
 				</div>
 				{hasAcronyms && (
@@ -259,7 +268,11 @@ const AcronymsSection = () => {
 			</div>
 
 			{loading ? (
-				<div className="mt-4" role="status" aria-label="Loading glossary definitions">
+				<div
+					className="mt-4"
+					role="status"
+					aria-label={__uiT('Loading glossary definitions')}
+				>
 					<SkeletonTable columns={3} rows={5} />
 				</div>
 			) : hasAcronyms ? (
@@ -267,8 +280,12 @@ const AcronymsSection = () => {
 					<table className="w-full min-w-[28rem] text-left text-sm">
 						<thead>
 							<tr className={TABLE_THEAD_CLASSNAME}>
-								<th className="px-3 py-2">Name</th>
-								<th className="px-3 py-2">Description</th>
+								<th className="px-3 py-2">
+									<T value={'Name'} />
+								</th>
+								<th className="px-3 py-2">
+									<T value={'Description'} />
+								</th>
 								<th className="w-10" />
 							</tr>
 						</thead>
@@ -287,7 +304,7 @@ const AcronymsSection = () => {
 			) : (
 				<EmptyState
 					variant={EmptyStateVariant.Inline}
-					title="No Glossary Definitions Created Yet"
+					title={__uiT('No Glossary Definitions Created Yet')}
 					action={{
 						label: 'Add Definition',
 						icon: IconName.ChatBubble,
@@ -300,41 +317,43 @@ const AcronymsSection = () => {
 			<ModalCreateNewItem
 				open={modalOpen}
 				onClose={handleClose}
-				title={isEditing ? 'Edit Glossary Definition' : 'Add Glossary Definition'}
-				submitLabel="Save"
+				title={
+					isEditing ? __uiT('Edit Glossary Definition') : __uiT('Add Glossary Definition')
+				}
+				submitLabel={__uiT('Save')}
 				onSubmit={handleSubmit}
 				canSubmit={Boolean(canSubmit)}
 			>
 				<div>
 					<label className="mb-1.5 block text-sm font-medium text-heading dark:text-zinc-100">
-						Name
+						<T value={'Name'} />
 					</label>
 					<input
 						type="text"
 						value={name}
 						onChange={(e) => setName(e.target.value)}
-						placeholder="Name"
+						placeholder={__uiT('Name')}
 						className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500 ${nameExists ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 dark:border-red-500 dark:focus:border-red-400 dark:focus:ring-red-400/30' : 'border-zinc-300 focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:focus:border-[#a3d63a] dark:focus:ring-[#a3d63a]/30'}`}
 					/>
 					{nameExists && (
 						<p className="mt-1 text-xs text-red-500 dark:text-red-400">
-							An acronym with this name already exists
+							<T value={'An acronym with this name already exists'} />
 						</p>
 					)}
 					{checkingName && name.trim() && (
 						<p className="mt-1 text-xs text-secondary dark:text-zinc-500">
-							Checking name…
+							<T value={'Checking name…'} />
 						</p>
 					)}
 				</div>
 				<div>
 					<label className="mb-1.5 block text-sm font-medium text-heading dark:text-zinc-100">
-						Description
+						<T value={'Description'} />
 					</label>
 					<textarea
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Add Short Description"
+						placeholder={__uiT('Add Short Description')}
 						rows={4}
 						className="w-full resize-y rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500 dark:focus:border-[#a3d63a] dark:focus:ring-[#a3d63a]/30"
 					/>
@@ -343,8 +362,10 @@ const AcronymsSection = () => {
 
 			<ConfirmModal
 				open={confirmDelete !== null}
-				title="Delete Acronym"
-				message="Are you sure you want to delete this acronym? This action cannot be undone."
+				title={__uiT('Delete Acronym')}
+				message={__uiT(
+					'Are you sure you want to delete this acronym? This action cannot be undone.',
+				)}
 				onConfirm={handleDelete}
 				onCancel={() => setConfirmDelete(null)}
 			/>
@@ -361,6 +382,8 @@ const SettingsSection = ({
 	onUpdate,
 	onDelete,
 }: SettingsSectionProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const hasPrompts = prompts.length > 0;
 	const [editing, setEditing] = useState(false);
 
@@ -403,7 +426,7 @@ const SettingsSection = ({
 					iconPosition="left"
 				>
 					<Icon name={IconName.Pencil} className="h-3.5 w-3.5" />
-					{hasPrompts ? 'Edit' : 'Add'}
+					{hasPrompts ? <T value={'Edit'} /> : 'Add'}
 				</Button>
 			</div>
 
@@ -417,7 +440,7 @@ const SettingsSection = ({
 				<div className="space-y-3 p-4">
 					<div className="rounded-lg border border-zinc-200/90 bg-white p-4 dark:border-zinc-700/90 dark:bg-zinc-900/60">
 						<span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-secondary">
-							Prompt
+							<T value={'Prompt'} />
 						</span>
 						<p className="whitespace-pre-wrap wrap-anywhere text-sm leading-relaxed text-body dark:text-zinc-300">
 							{prompts[0].content}
@@ -428,7 +451,7 @@ const SettingsSection = ({
 				<div
 					className="space-y-3 rounded-b-lg bg-zinc-50/80 p-4 dark:bg-zinc-900/30"
 					role="status"
-					aria-label="Loading custom prompts"
+					aria-label={__uiT('Loading custom prompts')}
 				>
 					<SkeletonBlock className="h-3 w-20" />
 					<SkeletonBlock variant={SkeletonVariant.RECTANGLE} className="h-24 w-full" />
@@ -437,7 +460,7 @@ const SettingsSection = ({
 				<EmptyState
 					variant={EmptyStateVariant.Inline}
 					icon={IconName.ChatBubble}
-					title="No Prompt"
+					title={__uiT('No Prompt')}
 					className="rounded-b-lg bg-zinc-50/80 dark:bg-zinc-900/30"
 				/>
 			)}
@@ -446,6 +469,8 @@ const SettingsSection = ({
 };
 
 export default function SemanticInputSettingsPage() {
+	const { t: __uiT } = useLanguage();
+
 	const [prompts, setPrompts] = useState<Prompt[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -500,14 +525,14 @@ export default function SemanticInputSettingsPage() {
 		<>
 			{error ? (
 				<div className="shrink-0 border-b border-red-200/90 bg-red-50 px-7 py-3 text-sm text-red-800 sm:px-10 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-					{error}
+					<T value={error} />
 				</div>
 			) : null}
 
 			<main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(250,250,250,0.6)_100%)] px-7 py-6 sm:px-10 sm:py-7 dark:bg-[linear-gradient(180deg,rgba(9,9,11,1)_0%,rgba(24,24,27,0.5)_100%)]">
 				<div className="w-full space-y-5">
 					<SettingsSection
-						title="Custom Prompts"
+						title={__uiT('Custom Prompts')}
 						subtitle="Default prompt prefixes automatically applied to all user prompts in this account"
 						prompts={prompts}
 						loading={loading}

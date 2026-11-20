@@ -22,6 +22,7 @@ import { Role } from '@/enums/auth';
 import { connectionQueries } from '@/lib/queries/connections';
 import { tagQueries } from '@/lib/queries/tags';
 import { zoneQueries } from '@/lib/queries/zones';
+import { LanguageProvider } from '@/i18n/LanguageProvider';
 import './globals.css';
 
 const isLoginOrOauthPath = (pathname: string): boolean =>
@@ -106,26 +107,28 @@ export default async function RootLayout({
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
 		>
 			<body className="flex h-full flex-col bg-white text-heading dark:bg-zinc-950 dark:text-zinc-100">
-				<QueryProvider>
-					<TooltipProvider openDelayDuration={400} skipDelayDuration={0}>
-						{showAppChrome ? (
-							// Only the signed-in app reads the shared lists; the login
-							// and consent screens have no picker to fill and no session
-							// to read them with.
-							<HydrationBoundary state={prefetchSharedData(userId)}>
-								<BreadcrumbProvider>
-									<AppTopBar version={appVersion} />
-									<div className="flex min-h-0 flex-1">
-										<NavRail isAdmin={isAdmin} />
-										<div className="min-w-0 flex-1">{children}</div>
-									</div>
-								</BreadcrumbProvider>
-							</HydrationBoundary>
-						) : (
-							children
-						)}
-					</TooltipProvider>
-				</QueryProvider>
+				<LanguageProvider>
+					<QueryProvider>
+						<TooltipProvider openDelayDuration={400} skipDelayDuration={0}>
+							{showAppChrome ? (
+								// Only the signed-in app reads the shared lists; the login
+								// and consent screens have no picker to fill and no session
+								// to read them with.
+								<HydrationBoundary state={prefetchSharedData(userId)}>
+									<BreadcrumbProvider>
+										<AppTopBar version={appVersion} />
+										<div className="flex min-h-0 flex-1">
+											<NavRail isAdmin={isAdmin} />
+											<div className="min-w-0 flex-1">{children}</div>
+										</div>
+									</BreadcrumbProvider>
+								</HydrationBoundary>
+							) : (
+								children
+							)}
+						</TooltipProvider>
+					</QueryProvider>
+				</LanguageProvider>
 			</body>
 		</html>
 	);

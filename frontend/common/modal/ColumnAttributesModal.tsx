@@ -19,6 +19,7 @@ import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
 import { usePagination } from '@/hooks/usePagination';
 import { Modal } from './Modal';
+import { useLanguage, T } from '@/i18n/LanguageProvider';
 
 /** Minimal Term reference — decoupled from any specific page's node/row shape. */
 export type ColumnAttributesModalTerm = {
@@ -33,6 +34,8 @@ type ColumnAttributesModalProps = {
 
 /** Generic modal listing a Term's attribute Columns. Reusable from any page that has a term id. */
 export const ColumnAttributesModal = ({ term, onClose }: ColumnAttributesModalProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const termId = term?.id ?? null;
 	const [attributes, setAttributes] = useState<ColumnAttribute[]>([]);
 	const [total, setTotal] = useState(0);
@@ -112,18 +115,20 @@ export const ColumnAttributesModal = ({ term, onClose }: ColumnAttributesModalPr
 					iconOnly
 					type="button"
 					onClick={onClose}
-					aria-label="Close attribute columns"
+					aria-label={__uiT('Close attribute columns')}
 				>
 					<Icon name={IconName.Close} className="h-4 w-4" />
 				</Button>
 			</header>
 			<div className="max-h-[70dvh] overflow-y-auto p-5">
 				{loading ? (
-					<div role="status" aria-label="Loading attribute columns">
+					<div role="status" aria-label={__uiT('Loading attribute columns')}>
 						<SkeletonTable columns={columns.length} rows={pageRowCount} />
 					</div>
 				) : error != null ? (
-					<p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+					<p className="text-sm text-red-600 dark:text-red-300">
+						<T value={error} />
+					</p>
 				) : (
 					<Table
 						columns={columns}
@@ -131,7 +136,7 @@ export const ColumnAttributesModal = ({ term, onClose }: ColumnAttributesModalPr
 						rowKey={(row) => row.id}
 						pagination={pagination}
 						containerClassName="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
-						emptyMessage="No Attribute Columns"
+						emptyMessage={__uiT('No Attribute Columns')}
 					/>
 				)}
 			</div>

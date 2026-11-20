@@ -7,6 +7,7 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type BackPanelLayoutProps = {
 	panel: ReactNode;
@@ -100,6 +101,7 @@ export const BackPanelLayout = ({
 	expandedWidthClass = 'w-[296px]',
 	collapsedWidthClass = 'w-8',
 }: BackPanelLayoutProps) => {
+	const { t } = useLanguage();
 	const [collapsed, setCollapsed] = useState(defaultCollapsed);
 	const toggleCollapsed = useCallback(() => setCollapsed((c) => !c), []);
 
@@ -113,8 +115,8 @@ export const BackPanelLayout = ({
 						<PanelCollapseToggle
 							collapsed
 							onToggle={toggleCollapsed}
-							expandAriaLabel={expandAriaLabel}
-							collapseAriaLabel={collapseAriaLabel}
+							expandAriaLabel={t(expandAriaLabel)}
+							collapseAriaLabel={t(collapseAriaLabel)}
 						/>
 					</div>
 				) : (
@@ -123,13 +125,13 @@ export const BackPanelLayout = ({
 							<PanelCollapseToggle
 								collapsed={false}
 								onToggle={toggleCollapsed}
-								expandAriaLabel={expandAriaLabel}
-								collapseAriaLabel={collapseAriaLabel}
+								expandAriaLabel={t(expandAriaLabel)}
+								collapseAriaLabel={t(collapseAriaLabel)}
 							/>
 						</div>
 						<div
 							className="flex min-h-0 flex-1 flex-col overflow-hidden"
-							aria-label={panelAriaLabel}
+							aria-label={panelAriaLabel ? t(panelAriaLabel) : undefined}
 						>
 							{panel}
 						</div>

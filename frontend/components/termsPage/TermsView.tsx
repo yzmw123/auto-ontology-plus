@@ -52,6 +52,7 @@ import { Toast } from '@/common/Toast';
 import { OwnerLabel } from '@/common/OwnerLabel';
 import type { Owner } from '@/types/owners';
 import type { ColumnAttribute, SqlAttribute, Term, TermCount, TermDetail } from '@/types/terms';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const termFocusTrail = ({
 	focusId,
@@ -157,10 +158,12 @@ const TermCard = ({
 				<div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
 					<span className="inline-flex items-center gap-1 text-sm font-semibold text-heading dark:text-zinc-100">
 						<Icon name={IconName.Tag} className="h-4 w-4" />
-						Tags
+						<T value={'Tags'} />
 					</span>
 					{shownTags.length === 0 ? (
-						<span className="text-sm text-[#B3B4B7]">None</span>
+						<span className="text-sm text-[#B3B4B7]">
+							<T value={'None'} />
+						</span>
 					) : (
 						shownTags.map((tag) => <Label key={tag.id} label={tag.name} />)
 					)}
@@ -179,7 +182,7 @@ const TermCard = ({
 					<Text as="p" text={term.description} lines={3} variant={TextVariant.Body} />
 				) : (
 					<p className="text-sm italic text-secondary dark:text-zinc-500">
-						No Description Available
+						<T value={'No Description Available'} />
 					</p>
 				)}
 			</div>
@@ -190,12 +193,14 @@ const TermCard = ({
 				<div className="border-r border-zinc-200 dark:border-zinc-700">
 					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
-							Column Attributes
+							<T value={'Column Attributes'} />
 						</span>
 					</div>
 					<div className="flex items-center">
 						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
-							<span>Column Attributes</span>
+							<span>
+								<T value={'Column Attributes'} />
+							</span>
 							<span className="ml-1.5 font-medium text-heading dark:text-zinc-100">
 								{columnAttributeCount}
 							</span>
@@ -207,12 +212,14 @@ const TermCard = ({
 				<div className="border-r border-zinc-200 dark:border-zinc-700">
 					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
-							SQL Attributes
+							<T value={'SQL Attributes'} />
 						</span>
 					</div>
 					<div className="flex items-center">
 						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
-							<span>SQL Attributes</span>
+							<span>
+								<T value={'SQL Attributes'} />
+							</span>
 							<span className="ml-1.5 font-medium text-heading dark:text-zinc-100">
 								{sqlAttributeCount}
 							</span>
@@ -224,11 +231,13 @@ const TermCard = ({
 				<div className="border-r border-zinc-200 dark:border-zinc-700">
 					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
-							Related Terms
+							<T value={'Related Terms'} />
 						</span>
 					</div>
 					<div className="flex items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
-						<span>Related Terms</span>
+						<span>
+							<T value={'Related Terms'} />
+						</span>
 						<span className="font-medium text-heading dark:text-zinc-100">
 							{relatedCount}
 						</span>
@@ -239,7 +248,7 @@ const TermCard = ({
 				<div>
 					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
-							Zones
+							<T value={'Zones'} />
 						</span>
 					</div>
 					<div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
@@ -291,6 +300,8 @@ const FIELD_INPUT_CLASSNAME =
 const FIELD_LABEL_CLASSNAME = 'mb-1.5 block text-sm font-medium text-heading dark:text-zinc-100';
 
 export const TermsView = () => {
+	const { t: __uiT } = useLanguage();
+
 	const router = useRouter();
 	// The tag picker's options come from the shared cache rather than a read of
 	// this page's own, so opening a term after a column attribute doesn't ask
@@ -1400,11 +1411,11 @@ export const TermsView = () => {
 												setSqlAttrEditing(true);
 											}}
 											aria-label={`Edit ${sqlAttrTitle}`}
-											title="Edit"
+											title={__uiT('Edit')}
 											iconPosition="left"
 										>
 											<Icon name={IconName.Pencil} className="h-3.5 w-3.5" />
-											Edit
+											<T value={'Edit'} />
 										</Button>
 										<Button
 											theme={ButtonTheme.DangerSubtle}
@@ -1418,11 +1429,11 @@ export const TermsView = () => {
 												setDeleteSqlAttrError(null);
 											}}
 											aria-label={`Delete ${sqlAttrTitle}`}
-											title="Delete"
+											title={__uiT('Delete')}
 											iconPosition="left"
 										>
 											<Icon name={IconName.Trash} className="h-3.5 w-3.5" />
-											Delete
+											<T value={'Delete'} />
 										</Button>
 									</>
 								)}
@@ -1466,7 +1477,7 @@ export const TermsView = () => {
 					open={deletingSqlAttr !== null}
 					onCancel={handleDeleteSqlAttrClose}
 					onConfirm={handleDeleteSqlAttrConfirm}
-					title="Delete SQL Attribute"
+					title={__uiT('Delete SQL Attribute')}
 					message={[
 						'Are you sure you want to delete ',
 						<strong key="name">{deletingSqlAttr?.name}</strong>,
@@ -1478,8 +1489,8 @@ export const TermsView = () => {
 				<ModalCreateNewItem
 					open={sqlEditModalOpen}
 					onClose={handleSqlEditClose}
-					title="SQL Code"
-					submitLabel={sqlEditSubmitting ? 'Saving…' : 'Save'}
+					title={__uiT('SQL Code')}
+					submitLabel={sqlEditSubmitting ? __uiT('Saving…') : __uiT('Save')}
 					onSubmit={handleSaveSqlEdit}
 					canSubmit={canSaveSqlEdit}
 					secondaryAction={{
@@ -1494,7 +1505,7 @@ export const TermsView = () => {
 					<SqlEditor
 						value={sqlEditValue}
 						onChange={handleSqlEditChange}
-						label="SQL Code"
+						label={__uiT('SQL Code')}
 						rows={10}
 					/>
 
@@ -1506,7 +1517,7 @@ export const TermsView = () => {
 
 					{sqlEditError != null && (
 						<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-							{sqlEditError}
+							<T value={sqlEditError} />
 						</p>
 					)}
 				</ModalCreateNewItem>
@@ -1536,11 +1547,11 @@ export const TermsView = () => {
 											setColumnAttrEditing(true);
 										}}
 										aria-label={`Edit ${colAttrTitle}`}
-										title="Edit"
+										title={__uiT('Edit')}
 										iconPosition="left"
 									>
 										<Icon name={IconName.Pencil} className="h-3.5 w-3.5" />
-										Edit
+										<T value={'Edit'} />
 									</Button>
 								)}
 							</>
@@ -1593,7 +1604,7 @@ export const TermsView = () => {
 										iconPosition="left"
 									>
 										<Icon name={IconName.Pencil} className="h-3.5 w-3.5" />
-										Edit
+										<T value={'Edit'} />
 									</Button>
 								)}
 								{canEditCatalog ? (
@@ -1606,7 +1617,7 @@ export const TermsView = () => {
 										shadow
 									>
 										<Icon name={IconName.Plus} className="h-4 w-4" />
-										Create New SQL Attribute
+										<T value={'Create New SQL Attribute'} />
 									</Button>
 								) : null}
 							</>
@@ -1634,8 +1645,8 @@ export const TermsView = () => {
 				<ModalCreateNewItem
 					open={createSqlAttrModalOpen}
 					onClose={handleCreateSqlAttrClose}
-					title="Create New SQL Attribute"
-					submitLabel={sqlAttrSubmitting ? 'Creating…' : 'Create'}
+					title={__uiT('Create New SQL Attribute')}
+					submitLabel={sqlAttrSubmitting ? __uiT('Creating…') : 'Create'}
 					onSubmit={handleCreateSqlAttr}
 					canSubmit={canCreateSqlAttr}
 					secondaryAction={{
@@ -1645,22 +1656,26 @@ export const TermsView = () => {
 					}}
 				>
 					<div>
-						<label className={FIELD_LABEL_CLASSNAME}>Attribute Name</label>
+						<label className={FIELD_LABEL_CLASSNAME}>
+							<T value={'Attribute Name'} />
+						</label>
 						<input
 							type="text"
 							value={sqlAttrName}
 							onChange={(e) => setSqlAttrName(e.target.value)}
-							placeholder="Attribute Name"
+							placeholder={__uiT('Attribute Name')}
 							className={FIELD_INPUT_CLASSNAME}
 						/>
 					</div>
 
 					<div>
-						<label className={FIELD_LABEL_CLASSNAME}>Description (Optional)</label>
+						<label className={FIELD_LABEL_CLASSNAME}>
+							<T value={'Description (Optional)'} />
+						</label>
 						<textarea
 							value={sqlAttrDescription}
 							onChange={(e) => setSqlAttrDescription(e.target.value)}
-							placeholder="Add Description"
+							placeholder={__uiT('Add Description')}
 							rows={3}
 							className={`resize-y ${FIELD_INPUT_CLASSNAME}`}
 						/>
@@ -1678,7 +1693,7 @@ export const TermsView = () => {
 
 					{sqlAttrSubmitError != null && (
 						<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-							{sqlAttrSubmitError}
+							<T value={sqlAttrSubmitError} />
 						</p>
 					)}
 				</ModalCreateNewItem>
@@ -1691,7 +1706,7 @@ export const TermsView = () => {
 			<header className="flex items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
 				<Icon name={IconName.Terms} className="h-5 w-5 text-body dark:text-zinc-300" />
 				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
-					Terms
+					<T value={'Terms'} />
 				</h1>
 			</header>
 
@@ -1709,8 +1724,8 @@ export const TermsView = () => {
 					<SearchInput
 						value={searchQuery}
 						onChange={setSearchQuery}
-						placeholder="Search Terms…"
-						aria-label="Search terms"
+						placeholder={__uiT('Search Terms…')}
+						aria-label={__uiT('Search terms')}
 						className="mb-6 w-full"
 					/>
 				)}
@@ -1720,10 +1735,10 @@ export const TermsView = () => {
 				{!loading && error != null && terms.length === 0 && (
 					<div className="mx-auto max-w-lg rounded-2xl border border-red-200/80 bg-white/90 px-8 py-10 text-center shadow-xl shadow-red-100/50 dark:border-red-900/50 dark:bg-zinc-950/80 dark:shadow-none">
 						<h2 className="text-lg font-semibold tracking-tight text-red-800 dark:text-red-300">
-							Couldn&apos;t load terms
+							<T value={'Couldn&apos;t load terms'} />
 						</h2>
 						<pre className="mt-4 max-w-full overflow-x-auto rounded-lg border border-red-100 bg-red-50/80 p-3 text-left text-xs text-red-900/80 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
-							{error}
+							<T value={error} />
 						</pre>
 						{/* `reload`, not `loadMore`: a failed first page leaves
 						    nothing fetched, so `loadMore` sees the list as ended
@@ -1735,7 +1750,7 @@ export const TermsView = () => {
 								type="button"
 								onClick={reloadTerms}
 							>
-								Retry
+								<T value={'Retry'} />
 							</Button>
 						</div>
 					</div>
@@ -1747,7 +1762,7 @@ export const TermsView = () => {
 						title={
 							debouncedSearchQuery
 								? 'No Terms Match Your Search'
-								: 'No Terms Created Yet'
+								: __uiT('No Terms Created Yet')
 						}
 					/>
 				)}

@@ -24,6 +24,7 @@ import { analyses } from '@/api/analyses';
 import { pqlAnalyses } from '@/api/pqlAnalyses';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { DEFAULT_PAGE_SIZE, useInfiniteList } from '@/hooks/useInfiniteList';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type AnalysisViewProps = Record<string, never>;
 
@@ -61,6 +62,8 @@ const getLoadingSkeletonCount = () =>
 	);
 
 export const AnalysisView = () => {
+	const { t: __uiT } = useLanguage();
+
 	const searchParams = useSearchParams();
 	const focusId = searchParams.get('focus');
 	const urlMode: AnalysisMode = searchParams.get('mode') === 'pql' ? 'pql' : 'sql';
@@ -348,7 +351,7 @@ export const AnalysisView = () => {
 			<header className="flex items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
 				<Icon name={IconName.ChartBar} className="h-5 w-5 text-body dark:text-zinc-300" />
 				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
-					{isPql ? 'PQL Analyses' : 'Custom Analyses'}
+					{isPql ? <T value={'PQL Analyses'} /> : <T value={'Custom Analyses'} />}
 				</h1>
 				<div className="ml-4 flex items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
 					<SelectButton
@@ -356,14 +359,14 @@ export const AnalysisView = () => {
 						selected={mode === 'sql'}
 						onClick={() => setMode('sql')}
 					>
-						SQL
+						<T value={'SQL'} />
 					</SelectButton>
 					<SelectButton
 						theme={SelectButtonTheme.Switcher}
 						selected={mode === 'pql'}
 						onClick={() => setMode('pql')}
 					>
-						PQL
+						<T value={'PQL'} />
 					</SelectButton>
 				</div>
 				<div className="ml-auto">
@@ -375,7 +378,7 @@ export const AnalysisView = () => {
 						shadow
 					>
 						<Icon name={IconName.Plus} className="h-4 w-4" />
-						Create New {MODE_LABEL[mode]} Analysis
+						<T value={'Create New'} /> {MODE_LABEL[mode]} <T value={'Analysis'} />
 					</Button>
 				</div>
 			</header>
@@ -415,7 +418,7 @@ export const AnalysisView = () => {
 							Couldn&apos;t load {MODE_LABEL[mode]} analyses
 						</h2>
 						<pre className="mt-4 max-w-full overflow-x-auto rounded-lg border border-red-100 bg-red-50/80 p-3 text-left text-xs text-red-900/80 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
-							{error}
+							<T value={error} />
 						</pre>
 						{/* `reload`, not `loadMore`: a failed first page leaves
 						    nothing fetched, so `loadMore` sees the list as ended
@@ -427,7 +430,7 @@ export const AnalysisView = () => {
 								type="button"
 								onClick={reload}
 							>
-								Retry
+								<T value={'Retry'} />
 							</Button>
 						</div>
 					</div>
@@ -542,7 +545,7 @@ export const AnalysisView = () => {
 						? `Edit ${MODE_LABEL[mode]} Analysis`
 						: `Create New ${MODE_LABEL[mode]} Analysis`
 				}
-				submitLabel={submitting ? 'Saving…' : 'Save'}
+				submitLabel={submitting ? __uiT('Saving…') : __uiT('Save')}
 				onSubmit={handleSubmit}
 				canSubmit={canSubmit}
 				secondaryAction={
@@ -556,7 +559,9 @@ export const AnalysisView = () => {
 				}
 			>
 				<div>
-					<label className={FIELD_LABEL_CLASSNAME}>Name</label>
+					<label className={FIELD_LABEL_CLASSNAME}>
+						<T value={'Name'} />
+					</label>
 					<input
 						type="text"
 						value={name}
@@ -567,11 +572,13 @@ export const AnalysisView = () => {
 				</div>
 
 				<div>
-					<label className={FIELD_LABEL_CLASSNAME}>Description</label>
+					<label className={FIELD_LABEL_CLASSNAME}>
+						<T value={'Description'} />
+					</label>
 					<textarea
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Add Short Description"
+						placeholder={__uiT('Add Short Description')}
 						rows={3}
 						className={`resize-y ${FIELD_INPUT_CLASSNAME}`}
 					/>
@@ -594,7 +601,7 @@ export const AnalysisView = () => {
 
 				{submitError != null && (
 					<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-						{submitError}
+						<T value={submitError} />
 					</p>
 				)}
 			</ModalCreateNewItem>
@@ -604,12 +611,10 @@ export const AnalysisView = () => {
 				onCancel={handleDeleteClose}
 				onConfirm={handleDeleteConfirm}
 				title={`Delete ${MODE_LABEL[mode]} Analysis`}
-				message={
-					<>
-						Are you sure you want to delete <strong>{deletingItem?.name}</strong>? This
-						action cannot be undone.
-					</>
-				}
+				message={__uiT(
+					'Are you sure you want to delete {name}? This action cannot be undone.',
+					{ name: deletingItem?.name ?? '' },
+				)}
 				confirming={deleting}
 				error={deleteError}
 			/>

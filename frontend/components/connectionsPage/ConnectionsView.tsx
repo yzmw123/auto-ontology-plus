@@ -24,8 +24,11 @@ import {
 	patchConnectionList,
 } from '@/lib/queries/connections';
 import type { Connection } from '@/types/connection';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export const ConnectionsView = () => {
+	const { t: __uiT } = useLanguage();
+
 	const queryClient = useQueryClient();
 
 	// Prefetched by the root layout, so the cards are usually drawn on the
@@ -141,7 +144,9 @@ export const ConnectionsView = () => {
 	if (error) {
 		return (
 			<div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-3 px-6">
-				<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+				<p className="text-sm text-red-600 dark:text-red-400">
+					<T value={error} />
+				</p>
 				<Button
 					theme={ButtonTheme.Secondary}
 					size={Size.REGULAR}
@@ -150,7 +155,7 @@ export const ConnectionsView = () => {
 						void refetch();
 					}}
 				>
-					Retry
+					<T value={'Retry'} />
 				</Button>
 			</div>
 		);
@@ -162,7 +167,7 @@ export const ConnectionsView = () => {
 				<EmptyState
 					variant={EmptyStateVariant.Borderless}
 					illustration={<Placeholders.NoConnections />}
-					title="No Connections Created Yet"
+					title={__uiT('No Connections Created Yet')}
 					action={{
 						label: 'Create New Connection',
 						icon: IconName.Database,
@@ -181,7 +186,7 @@ export const ConnectionsView = () => {
 							shadow
 						>
 							<Icon name={IconName.Database} className="h-4 w-4" />
-							Create New Connection
+							<T value={'Create New Connection'} />
 						</Button>
 					</div>
 					<ConnectionsInfoCardView
@@ -198,15 +203,14 @@ export const ConnectionsView = () => {
 
 			<ConfirmModal
 				open={deletingConnection !== null}
-				title="Remove Connection"
+				title={__uiT('Remove Connection')}
 				message={
-					deletingConnection ? (
-						<>
-							Are you sure you want to remove <strong>{deletingConnection}</strong>?
-							The connection goes away immediately; its ingested data is cleaned up in
-							the background. This action cannot be undone.
-						</>
-					) : null
+					deletingConnection
+						? __uiT(
+								'Are you sure you want to remove {name}? The connection goes away immediately; its ingested data is cleaned up in the background. This action cannot be undone.',
+								{ name: deletingConnection },
+							)
+						: null
 				}
 				confirmLabel="Remove"
 				onConfirm={handleDeleteConfirm}

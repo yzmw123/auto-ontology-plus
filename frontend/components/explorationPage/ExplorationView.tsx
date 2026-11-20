@@ -53,6 +53,7 @@ import { HoverNodeCard } from './HoverNodeCard';
 import { ActiveDataCard, buildDataGraph } from './ExplorationData';
 import { ExplorationLoader } from './ExplorationLoader';
 import { ActiveTermCard, buildSemanticGraph } from './ExplorationSemantic';
+import { useLanguage, T } from '@/i18n/LanguageProvider';
 
 const EMPTY_GRAPH: ExplorationGraph = { nodes: [], links: [] };
 
@@ -187,6 +188,8 @@ const GraphCanvas = dynamic(
 );
 
 export const ExplorationView = () => {
+	const { t: __uiT } = useLanguage();
+
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const semanticId = searchParams.get('semanticId');
@@ -2141,8 +2144,8 @@ export const ExplorationView = () => {
 							onChange={setSearch}
 							placeholder={
 								layer === ExplorationLayer.Semantic
-									? 'Search terms…'
-									: 'Search data objects…'
+									? __uiT('Search terms…')
+									: __uiT('Search data objects…')
 							}
 							aria-label={
 								layer === ExplorationLayer.Semantic
@@ -2197,7 +2200,7 @@ export const ExplorationView = () => {
 			{!loading && error != null && (
 				<div className="flex h-full items-center justify-center px-6 text-center">
 					<div className="rounded-xl border border-red-200 bg-white px-8 py-6 text-sm text-red-700 shadow-lg dark:border-red-900/50 dark:bg-zinc-900 dark:text-red-300">
-						Couldn&apos;t load exploration: {error}
+						Couldn&apos;t load exploration: <T value={error} />
 					</div>
 				</div>
 			)}
@@ -2210,10 +2213,10 @@ export const ExplorationView = () => {
 						layer === ExplorationLayer.Semantic
 							? selectedDatabaseId !== null
 								? 'No Terms Match This Filter'
-								: 'No Terms Created Yet'
+								: __uiT('No Terms Created Yet')
 							: selectedDatabaseId !== null
 								? 'No Data Objects Match This Filter'
-								: 'No Data Objects Found'
+								: __uiT('No Data Objects Found')
 					}
 				/>
 			)}
@@ -2303,26 +2306,30 @@ export const ExplorationView = () => {
 			<div className="absolute bottom-4 right-4 z-20 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
 				<p className="text-xs text-secondary dark:text-zinc-400">
 					Viewing:{' '}
-					{layer === ExplorationLayer.Semantic ? 'Semantic Objects' : 'Data Objects'}
+					{layer === ExplorationLayer.Semantic ? (
+						<T value={'Semantic Objects'} />
+					) : (
+						<T value={'Data Objects'} />
+					)}
 				</p>
 				{layer === ExplorationLayer.Semantic ? (
 					<div className="mt-2 flex flex-col gap-1.5">
 						<LegendItem
 							kind="term"
 							icon={IconName.Terms}
-							label="Terms"
+							label={__uiT('Terms')}
 							count={graph.nodes.length}
 						/>
 						<div className="flex items-center gap-3">
 							<LegendItem
 								kind="columnAttribute"
 								icon={IconName.Key}
-								label="Column Attribute"
+								label={__uiT('Column Attribute')}
 							/>
 							<LegendItem
 								kind="sqlAttribute"
 								icon={IconName.ChartLine}
-								label="SQL Attribute"
+								label={__uiT('SQL Attribute')}
 							/>
 						</div>
 						{/* A Term's own expansion (see `expandTermNode`) grafts on Data
@@ -2334,16 +2341,28 @@ export const ExplorationView = () => {
 						Data-layer kinds here as well, same as the Data-layer section
 						below. */}
 						<div className="flex items-center gap-3">
-							<LegendItem kind="table" icon={IconName.Table} label="Table" />
-							<LegendItem kind="schema" icon={IconName.Schema} label="Schema" />
-							<LegendItem kind="column" icon={IconName.Column} label="Column" />
+							<LegendItem kind="table" icon={IconName.Table} label={__uiT('Table')} />
+							<LegendItem
+								kind="schema"
+								icon={IconName.Schema}
+								label={__uiT('Schema')}
+							/>
+							<LegendItem
+								kind="column"
+								icon={IconName.Column}
+								label={__uiT('Column')}
+							/>
 						</div>
 						<div className="flex items-center gap-3">
-							<LegendItem kind="sql" icon={IconName.CodeBracket} label="SQL" />
+							<LegendItem
+								kind="sql"
+								icon={IconName.CodeBracket}
+								label={__uiT('SQL')}
+							/>
 							<LegendItem
 								kind="customAnalysis"
 								icon={IconName.ChartBar}
-								label="Custom Analysis"
+								label={__uiT('Custom Analysis')}
 							/>
 						</div>
 					</div>
@@ -2365,13 +2384,25 @@ export const ExplorationView = () => {
 							))}
 						</div>
 						<div className="flex items-center gap-3">
-							<LegendItem kind="schema" icon={IconName.Schema} label="Schema" />
-							<LegendItem kind="column" icon={IconName.Column} label="Column" />
-							<LegendItem kind="sql" icon={IconName.CodeBracket} label="SQL" />
+							<LegendItem
+								kind="schema"
+								icon={IconName.Schema}
+								label={__uiT('Schema')}
+							/>
+							<LegendItem
+								kind="column"
+								icon={IconName.Column}
+								label={__uiT('Column')}
+							/>
+							<LegendItem
+								kind="sql"
+								icon={IconName.CodeBracket}
+								label={__uiT('SQL')}
+							/>
 							<LegendItem
 								kind="customAnalysis"
 								icon={IconName.ChartBar}
-								label="Custom Analysis"
+								label={__uiT('Custom Analysis')}
 							/>
 						</div>
 						{/* A Table's own expansion (see `expandTableNode`) grafts on
@@ -2380,16 +2411,16 @@ export const ExplorationView = () => {
 						covers those same three Semantic-layer kinds here as well,
 						same as the Semantic-layer section above. */}
 						<div className="flex items-center gap-3">
-							<LegendItem kind="term" icon={IconName.Terms} label="Term" />
+							<LegendItem kind="term" icon={IconName.Terms} label={__uiT('Term')} />
 							<LegendItem
 								kind="columnAttribute"
 								icon={IconName.Key}
-								label="Column Attribute"
+								label={__uiT('Column Attribute')}
 							/>
 							<LegendItem
 								kind="sqlAttribute"
 								icon={IconName.ChartLine}
-								label="SQL Attribute"
+								label={__uiT('SQL Attribute')}
 							/>
 						</div>
 					</div>

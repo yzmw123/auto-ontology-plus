@@ -18,6 +18,7 @@ import type {
 	ExplorationTermNode,
 	SemanticExplorationGraph,
 } from '@/types/exploration';
+import { T } from '@/i18n/LanguageProvider';
 
 /** Build the semantic-layer graph (Terms + their relationships) from the server DTO. */
 export const buildSemanticGraph = (graph: SemanticExplorationGraph): ExplorationGraph => ({
@@ -62,7 +63,7 @@ export const ActiveTermCard = ({
 	<section className="absolute right-4 top-20 bottom-28 z-20 flex w-[380px] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
 		<header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
 			<p className="text-xs font-semibold text-body dark:text-zinc-300">
-				Showing info on this Semantic Object
+				<T value={'Showing info on this Semantic Object'} />
 			</p>
 			<Button
 				theme={ButtonTheme.IconNeutral}
@@ -85,7 +86,7 @@ export const ActiveTermCard = ({
 					<Text as="h2" text={node.name} variant={TextVariant.Heading} />
 					{node.synonyms.length > 0 && (
 						<Text as="p" variant={TextVariant.Caption}>
-							Synonyms: {node.synonyms.join(', ')}
+							<T value={'Synonyms:'} /> {node.synonyms.join(', ')}
 						</Text>
 					)}
 				</div>
@@ -97,7 +98,7 @@ export const ActiveTermCard = ({
 					type="button"
 					onClick={onView}
 				>
-					View Term
+					<T value={'View Term'} />
 				</Button>
 			</div>
 			<div className="flex flex-col gap-2">

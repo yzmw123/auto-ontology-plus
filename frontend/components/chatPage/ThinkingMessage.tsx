@@ -7,6 +7,7 @@
 import type { GraphStep } from '@/types/chat';
 import { Icon, IconName } from '@/common/icons';
 import { SqlBlock } from '@/common/SqlBlock';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 type ThinkingMessageProps = {
 	steps: GraphStep[];
@@ -29,6 +30,8 @@ const Dot = ({ delay }: { delay: string }) => (
 );
 
 export const ThinkingMessage = ({ steps, liveSql }: ThinkingMessageProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const activeStep = [...steps].reverse().find((s) => s.status === 'active');
 	const completedSteps = steps.filter((s) => s.status === 'completed');
 
@@ -47,7 +50,7 @@ export const ThinkingMessage = ({ steps, liveSql }: ThinkingMessageProps) => {
 						<Icon name={IconName.NvidiaLogo} className="h-4 w-4 text-[#76b900]" />
 					</div>
 					<span className="text-xs font-semibold text-body dark:text-zinc-200">
-						Auto Ontology Agent
+						<T value={'Auto Ontology Agent'} />
 					</span>
 				</div>
 
@@ -94,7 +97,9 @@ export const ThinkingMessage = ({ steps, liveSql }: ThinkingMessageProps) => {
 						<SqlBlock
 							sql={liveSql}
 							label={
-								liveSql.trim().toUpperCase().startsWith('PREDICT') ? 'PQL' : 'SQL'
+								liveSql.trim().toUpperCase().startsWith('PREDICT')
+									? __uiT('PQL')
+									: __uiT('SQL')
 							}
 							className="w-full"
 						/>

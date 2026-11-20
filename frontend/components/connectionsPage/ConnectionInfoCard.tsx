@@ -12,6 +12,7 @@ import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
 import { ConnectionType } from '@/enums/connection';
 import type { Connection } from '@/types/connection';
+import { T } from '@/i18n/LanguageProvider';
 
 export type ConnectionInfoCardProps = {
 	connection: Connection;
@@ -114,12 +115,22 @@ export const ConnectionInfoCard = ({
 						/>
 						<span className="min-w-0">
 							<span className="block text-xs font-medium text-heading dark:text-zinc-200">
-								Authenticate as Signed-In User
+								<T value={'Authenticate as Signed-In User'} />
 							</span>
 							<span className="block text-xs text-secondary dark:text-zinc-400">
-								{ssoFederationOn
-									? 'Chat runs SQL with each user’s own Databricks privileges.'
-									: 'Chat runs SQL with this connection’s stored access token.'}
+								{ssoFederationOn ? (
+									<T
+										value={
+											'Chat runs SQL with each user’s own Databricks privileges.'
+										}
+									/>
+								) : (
+									<T
+										value={
+											'Chat runs SQL with this connection’s stored access token.'
+										}
+									/>
+								)}
 							</span>
 						</span>
 					</label>

@@ -10,6 +10,7 @@ import { Spinner } from '@nvidia/foundations-react-core';
 
 import { Button } from '@/common/Button';
 import { ButtonTheme, Size } from '@/enums/button';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 type InfiniteScrollProps = {
 	/**
@@ -59,6 +60,8 @@ export const InfiniteScroll = ({
 	className,
 	children,
 }: InfiniteScrollProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const rootRef = useRef<HTMLDivElement>(null);
 	const sentinelRef = useRef<HTMLDivElement>(null);
 	// Held in a ref so a caller passing an inline callback doesn't tear down and
@@ -96,19 +99,21 @@ export const InfiniteScroll = ({
 			{hasMore && error == null && <div ref={sentinelRef} aria-hidden className="h-px" />}
 			{isLoading && (
 				<div className="flex justify-center py-4">
-					<Spinner aria-label="Loading more" className="h-6 w-6" />
+					<Spinner aria-label={__uiT('Loading more')} className="h-6 w-6" />
 				</div>
 			)}
 			{error != null && (
 				<div className="flex flex-col items-center gap-2 py-4">
-					<p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+					<p className="text-sm text-red-600 dark:text-red-300">
+						<T value={error} />
+					</p>
 					<Button
 						theme={ButtonTheme.Secondary}
 						size={Size.SMALL}
 						type="button"
 						onClick={onLoadMore}
 					>
-						Retry
+						<T value={'Retry'} />
 					</Button>
 				</div>
 			)}

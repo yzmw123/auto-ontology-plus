@@ -37,6 +37,7 @@ import {
 	patchNodeInTree,
 } from '@/lib/data/datasource-tree-merge';
 import { datasources } from '@/api/datasources';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type DataWorkspaceViewProps = Record<string, never>;
 
@@ -99,6 +100,8 @@ const focusedTagType = (focusId: string | null): TagItemType | null => {
 };
 
 export function DataWorkspaceView() {
+	const { t: __uiT } = useLanguage();
+
 	// Where the tag picker's options are read from — shared with every other
 	// page that offers them, so walking the tree doesn't re-read the
 	// vocabulary at each table and column.
@@ -416,10 +419,10 @@ export function DataWorkspaceView() {
 						⚠
 					</div>
 					<h2 className="text-lg font-semibold tracking-tight text-red-800 dark:text-red-300">
-						Couldn&apos;t load databases
+						<T value={'Couldn&apos;t load databases'} />
 					</h2>
 					<pre className="mt-4 max-w-full overflow-x-auto rounded-lg border border-red-100 bg-red-50/80 p-3 text-left text-xs text-red-900/80 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
-						{loadError}
+						<T value={loadError} />
 					</pre>
 				</div>
 			</div>
@@ -428,7 +431,11 @@ export function DataWorkspaceView() {
 
 	if (loading && databases.length === 0) {
 		return (
-			<div className="flex h-full flex-1" role="status" aria-label="Loading databases">
+			<div
+				className="flex h-full flex-1"
+				role="status"
+				aria-label={__uiT('Loading databases')}
+			>
 				<aside className="w-72 border-r border-zinc-200 p-4 dark:border-zinc-800">
 					<SkeletonBlock className="mb-5 h-6 w-24" />
 					<SkeletonRows rows={8} />
@@ -446,7 +453,7 @@ export function DataWorkspaceView() {
 			<EmptyState
 				variant={EmptyStateVariant.Borderless}
 				icon={IconName.Database}
-				title="No Databases Found"
+				title={__uiT('No Databases Found')}
 			/>
 		);
 	}

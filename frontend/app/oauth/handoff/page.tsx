@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { Icon, IconName } from '@/common/icons';
 import { deliverLoopbackCallback, isLoopbackCallback } from '@/auth/oauth-loopback';
 import { OauthStatus } from '@/app/oauth/OauthStatus';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 // The page is public and takes its target from the query string, so it only
 // ever talks to a loopback listener. Anything else is refused rather than
@@ -24,6 +25,8 @@ const callbackError = (target: string | null): string | null => {
 };
 
 const HandoffStatus = () => {
+	const { t: __uiT } = useLanguage();
+
 	const params = useSearchParams();
 	const target = params.get('url');
 	const error = callbackError(target);
@@ -35,12 +38,16 @@ const HandoffStatus = () => {
 	}, [error, target]);
 
 	if (error) {
-		return <p className="text-center text-sm text-red-500">{error}</p>;
+		return (
+			<p className="text-center text-sm text-red-500">
+				<T value={error} />
+			</p>
+		);
 	}
 
 	return (
-		<OauthStatus title="Thank You">
-			Authentication successful. You can close this page.
+		<OauthStatus title={__uiT('Thank You')}>
+			<T value={'Authentication successful. You can close this page.'} />
 		</OauthStatus>
 	);
 };
@@ -51,7 +58,7 @@ const HandoffPage = () => (
 			<div className="flex items-center gap-2">
 				<Icon name={IconName.NvidiaLogo} className="h-6 w-6" />
 				<span className="text-lg font-semibold text-heading dark:text-zinc-100">
-					Auto Ontology
+					<T value={'Auto Ontology'} />
 				</span>
 			</div>
 			<Suspense fallback={null}>

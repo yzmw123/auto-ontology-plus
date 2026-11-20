@@ -22,6 +22,7 @@ import { ExplorationLayer } from '@/enums/exploration';
 import type { ExplorationGraph } from '@/types/exploration';
 import { NODE_TYPE_ACCENT_COLOR } from './nodeTypeColors';
 import type { NodeType } from './nodeTypeColors';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type HoveredNode = {
 	id: string;
@@ -627,6 +628,8 @@ export const GraphCanvas = ({
 	onHoverNode,
 	onControllerChange,
 }: GraphCanvasProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const containerRef = useRef<HTMLDivElement>(null);
 	const activeNodeIdRef = useRef<string | null>(activeNodeId);
 	const highlightedPathRef = useRef<{ nodeIds: Set<string>; edgeKeys: Set<string> } | null>(null);
@@ -1703,5 +1706,7 @@ export const GraphCanvas = ({
 		onSelectNode,
 	]);
 
-	return <div ref={containerRef} className="h-full w-full" aria-label="Exploration graph" />;
+	return (
+		<div ref={containerRef} className="h-full w-full" aria-label={__uiT('Exploration graph')} />
+	);
 };

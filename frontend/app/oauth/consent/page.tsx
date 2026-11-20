@@ -16,8 +16,11 @@ import {
 } from '@/auth/oauth-loopback';
 import { OauthStatus } from '@/app/oauth/OauthStatus';
 import { ButtonTheme, Size } from '@/enums/button';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const ConsentForm = () => {
+	const { t: __uiT } = useLanguage();
+
 	const params = useSearchParams();
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -54,16 +57,20 @@ const ConsentForm = () => {
 
 	if (outcome === 'granted') {
 		return (
-			<OauthStatus title="Thank You">
-				Authentication successful. You can close this page.
+			<OauthStatus title={__uiT('Thank You')}>
+				<T value={'Authentication successful. You can close this page.'} />
 			</OauthStatus>
 		);
 	}
 
 	if (outcome === 'denied') {
 		return (
-			<OauthStatus title="Authorization Cancelled">
-				You can close this page and return to the application that started sign-in.
+			<OauthStatus title={__uiT('Authorization Cancelled')}>
+				<T
+					value={
+						'You can close this page and return to the application that started sign-in.'
+					}
+				/>
 			</OauthStatus>
 		);
 	}
@@ -72,17 +79,19 @@ const ConsentForm = () => {
 		<div className="flex w-full max-w-md flex-col gap-5">
 			<div className="space-y-2 text-center">
 				<h1 className="text-xl font-semibold text-heading dark:text-zinc-100">
-					Authorize MCP access
+					<T value={'Authorize MCP access'} />
 				</h1>
 				<p className="text-sm text-body dark:text-zinc-400">
-					{clientId} is requesting access to Auto Ontology as your account.
+					{__uiT('{client} is requesting access to Auto Ontology as your account.', {
+						client: clientId,
+					})}
 				</p>
 			</div>
 
 			{scopes.length ? (
 				<div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700">
 					<p className="mb-2 text-xs font-medium text-body dark:text-zinc-400">
-						Requested access
+						<T value={'Requested access'} />
 					</p>
 					<ul className="space-y-1 text-sm text-heading dark:text-zinc-200">
 						{scopes.map((scope) => (
@@ -92,7 +101,11 @@ const ConsentForm = () => {
 				</div>
 			) : null}
 
-			{error ? <p className="text-center text-xs text-red-500">{error}</p> : null}
+			{error ? (
+				<p className="text-center text-xs text-red-500">
+					<T value={error} />
+				</p>
+			) : null}
 
 			<div className="flex justify-center gap-3">
 				<Button
@@ -102,7 +115,7 @@ const ConsentForm = () => {
 					disabled={submitting}
 					onClick={() => submit(false)}
 				>
-					Cancel
+					<T value={'Cancel'} />
 				</Button>
 				<Button
 					theme={ButtonTheme.Primary}
@@ -111,7 +124,7 @@ const ConsentForm = () => {
 					disabled={submitting}
 					onClick={() => submit(true)}
 				>
-					{submitting ? 'Authorizing…' : 'Authorize'}
+					{submitting ? <T value={'Authorizing…'} /> : <T value={'Authorize'} />}
 				</Button>
 			</div>
 		</div>
@@ -124,7 +137,7 @@ const ConsentPage = () => (
 			<div className="flex items-center gap-2">
 				<Icon name={IconName.NvidiaLogo} className="h-6 w-6" />
 				<span className="text-lg font-semibold text-heading dark:text-zinc-100">
-					Auto Ontology
+					<T value={'Auto Ontology'} />
 				</span>
 			</div>
 			<Suspense fallback={null}>

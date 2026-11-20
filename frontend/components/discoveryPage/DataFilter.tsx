@@ -15,6 +15,7 @@ import { ButtonTheme, SelectButtonTheme, Size } from '@/enums/button';
 import { PopoverAlign } from '@/enums/popover';
 import { mergeSchemasIntoDatabase } from '@/lib/data/datasource-tree-merge';
 import type { Database } from '@/types/datasources';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type DataFilterProps = {
 	/** Database and schema ids in one list; null is the whole catalog. */
@@ -83,6 +84,8 @@ const toDataIds = (databases: Database[], selection: Set<string>): string[] => {
  * picker goes on offering every kind, and the tabs report what was found.
  */
 export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const [databases, setDatabases] = useState<Database[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [failed, setFailed] = useState(false);
@@ -154,7 +157,7 @@ export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
 					theme={SelectButtonTheme.SelectField}
 					onClick={togglePanel}
 					aria-expanded={open}
-					aria-label="Filter by database or schema"
+					aria-label={__uiT('Filter by database or schema')}
 				>
 					<span className="truncate">{summary}</span>
 					<Icon
@@ -168,7 +171,7 @@ export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
 						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
-							Filter By
+							<T value={'Filter By'} />
 						</span>
 						<Button
 							theme={ButtonTheme.Minimal}
@@ -177,7 +180,11 @@ export const DataFilter = ({ selected, onChange }: DataFilterProps) => {
 							onClick={() => onChange(selected === null ? [] : null)}
 							disabled={emptyMessage !== null}
 						>
-							{selected === null ? 'Deselect All' : 'Select All'}
+							{selected === null ? (
+								<T value={'Deselect All'} />
+							) : (
+								<T value={'Select All'} />
+							)}
 						</Button>
 					</div>
 					{emptyMessage !== null ? (

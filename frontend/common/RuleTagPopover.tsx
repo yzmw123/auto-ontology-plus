@@ -21,6 +21,7 @@ import { SkeletonVariant } from '@/enums/skeleton';
 import { addTagToVocabulary, tagQueries } from '@/lib/queries/tags';
 import type { RuleTagDraft } from '@/types/rules';
 import type { TagChip } from '@/types/tags';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 export type RuleTagPopoverProps = {
 	/** How many items the rule would tag. */
@@ -97,6 +98,8 @@ const RuleTagForm = ({
 	onNavigate,
 	onDone,
 }: RuleTagFormProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const queryClient = useQueryClient();
 	const [selected, setSelected] = useState<TagChip[]>([]);
 	const [search, setSearch] = useState('');
@@ -188,7 +191,7 @@ const RuleTagForm = ({
 					className="h-4 w-4 shrink-0 self-center text-body dark:text-zinc-300"
 				/>
 				<h3 className="text-sm font-semibold text-heading dark:text-zinc-100">
-					Create a New Rule Based Tag
+					<T value={'Create a New Rule Based Tag'} />
 				</h3>
 				<span className="text-xs text-secondary dark:text-zinc-400">
 					({itemsToTagLabel(itemsCount, matchedCount)})
@@ -201,22 +204,25 @@ const RuleTagForm = ({
 						htmlFor="rule-name"
 						className="mb-1.5 block text-sm font-semibold text-heading dark:text-zinc-100"
 					>
-						Rule Name
+						<T value={'Rule Name'} />
 					</label>
 					<input
 						id="rule-name"
 						type="text"
 						value={name}
 						onChange={(event) => setName(event.target.value)}
-						placeholder="Name This Rule and Save It!"
+						placeholder={__uiT('Name This Rule and Save It!')}
 						autoFocus
 						// Same frame and height as the search field below it, so the two
 						// controls in this panel read as one set.
 						className="h-9 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500"
 					/>
 					<p className="mt-1.5 text-xs text-secondary dark:text-zinc-400">
-						Every item this search matches is labelled with these tags, and so is every
-						item that matches it later.
+						<T
+							value={
+								'Every item this search matches is labelled with these tags, and so is every item that matches it later.'
+							}
+						/>
 					</p>
 				</div>
 
@@ -250,8 +256,8 @@ const RuleTagForm = ({
 						<SearchInput
 							value={search}
 							onChange={setSearch}
-							placeholder="Select or Search to Add a Tag…"
-							aria-label="Search tags"
+							placeholder={__uiT('Select or Search to Add a Tag…')}
+							aria-label={__uiT('Search tags')}
 							className="h-9 w-full"
 						/>
 						{/* Fixed rather than fitted: the panel hangs off its trigger, so a
@@ -269,7 +275,9 @@ const RuleTagForm = ({
 											className={`h-[26px] ${width}`}
 										/>
 									))}
-									<span className="sr-only">Loading tags</span>
+									<span className="sr-only">
+										<T value={'Loading tags'} />
+									</span>
 								</div>
 							) : matches.length > 0 ? (
 								<ul className="flex flex-wrap gap-2">
@@ -300,11 +308,13 @@ const RuleTagForm = ({
 								</button>
 							) : (
 								<p className="px-2 text-xs text-secondary dark:text-zinc-400">
-									{options.length === 0
-										? 'No tags exist yet'
-										: unselected.length === 0
-											? 'Every tag is already selected'
-											: 'No tag matches this search'}
+									{options.length === 0 ? (
+										<T value={'No tags exist yet'} />
+									) : unselected.length === 0 ? (
+										'Every tag is already selected'
+									) : (
+										'No tag matches this search'
+									)}
 								</p>
 							)}
 						</div>
@@ -313,7 +323,7 @@ const RuleTagForm = ({
 
 				{error !== null ? (
 					<div className="rounded-lg border border-red-200/90 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-						{error}
+						<T value={error} />
 					</div>
 				) : null}
 			</div>
@@ -338,7 +348,7 @@ const RuleTagForm = ({
 						void handleApply();
 					}}
 				>
-					{saving ? 'Applying…' : 'Apply'}
+					{saving ? 'Applying…' : <T value={'Apply'} />}
 				</Button>
 			</div>
 		</>

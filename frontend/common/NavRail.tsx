@@ -8,6 +8,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon, IconName } from '@/common/icons';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 type NavItem = {
 	icon: IconName;
@@ -24,13 +25,12 @@ const navItems: NavItem[] = [
 	{ icon: IconName.Exploration, href: '/exploration', label: 'Exploration' },
 	{ icon: IconName.Database, href: '/data', label: 'Data' },
 	{ icon: IconName.ChartLine, href: '/analytics', label: 'Analytics', adminOnly: true },
-	// Settings is admin-only and now also contains Users and Single Sign-On
-	// (see app/settings/*). Viewers don't see it.
-	{ icon: IconName.Settings, href: '/settings', label: 'Settings', adminOnly: true },
+	{ icon: IconName.Settings, href: '/settings', label: 'Settings' },
 ];
 
 export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
 	const pathname = usePathname();
+	const { t } = useLanguage();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
@@ -55,7 +55,7 @@ export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
 							<Link
 								key={item.href}
 								href={item.href}
-								title={isExpanded ? undefined : item.label}
+								title={isExpanded ? undefined : t(item.label)}
 								className={`flex h-9 shrink-0 items-center gap-3 rounded-lg transition-colors ${
 									isExpanded ? 'w-full px-2' : 'w-9 justify-center'
 								} ${
@@ -67,7 +67,7 @@ export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
 								<Icon name={item.icon} className="h-5 w-5 shrink-0" />
 								{isExpanded && (
 									<span className="truncate text-sm font-medium whitespace-nowrap">
-										{item.label}
+										{t(item.label)}
 									</span>
 								)}
 							</Link>

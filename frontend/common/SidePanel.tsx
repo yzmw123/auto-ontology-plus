@@ -27,6 +27,7 @@ import type {
 import type { Owner } from '@/types/owners';
 import type { TagAuthor } from '@/types/tags';
 import type { GlossaryActivity } from '@/types/terms';
+import { T } from '@/i18n/LanguageProvider';
 
 export const SIDE_PANEL_WIDTH = '280px';
 
@@ -250,9 +251,11 @@ const TagEditor = ({
 					header={
 						unassigned.length === 0 ? (
 							<p className="px-3 py-1.5 text-xs text-secondary dark:text-zinc-400">
-								{section.options.length === 0
-									? 'No tags exist yet'
-									: 'Every tag is already applied'}
+								{section.options.length === 0 ? (
+									<T value={'No tags exist yet'} />
+								) : (
+									<T value={'Every tag is already applied'} />
+								)}
 							</p>
 						) : undefined
 					}
@@ -265,13 +268,15 @@ const TagEditor = ({
 							iconPosition="left"
 						>
 							<Icon name={IconName.Plus} className="h-3.5 w-3.5" />
-							Add Tag
+							<T value={'Add Tag'} />
 						</Button>
 					)}
 				/>
 			</div>
 			{tags.length === 0 ? (
-				<p className="text-sm text-secondary dark:text-zinc-400">No Tags Added</p>
+				<p className="text-sm text-secondary dark:text-zinc-400">
+					<T value={'No Tags Added'} />
+				</p>
 			) : (
 				<ul className="flex w-full min-w-0 flex-wrap gap-1.5">
 					{tags.map((tag) => (
@@ -290,7 +295,9 @@ const TagEditor = ({
 
 const TagList = ({ tags }: { tags: ComposerTagChip[] }) =>
 	tags.length === 0 ? (
-		<p className="text-sm text-secondary dark:text-zinc-400">No Tags Added</p>
+		<p className="text-sm text-secondary dark:text-zinc-400">
+			<T value={'No Tags Added'} />
+		</p>
 	) : (
 		<ul className="flex w-full min-w-0 flex-wrap gap-1.5">
 			{[...tags].sort(byName).map((tag) => (

@@ -9,8 +9,7 @@ export const metadata: Metadata = {
 	title: 'Account',
 };
 
-// Unlike /settings (admin-only), /account is every user's own space — API
-// tokens are self-service for viewers too. Any authenticated user passes.
+// Account settings are available to any authenticated user.
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
 	await requireUser();
 	return children;

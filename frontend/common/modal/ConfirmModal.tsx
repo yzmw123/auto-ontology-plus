@@ -8,6 +8,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
 import { Modal } from './Modal';
+import { useLanguage, T } from '@/i18n/LanguageProvider';
 
 type Tone = 'danger' | 'default';
 
@@ -38,6 +39,8 @@ export const ConfirmModal = ({
 	tone = 'danger',
 	className = 'w-full max-w-sm',
 }: ConfirmModalProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const cancelRef = useRef<HTMLButtonElement>(null);
 
 	useEffect(() => {
@@ -47,14 +50,16 @@ export const ConfirmModal = ({
 	return (
 		<Modal open={open} onClose={onCancel} className={className}>
 			<div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-700">
-				<h3 className="text-base font-semibold text-heading dark:text-zinc-100">{title}</h3>
+				<h3 className="text-base font-semibold text-heading dark:text-zinc-100">
+					{__uiT(title)}
+				</h3>
 				<Button
 					onClick={onCancel}
 					disabled={confirming}
 					theme={ButtonTheme.Icon}
 					size={Size.SMALL}
 					iconOnly
-					aria-label="Close"
+					aria-label={__uiT('Close')}
 				>
 					<svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
 						<path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
@@ -62,10 +67,12 @@ export const ConfirmModal = ({
 				</Button>
 			</div>
 			<div className="space-y-4 p-6">
-				<div className="wrap-anywhere text-sm text-body dark:text-zinc-300">{message}</div>
+				<div className="wrap-anywhere text-sm text-body dark:text-zinc-300">
+					{typeof message === 'string' ? __uiT(message) : message}
+				</div>
 				{error != null && (
 					<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-						{error}
+						<T value={error} />
 					</p>
 				)}
 				<div className="flex justify-end gap-2">
@@ -76,7 +83,7 @@ export const ConfirmModal = ({
 						theme={ButtonTheme.Secondary}
 						size={Size.REGULAR}
 					>
-						{cancelLabel}
+						{__uiT(cancelLabel)}
 					</Button>
 					<Button
 						onClick={() => {
@@ -86,7 +93,7 @@ export const ConfirmModal = ({
 						theme={tone === 'danger' ? ButtonTheme.Danger : ButtonTheme.Primary}
 						size={Size.REGULAR}
 					>
-						{confirming ? `${confirmLabel}…` : confirmLabel}
+						{confirming ? `${__uiT(confirmLabel)}…` : __uiT(confirmLabel)}
 					</Button>
 				</div>
 			</div>

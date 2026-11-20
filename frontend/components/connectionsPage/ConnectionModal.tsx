@@ -17,6 +17,7 @@ import {
 	type ConnectionFieldKey,
 } from '@/enums/connection';
 import type { Connection, ConnectionInput, ConnectionParams } from '@/types/connection';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const TYPE_STEP = 'Select Connector';
 const CONNECT_STEP = 'Connect';
@@ -68,6 +69,8 @@ export const ConnectionModal = ({
 	onConfirm,
 	onCancel,
 }: ConnectionModalProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const editing = connection != null;
 
 	const [loading, setLoading] = useState(false);
@@ -288,7 +291,7 @@ export const ConnectionModal = ({
 				return (
 					<div className="flex flex-col gap-2">
 						<p className="px-2 text-xs text-secondary dark:text-zinc-400">
-							Leave empty to ingest all schemas.
+							<T value={'Leave empty to ingest all schemas.'} />
 						</p>
 						<ConnectionSelectDataStep
 							availableDatabases={availableSchemas}
@@ -350,7 +353,7 @@ export const ConnectionModal = ({
 		<ModalWithSteps
 			open={open}
 			onClose={onCancel}
-			title={editing ? `Edit ${connection.database_name}` : 'Create New Connection'}
+			title={editing ? `Edit ${connection.database_name}` : __uiT('Create New Connection')}
 			steps={steps}
 			activeStep={activeStep}
 			onActiveStepChange={setActiveStep}

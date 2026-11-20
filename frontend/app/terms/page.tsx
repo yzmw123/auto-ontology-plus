@@ -5,6 +5,7 @@
 import { Suspense } from 'react';
 import { Icon, IconName } from '@/common/icons';
 import { TermsLoadingSkeleton, TermsView } from '@/components/termsPage';
+import { T } from '@/i18n/LanguageProvider';
 
 export default function TermsPage() {
 	return (
@@ -17,7 +18,7 @@ export default function TermsPage() {
 							className="h-5 w-5 text-body dark:text-zinc-300"
 						/>
 						<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
-							Terms
+							<T value={'Terms'} />
 						</h1>
 					</header>
 					<div className="flex-1 px-6 py-6">

@@ -7,6 +7,7 @@
 import { Popover } from '@/common/Popover';
 import { ColorSwatch } from '@/components/settings/ColorSwatch';
 import { Size } from '@/enums/button';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export type ColorOption = {
 	value: string;
@@ -27,6 +28,8 @@ export const ColorPicker = ({
 	onChange,
 	fallbackColorClass = 'bg-zinc-400',
 }: ColorPickerProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const selectedColorClass =
 		colors.find((color) => color.value === value)?.colorClass ?? fallbackColorClass;
 
@@ -39,8 +42,8 @@ export const ColorPicker = ({
 					colorClass={selectedColorClass}
 					size={Size.LARGE}
 					onClick={toggle}
-					aria-label="Pick Color"
-					title="Pick Color"
+					aria-label={__uiT('Pick Color')}
+					title={__uiT('Pick Color')}
 				/>
 			)}
 		>

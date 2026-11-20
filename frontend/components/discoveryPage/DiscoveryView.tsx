@@ -41,6 +41,7 @@ import type { DiscoveryFilters, DiscoverySearch } from '@/types/discovery';
 import type { RuleTagDraft } from '@/types/rules';
 import type { GlobalSearchItem, GlobalSearchRequest } from '@/types/search';
 import { DiscoveryFiltersPanel, discoveryFiltersMatchNothing } from './DiscoveryFiltersPanel';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 /**
  * The request behind one tab of results, and behind a rule saved from it.
@@ -94,13 +95,15 @@ const DiscoveryResults = ({
 	error,
 	onRetry,
 }: DiscoveryResultsProps) => {
+	const { t: __uiT } = useLanguage();
+
 	if (loading) return <GlobalSearchResultsSkeleton />;
 
 	if (error !== null) {
 		return (
 			<EmptyState
 				variant={EmptyStateVariant.Borderless}
-				title="Search Is Unavailable"
+				title={__uiT('Search Is Unavailable')}
 				description={error}
 				action={{ label: 'Try Again', onClick: onRetry }}
 			/>
@@ -124,7 +127,7 @@ const DiscoveryResults = ({
 		<EmptyState
 			variant={EmptyStateVariant.Borderless}
 			illustration={<Placeholders.NoResults />}
-			title={searched ? 'No Results Match Your Search' : 'Search Auto Ontology'}
+			title={searched ? __uiT('No Results Match Your Search') : __uiT('Search Auto Ontology')}
 			description={
 				searched
 					? "Don't give up, search harder!"
@@ -177,6 +180,8 @@ export type DiscoveryViewProps = {
  * so there is no first paint with the term in the field and nothing beneath it.
  */
 export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryViewProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const [query, setQuery] = useState(initialQuery);
 	const [filters, setFilters] = useState<DiscoveryFilters>(DEFAULT_DISCOVERY_FILTERS);
 	const [applied, setApplied] = useState<DiscoverySearch | null>(() =>
@@ -377,7 +382,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 			<header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
 				<Icon name={IconName.Discovery} className="h-5 w-5 text-body dark:text-zinc-300" />
 				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
-					Discovery
+					<T value={'Discovery'} />
 				</h1>
 			</header>
 			<div className="flex min-h-0 flex-1">
@@ -407,8 +412,8 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 							<SearchInput
 								value={query}
 								onChange={setQuery}
-								placeholder="Search…"
-								aria-label="Search Auto Ontology"
+								placeholder={__uiT('Search…')}
+								aria-label={__uiT('Search Auto Ontology')}
 								autoFocus
 								// `h-9` is `Size.REGULAR`'s height: the field's own
 								// padding would make it 2px taller than the buttons
@@ -416,7 +421,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 								className="h-9 min-w-0 flex-1"
 							/>
 							<Button type="submit" disabled={!canSearch}>
-								Apply
+								<T value={'Apply'} />
 							</Button>
 							{applied !== null && (
 								<Button
@@ -424,7 +429,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 									type="button"
 									onClick={resetAll}
 								>
-									Reset
+									<T value={'Reset'} />
 								</Button>
 							)}
 							{/* A rule tags whatever the current search matched, so it can
@@ -436,12 +441,19 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 								items.length > 0 &&
 								(untaggedSearch ? (
 									<p className="shrink-0 text-xs text-secondary dark:text-zinc-400">
-										A search for untagged objects cannot be saved as a rule
+										<T
+											value={
+												'A search for untagged objects cannot be saved as a rule'
+											}
+										/>
 									</p>
 								) : taggableCount === 0 ? (
 									<p className="shrink-0 text-xs text-secondary dark:text-zinc-400">
-										These results cannot carry tags, so a rule cannot be saved
-										from them
+										<T
+											value={
+												'These results cannot carry tags, so a rule cannot be saved from them'
+											}
+										/>
 									</p>
 								) : (
 									<RuleTagPopover
@@ -462,7 +474,9 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 										/>
 									) : countsFailed && !countsLoading ? (
 										<div className="flex items-center gap-2 px-2 pb-2 text-sm text-secondary dark:text-zinc-400">
-											<span>Result counts are unavailable.</span>
+											<span>
+												<T value={'Result counts are unavailable.'} />
+											</span>
 											<Button
 												theme={ButtonTheme.Minimal}
 												size={Size.SMALL}
@@ -472,7 +486,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 													setCountsAttempt((value) => value + 1);
 												}}
 											>
-												Try Again
+												<T value={'Try Again'} />
 											</Button>
 										</div>
 									) : (

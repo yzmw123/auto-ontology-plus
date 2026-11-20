@@ -19,6 +19,7 @@ import { formatDate } from '@/common/date';
 import { usePagination } from '@/hooks/usePagination';
 import type { ConversationAnalytics } from '@/types/analytics';
 import type { TableColumn } from '@/types/table';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const CSV_HEADERS = ['Timestamp', 'User', 'Source', 'Question', 'Reasoning', 'SQL'];
 const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
@@ -77,6 +78,8 @@ const COLUMNS: TableColumn<ConversationAnalytics>[] = [
 ];
 
 export const AnalyticsView = () => {
+	const { t: __uiT } = useLanguage();
+
 	const [rows, setRows] = useState<ConversationAnalytics[]>([]);
 	const [total, setTotal] = useState(0);
 	const [loading, setLoading] = useState(true);
@@ -159,7 +162,7 @@ export const AnalyticsView = () => {
 			<header className="flex items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
 				<Icon name={IconName.ChartLine} className="h-5 w-5 text-body dark:text-zinc-300" />
 				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
-					Analytics
+					<T value={'Analytics'} />
 				</h1>
 				<div className="ml-auto">
 					<Button
@@ -170,14 +173,14 @@ export const AnalyticsView = () => {
 						disabled={total === 0 || downloading}
 						shadow
 					>
-						{downloading ? 'Preparing download…' : 'Download'}
+						{downloading ? <T value={'Preparing download…'} /> : 'Download'}
 					</Button>
 				</div>
 			</header>
 
 			<div className="flex-1 overflow-y-auto px-6 py-6">
 				{loading && (
-					<div role="status" aria-label="Loading analytics">
+					<div role="status" aria-label={__uiT('Loading analytics')}>
 						<SkeletonTable columns={6} rows={10} />
 					</div>
 				)}
@@ -185,8 +188,10 @@ export const AnalyticsView = () => {
 				{!loading && error == null && total === 0 && (
 					<EmptyState
 						icon={IconName.ChartLine}
-						title="No Analytics Recorded Yet"
-						description="Analytics are captured automatically when you send messages in a conversation."
+						title={__uiT('No Analytics Recorded Yet')}
+						description={__uiT(
+							'Analytics are captured automatically when you send messages in a conversation.',
+						)}
 					/>
 				)}
 
@@ -203,7 +208,7 @@ export const AnalyticsView = () => {
 			<Toast
 				open={error !== null}
 				message={error ?? ''}
-				title="Couldn't load analytics"
+				title={__uiT("Couldn't load analytics")}
 				variant={ToastVariant.Error}
 				onClose={() => setError(null)}
 			/>
@@ -211,7 +216,7 @@ export const AnalyticsView = () => {
 			<Toast
 				open={downloadError !== null}
 				message={downloadError ?? ''}
-				title="Couldn't download analytics"
+				title={__uiT("Couldn't download analytics")}
 				variant={ToastVariant.Error}
 				onClose={() => setDownloadError(null)}
 			/>

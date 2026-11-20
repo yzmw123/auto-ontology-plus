@@ -25,6 +25,7 @@ import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
 import { usePagination } from '@/hooks/usePagination';
 import { Modal } from './Modal';
+import { useLanguage, T } from '@/i18n/LanguageProvider';
 
 export type DataDetailsType = 'columns' | 'queries' | 'terms';
 
@@ -44,6 +45,8 @@ type DataDetailsModalProps = {
 
 /** Generic modal for a Table/View's columns, SQL queries, or related Terms. */
 export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProps) => {
+	const { t: __uiT } = useLanguage();
+
 	const [columns, setColumns] = useState<Column[]>([]);
 	const [details, setDetails] = useState<TableExplorationDetails>({
 		queries: [],
@@ -183,14 +186,19 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 					rowKey={(row) => row.id}
 					pagination={columnsPage.pagination}
 					containerClassName="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
-					emptyMessage="No Columns"
+					emptyMessage={__uiT('No Columns')}
 				/>
 			);
 		}
 
 		if (type === 'queries') {
 			if (details.queries.length === 0) {
-				return <EmptyState variant={EmptyStateVariant.Inline} title="No SQL Queries" />;
+				return (
+					<EmptyState
+						variant={EmptyStateVariant.Inline}
+						title={__uiT('No SQL Queries')}
+					/>
+				);
 			}
 			return (
 				<ul className="space-y-4">
@@ -210,7 +218,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 				rowKey={(row) => row.id}
 				pagination={termsPage.pagination}
 				containerClassName="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
-				emptyMessage="No Terms"
+				emptyMessage={__uiT('No Terms')}
 			/>
 		);
 	};
@@ -261,7 +269,9 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 						{renderSkeleton()}
 					</div>
 				) : error != null ? (
-					<p className="text-sm text-red-600 dark:text-red-300">{error}</p>
+					<p className="text-sm text-red-600 dark:text-red-300">
+						<T value={error} />
+					</p>
 				) : (
 					renderTable()
 				)}

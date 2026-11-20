@@ -28,6 +28,7 @@ import { invalidateOwners } from '@/lib/queries/owners';
 import { GroupsSection } from './GroupsSection';
 import { EditUserModal } from './EditUserModal';
 import { InviteUserModal, type InviteUserInput } from './InviteUserModal';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const invitationStatusLabel: Record<InvitationStatus, string> = {
 	[InvitationStatus.Active]: 'Active',
@@ -48,6 +49,8 @@ const actionErrorMessage = (error: unknown, fallback: string): string => {
 };
 
 export const UsersManager = () => {
+	const { t: __uiT } = useLanguage();
+
 	const queryClient = useQueryClient();
 	const { data: session } = useSession();
 	const [users, setUsers] = useState<User[]>([]);
@@ -334,7 +337,7 @@ export const UsersManager = () => {
 						disabled={busyId === invitation.id}
 						onClick={() => deleteInvitation(invitation)}
 					>
-						Delete
+						<T value={'Delete'} />
 					</Button>
 				</div>
 			),
@@ -346,15 +349,19 @@ export const UsersManager = () => {
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-4">
 					<h1 className="mb-1 text-lg font-semibold text-heading dark:text-zinc-100">
-						Users
+						<T value={'Users'} />
 					</h1>
 					<p className="text-xs text-secondary">
-						Admins manage users; viewers can read the other pages and use chat.
+						<T
+							value={
+								'Admins manage users; viewers can read the other pages and use chat.'
+							}
+						/>
 					</p>
 				</div>
 
 				{loading ? (
-					<div role="status" aria-label="Loading users">
+					<div role="status" aria-label={__uiT('Loading users')}>
 						<SkeletonTable columns={3} rows={8} />
 					</div>
 				) : (
@@ -363,7 +370,7 @@ export const UsersManager = () => {
 						rows={users}
 						rowKey={(user) => user.id}
 						layout="auto"
-						emptyMessage="No Users Found"
+						emptyMessage={__uiT('No Users Found')}
 					/>
 				)}
 
@@ -373,12 +380,14 @@ export const UsersManager = () => {
 					<div className="mb-3 flex items-start justify-between gap-4">
 						<div className="min-w-0">
 							<h2 className="mb-1 text-sm font-semibold text-heading dark:text-zinc-100">
-								Invitations
+								<T value={'Invitations'} />
 							</h2>
 							<p className="text-xs text-secondary">
-								Invite by email. Copy the link and send it yourself — they set a
-								password on it. A join invite creates the account; a reset invite
-								only changes the password.
+								<T
+									value={
+										'Invite by email. Copy the link and send it yourself — they set a password on it. A join invite creates the account; a reset invite only changes the password.'
+									}
+								/>
 							</p>
 						</div>
 						<Button
@@ -395,7 +404,7 @@ export const UsersManager = () => {
 						</Button>
 					</div>
 					{loading ? (
-						<div role="status" aria-label="Loading invitations">
+						<div role="status" aria-label={__uiT('Loading invitations')}>
 							<SkeletonTable columns={5} rows={4} />
 						</div>
 					) : (
@@ -404,7 +413,7 @@ export const UsersManager = () => {
 							rows={invitations}
 							rowKey={(invitation) => invitation.id}
 							layout="auto"
-							emptyMessage="No Invitations"
+							emptyMessage={__uiT('No Invitations')}
 						/>
 					)}
 				</div>
@@ -438,13 +447,13 @@ export const UsersManager = () => {
 
 			<ConfirmModal
 				open={pendingDeleteUser !== null}
-				title="Delete User"
+				title={__uiT('Delete User')}
 				message={
 					pendingDeleteUser == null
 						? ''
 						: `Delete user "${pendingDeleteUser.name || pendingDeleteUser.email}"? This permanently removes the account and its data.`
 				}
-				confirmLabel="Delete"
+				confirmLabel={__uiT('Delete')}
 				onConfirm={confirmDeleteUser}
 				onCancel={() => {
 					if (pendingDeleteUser == null || busyId !== pendingDeleteUser.id) {

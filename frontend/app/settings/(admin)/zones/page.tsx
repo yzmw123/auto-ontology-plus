@@ -28,6 +28,7 @@ import { invalidateZoneList, patchZoneList, zoneQueries } from '@/lib/queries/zo
 import type { Zone, ZoneCreated, ZoneUpdateInput } from '@/types/zones';
 import { useSession } from '@/auth/auth-client';
 import { Role } from '@/enums/auth';
+import { T, useLanguage } from '@/i18n/LanguageProvider';
 
 const ZONE_COLORS: readonly ColorOption[] = [
 	{ value: '#0ea5e9', label: 'Sky', colorClass: 'bg-sky-500' },
@@ -181,7 +182,7 @@ const ZoneCard = ({
 					<Text as="h2" text={zone.name} variant={TextVariant.Heading} />
 					{!zone.enabled ? (
 						<span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium tracking-wide text-body uppercase dark:bg-zinc-700 dark:text-zinc-300">
-							Disabled
+							<T value={'Disabled'} />
 						</span>
 					) : null}
 				</div>
@@ -228,7 +229,7 @@ const ZoneCard = ({
 			</div>
 		</div>
 		<p className="mt-3 text-sm text-body dark:text-zinc-300">
-			{zone.description?.trim() ? zone.description : 'No description'}
+			{zone.description?.trim() ? zone.description : <T value={'No description'} />}
 		</p>
 	</div>
 );
@@ -238,6 +239,8 @@ const ZoneCard = ({
 // ---------------------------------------------------------------------------
 
 export default function ZonesSettingsPage() {
+	const { t: __uiT } = useLanguage();
+
 	const { data: session } = useSession();
 	const currentUserId = session?.user?.id ?? '';
 	const isAdmin = session?.user?.role === Role.Admin;
@@ -631,7 +634,7 @@ export default function ZonesSettingsPage() {
 			<div className="w-full space-y-5">
 				<div className="flex items-center gap-3">
 					<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
-						Zones
+						<T value={'Zones'} />
 					</h1>
 					<div className="ml-auto">
 						<Button
@@ -643,20 +646,20 @@ export default function ZonesSettingsPage() {
 							shadow
 						>
 							<Icon name={IconName.Plus} className="h-4 w-4" />
-							Create New Zone
+							<T value={'Create New Zone'} />
 						</Button>
 					</div>
 				</div>
 
 				{error ? (
 					<div className="rounded-lg border border-red-200/90 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-						{error}
+						<T value={error} />
 					</div>
 				) : null}
 
 				{toggleError ? (
 					<div className="rounded-lg border border-red-200/90 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-						{toggleError}
+						<T value={toggleError} />
 					</div>
 				) : null}
 
@@ -664,7 +667,7 @@ export default function ZonesSettingsPage() {
 					<div
 						className="grid grid-cols-1 gap-4 lg:grid-cols-2"
 						role="status"
-						aria-label="Loading zones"
+						aria-label={__uiT('Loading zones')}
 					>
 						{Array.from({ length: 4 }).map((_, index) => (
 							<SkeletonCard key={index} rows={3} />
@@ -692,7 +695,7 @@ export default function ZonesSettingsPage() {
 					<EmptyState
 						variant={EmptyStateVariant.Inline}
 						icon={IconName.Key}
-						title="No Zones Found"
+						title={__uiT('No Zones Found')}
 						className="rounded-lg border border-dashed border-zinc-300/90 bg-white/70 dark:border-zinc-600 dark:bg-zinc-900/30"
 					/>
 				)}
@@ -700,7 +703,7 @@ export default function ZonesSettingsPage() {
 			<ModalWithSteps
 				open={modalOpen}
 				onClose={closeZoneModal}
-				title={modalMode === 'edit' ? 'Edit Zone' : 'Create New Zone'}
+				title={modalMode === 'edit' ? __uiT('Edit Zone') : __uiT('Create New Zone')}
 				steps={['Info', 'Data to Connect']}
 				activeStep={activeStep}
 				onActiveStepChange={(step) => setActiveStep(step)}
@@ -758,18 +761,18 @@ export default function ZonesSettingsPage() {
 						<div className="flex items-end gap-3">
 							<div className="flex-1">
 								<label className="mb-1.5 block text-sm font-medium text-heading dark:text-zinc-100">
-									Name <span className="text-red-500">*</span>
+									<T value={'Name'} /> <span className="text-red-500">*</span>
 								</label>
 								<input
 									type="text"
 									value={name}
 									onChange={(e) => setName(e.target.value)}
-									placeholder="Zone Name"
+									placeholder={__uiT('Zone Name')}
 									className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500 ${nameExists ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 dark:border-red-500 dark:focus:border-red-400 dark:focus:ring-red-400/30' : 'border-zinc-300 focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600'}`}
 								/>
 								{nameExists ? (
 									<p className="mt-1 text-xs text-red-500 dark:text-red-400">
-										A zone with this name already exists
+										<T value={'A zone with this name already exists'} />
 									</p>
 								) : null}
 							</div>
@@ -782,12 +785,12 @@ export default function ZonesSettingsPage() {
 						</div>
 						<div>
 							<label className="mb-1.5 block text-sm font-medium text-heading dark:text-zinc-100">
-								Description
+								<T value={'Description'} />
 							</label>
 							<textarea
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								placeholder="Optional Description"
+								placeholder={__uiT('Optional Description')}
 								rows={3}
 								className="w-full resize-y rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500"
 							/>
@@ -796,13 +799,13 @@ export default function ZonesSettingsPage() {
 				) : (
 					<div className="space-y-3">
 						<p className="text-sm text-body dark:text-zinc-300">
-							Choose data to connect for this zone.
+							<T value={'Choose data to connect for this zone.'} />
 						</p>
 						{treeLoading ? (
 							<div
 								className="min-h-[220px] py-4"
 								role="status"
-								aria-label="Loading data tree"
+								aria-label={__uiT('Loading data tree')}
 							>
 								<SkeletonRows rows={7} />
 							</div>
@@ -821,8 +824,10 @@ export default function ZonesSettingsPage() {
 			</ModalWithSteps>
 			<ConfirmModal
 				open={confirmDeleteZone !== null}
-				title="Delete Zone"
-				message="Are you sure you want to delete this zone? This action cannot be undone."
+				title={__uiT('Delete Zone')}
+				message={__uiT(
+					'Are you sure you want to delete this zone? This action cannot be undone.',
+				)}
 				onConfirm={handleConfirmZoneDelete}
 				onCancel={handleCancelZoneDelete}
 				confirming={deletingZone}
